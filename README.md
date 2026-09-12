@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logo.png" alt="verboisy" width="140" />
+  <img src="./logo.png" alt="verboisy" width="240" />
 </p>
 <p align="center">
   <strong align="center">An autonomous web research and structured scrape-to-JSON agent.</strong>
