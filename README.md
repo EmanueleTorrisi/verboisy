@@ -1,7 +1,13 @@
-# Verboisy
+<p align="center">
+  <img src="./logo.png" alt="verboisy" width="140" />
+</p>
+<p align="center">
+  <strong align="center">An autonomous web research and structured scrape-to-JSON agent.</strong>
+</p>
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="License"></a>
+</p>
 
-An autonomous web research and structured scrape-to-JSON agent built for the enterprise.
-Powered by Playwright, Pydantic v2, and LiteLLM.
 
 ## Architecture
 
@@ -34,5 +40,7 @@ verboisy run \
   --goal "Find the latest AI startups from YCombinator W24" \
   --schema examples/yc_startups/schema.json \
   --export result.json
+
+## License
 
 Verboisy was written by Emanuele Torrisi and is released under the BSD 2 clause license.
