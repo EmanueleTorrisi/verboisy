@@ -1,0 +1,24 @@
+{
+  "properties": {
+    "company_name": {
+      "type": "string",
+      "description": "The name of the startup company"
+    },
+    "batch": {
+      "type": "string",
+      "description": "The YC batch, e.g., W24, S23"
+    },
+    "description": {
+      "type": "string",
+      "description": "A short summary of what the company does"
+    },
+    "website": {
+      "type": "string",
+      "description": "The URL of the company website"
+    }
+  },
+  "required": [
+    "company_name",
+    "description"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "properties": {
+    "product_name": {
+      "type": "string",
+      "description": "Full name of the product"
+    },
+    "price_usd": {
+      "type": "number",
+      "description": "Current listed price in USD (without currency symbols)"
+    },
+    "availability_status": {
+      "type": "string",
+      "description": "E.g., In Stock, Out of Stock, Pre-order"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Average user rating, out of 5 stars"
+    }
+  },
+  "required": [
+    "product_name",
+    "price_usd"
+  ]
+}
