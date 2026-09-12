@@ -62,5 +62,5 @@ run: The main command to start the autonomous agent.
 Once you hit enter, Verboisy will spin up a headless browser, autonomously navigate the web, analyze the page DOM, extract the data matching your schema, and save it to your result.json file.
 
 
-
+*----------------------------------------------------------------------------------------*
 *Verboisy was written by Emanuele Torrisi and is released under the BSD 2 clause license.*
