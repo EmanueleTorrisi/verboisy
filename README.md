@@ -22,10 +22,12 @@ graph TD
     Pydantic --> Storage[SQLite / Exporters]
 ```
 
-## Installation
+## How to install:
 
+```
 pip install verboisy
 playwright install --with-deps chromium
+```
 
 ## Configuration
 
@@ -34,13 +36,30 @@ Copy .env.example to .env and set your API keys:
 OPENAI_API_KEY=sk-...
 LITELLM_MODEL=gpt-4o
 
-## Usage
+## How to use:
 
+Verboisy operates through a simple command-line interface.
+You provide it with a plain-english goal and a JSON schema defining the exact data structure you want back.
+
+Here is a complete example command:
+```
 verboisy run \
   --goal "Find the latest AI startups from YCombinator W24" \
   --schema examples/yc_startups/schema.json \
   --export result.json
+```
 
-## License
+Command Breakdown:
+
+run: The main command to start the autonomous agent.
+
+--goal (or -g): Tell the agent exactly what to look for and where to go. Be as specific as possible.
+
+--schema (or -s): The file path to your custom JSON schema. This file tells Verboisy exactly what data fields to extract (e.g., company name, website, description).
+
+--export (or -e): (Optional) The file path where you want to save the final extracted data. It supports .json and .csv formats.
+
+Once you hit enter, Verboisy will spin up a headless browser, autonomously navigate the web, analyze the page DOM, extract the data matching your schema, and save it to your result.json file.
+
 
 Verboisy was written by Emanuele Torrisi and is released under the BSD 2 clause license.
