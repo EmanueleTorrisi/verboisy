@@ -37,11 +37,11 @@ verboisy run \
 
 Command Breakdown:
 
-run: The main command to start the autonomous agent.
+*run*: The main command to start the autonomous agent.
 
---goal (or -g): Tell the agent exactly what to look for and where to go. Be as specific as possible.
+*--goal* (or -g): Tell the agent exactly what to look for and where to go. Be as specific as possible.
 
---schema (or -s): The file path to your custom JSON schema. This file tells Verboisy exactly what data fields to extract (e.g., company name, website, description).
+*--schema* (or -s): The file path to your custom JSON schema. This file tells Verboisy exactly what data fields to extract (e.g., company name, website, description).
 
 --export (or -e): (Optional) The file path where you want to save the final extracted data. It supports .json and .csv formats.
 
@@ -49,4 +49,4 @@ Once you hit enter, Verboisy will spin up a headless browser, autonomously navig
 
 
 ----------------------------------------------------------------------------------------
-*Verboisy was written by Emanuele Torrisi and is released under the BSD 2 clause license.*
+**Verboisy was written by Emanuele Torrisi and is released under the BSD 2 clause license.**
