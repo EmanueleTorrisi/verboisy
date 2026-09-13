@@ -8,6 +8,17 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="License"></a>
 </p>
 
+<p align="center">
+  <strong title="English" aria-label="English">🇬🇧</strong> ·
+  <a href=".github/readme/README.it.md" title="Italiano" aria-label="Italiano">🇮🇹</a> ·
+  <a href=".github/readme/README.de.md" title="Deutsch" aria-label="Deutsch">🇩🇪</a> ·
+  <a href=".github/readme/README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
+  <a href=".github/readme/README.fr.md" title="Français" aria-label="Français">🇫🇷</a> ·
+  <a href=".github/readme/README.es.md" title="Español" aria-label="Español">🇪🇸</a> ·
+  <a href=".github/readme/README.hi.md" title="हिन्दी" aria-label="हिन्दी">🇮🇳</a> ·
+  <a href=".github/readme/README.ar.md" title="العربية" aria-label="العربية">🇸🇦</a>
+</p>
+
 ## How to install:
 
 ```
@@ -19,7 +30,7 @@ playwright install --with-deps chromium
 
 Copy .env.example to .env and set your API keys:
 
--> OPENAI_API_KEY=sk-...  
+-> OPENAI_API_KEY=sk-...
 -> LITELLM_MODEL=gpt-4o
 
 ## How to use:
