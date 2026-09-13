@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md" title="English" aria-label="English">GB</a> ·
+  <a href="../../README.md" title="English" aria-label="English">GB</a> ·
   <strong title="Italiano" aria-label="Italiano">IT</strong> ·
   <a href=".github/readme/README.de.md" title="Deutsch" aria-label="Deutsch">🇩🇪</a> ·
   <a href=".github/readme/README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
