@@ -8,20 +8,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="License"></a>
 </p>
 
-
-## Architecture
-
-```mermaid
-graph TD
-    CLI[Typer CLI] --> Agent[Core Agent Loop]
-    Agent --> Planner[LLM Planner]
-    Agent --> Context[Browser Manager]
-    Context --> DOM[DOM Parser & Cleaner]
-    DOM --> Extractor[Extraction Engine]
-    Extractor --> Pydantic[Dynamic Schema Builder]
-    Pydantic --> Storage[SQLite / Exporters]
-```
-
 ## How to install:
 
 ```
@@ -29,7 +15,7 @@ pip install verboisy
 playwright install --with-deps chromium
 ```
 
-## Configuration
+## How to configure:
 
 Copy .env.example to .env and set your API keys:
 
