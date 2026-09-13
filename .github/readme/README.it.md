@@ -42,7 +42,7 @@ Gli fornisci un obiettivo in linguaggio naturale e uno schema JSON che definisce
 Ecco un esempio di comando completo:
 ```
 verboisy run \
-  --goal "Find the latest AI startups from YCombinator W24" \
+  --goal "Trova le startup di IA più recenti di Y Combinator W24" \
   --schema examples/yc_startups/schema.json \
   --export result.json
 ```
@@ -51,11 +51,11 @@ Dettaglio del comando:
 
 *run*: Il comando principale per avviare l'agente autonomo.
 
-*--goal* (or -g): Dice all'agente esattamente cosa cercare e dove andare. Sii il più specifico possibile.
+*--goal* (o -g): Dice all'agente esattamente cosa cercare e dove andare. Sii il più specifico possibile.
 
-*--schema* (or -s): Il percorso del file al tuo schema JSON personalizzato. Questo file dice a Verboisy esattamente quali campi di dati estrarre (es. nome dell'azienda, sito web, descrizione).
+*--schema* (o -s): Il percorso del file al tuo schema JSON personalizzato. Questo file dice a Verboisy esattamente quali campi di dati estrarre (es. nome dell'azienda, sito web, descrizione).
 
-*--export* (or -e): (Opzionale) Il percorso del file in cui desideri salvare i dati finali estratti. Supporta i formati .json e .csv.
+*--export* (o -e): (Opzionale) Il percorso del file in cui desideri salvare i dati finali estratti. Supporta i formati .json e .csv.
 
 Una volta premuto invio, Verboisy avvierà un browser headless, navigherà autonomamente sul web, analizzerà il DOM della pagina, estrarrà i dati corrispondenti al tuo schema e li salverà nel tuo file result.json.
 
