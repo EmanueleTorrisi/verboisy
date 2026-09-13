@@ -21,7 +21,7 @@
 
 ## Cómo instalar:
 
-```
+```bash
 pip install verboisy
 playwright install --with-deps chromium
 ```
@@ -40,7 +40,7 @@ Verboisy funciona a través de una sencilla interfaz de línea de comandos.
 Le proporcionas un objetivo en inglés sencillo y un esquema JSON que define la estructura exacta de los datos que deseas obtener.
 
 Aquí tienes un ejemplo de comando completo:
-```
+```bash
 verboisy run \
   --goal "Encuentra las startups de IA más recientes de Y Combinator W24" \
   --schema examples/yc_startups/schema.json \

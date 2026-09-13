@@ -21,7 +21,7 @@
 
 ## 如何安装:
 
-```
+```bash
 pip install verboisy
 playwright install --with-deps chromium
 ```
@@ -40,7 +40,7 @@ Verboisy 通过一个简单的命令行界面运行。
 你需要为它提供一个纯英语的目标描述，以及一个定义你确切想要返回的数据结构的 JSON schema
 
 下面是一个完整的示例命令:
-```
+```bash
 verboisy run \
   --goal "寻找 Y Combinator W24 最新的 AI 初创公司。" \
   --schema examples/yc_startups/schema.json \

@@ -21,7 +21,7 @@
 
 ## So installieren Sie:
 
-```
+```bash
 pip install verboisy
 playwright install --with-deps chromium
 ```
@@ -40,7 +40,7 @@ Verboisy funktioniert über eine einfache Befehlszeilenschnittstelle.
 Sie geben ein Ziel in einfachem Englisch und ein JSON-Schema vor, das die genaue Datenstruktur definiert, die Sie zurückerhalten möchten.
 
 Hier ist ein vollständiger Beispielbefehl:
-```
+```bash
 verboisy run \
   --goal "Finde die neuesten KI-Startups von Y Combinator W24" \
   --schema examples/yc_startups/schema.json \
