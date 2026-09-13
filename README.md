@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logo.png" alt="verboisy" width="240" />
+  <img src="./logo.png" alt="verboisy" width="300" />
 </p>
 <p align="center">
   <strong align="center">An autonomous web research and structured scrape-to-JSON agent.</strong>
@@ -30,7 +30,8 @@ playwright install --with-deps chromium
 
 Copy .env.example to .env and set your API keys:
 
--> OPENAI_API_KEY=sk-...  
+-> OPENAI_API_KEY=sk-...
+
 -> LITELLM_MODEL=gpt-4o
 
 ## How to use:
@@ -54,7 +55,7 @@ Command Breakdown:
 
 *--schema* (or -s): The file path to your custom JSON schema. This file tells Verboisy exactly what data fields to extract (e.g., company name, website, description).
 
---export (or -e): (Optional) The file path where you want to save the final extracted data. It supports .json and .csv formats.
+*--export* (or -e): (Optional) The file path where you want to save the final extracted data. It supports .json and .csv formats.
 
 Once you hit enter, Verboisy will spin up a headless browser, autonomously navigate the web, analyze the page DOM, extract the data matching your schema, and save it to your result.json file.
 
