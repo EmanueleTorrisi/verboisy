@@ -15,3 +15,4 @@ Verboisy is an autonomous web research and structured scrape-to-JSON agent. It c
 ```bash
 pip install verboisy
 verboisy run --goal "Find YCombinator startups in AI from W24" --schema schema.json
+```
