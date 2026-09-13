@@ -30,7 +30,7 @@ playwright install --with-deps chromium
 
 Copy .env.example to .env and set your API keys:
 
--> OPENAI_API_KEY=sk-...
+-> OPENAI_API_KEY=sk-...  
 -> LITELLM_MODEL=gpt-4o
 
 ## How to use:
