@@ -9,9 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="../../README.md" title="English" aria-label="English">GB</a> ·
-  <a href="README.it.md" title="Italiano" aria-label="Italiano">IT</a> ·
-  <strong title="Deutsch" aria-label="Deutsch">DE</strong> ·
+  <a href="../../README.md" title="English" aria-label="English">🇬🇧</a> ·
+  <a href="README.it.md" title="Italiano" aria-label="Italiano">🇮🇹</a> ·
+  <strong title="Deutsch" aria-label="Deutsch">🇩🇪</strong> ·
   <a href="README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
   <a href="README.fr.md" title="Français" aria-label="Français">🇫🇷</a> ·
   <a href="README.es.md" title="Español" aria-label="Español">🇪🇸</a> ·
