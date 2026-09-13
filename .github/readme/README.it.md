@@ -11,12 +11,12 @@
 <p align="center">
   <a href="../../README.md" title="English" aria-label="English">GB</a> ·
   <strong title="Italiano" aria-label="Italiano">IT</strong> ·
-  <a href=".github/readme/README.de.md" title="Deutsch" aria-label="Deutsch">🇩🇪</a> ·
-  <a href=".github/readme/README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
-  <a href=".github/readme/README.fr.md" title="Français" aria-label="Français">🇫🇷</a> ·
-  <a href=".github/readme/README.es.md" title="Español" aria-label="Español">🇪🇸</a> ·
-  <a href=".github/readme/README.hi.md" title="हिन्दी" aria-label="हिन्दी">🇮🇳</a> ·
-  <a href=".github/readme/README.ar.md" title="العربية" aria-label="العربية">🇸🇦</a>
+  <a href="README.de.md" title="Deutsch" aria-label="Deutsch">🇩🇪</a> ·
+  <a href="README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
+  <a href="README.fr.md" title="Français" aria-label="Français">🇫🇷</a> ·
+  <a href="README.es.md" title="Español" aria-label="Español">🇪🇸</a> ·
+  <a href="README.hi.md" title="हिन्दी" aria-label="हिन्दी">🇮🇳</a> ·
+  <a href="README.ar.md" title="العربية" aria-label="العربية">🇸🇦</a>
 </p>
 
 ## Come installare:
