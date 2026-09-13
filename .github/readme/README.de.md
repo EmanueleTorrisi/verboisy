@@ -42,7 +42,7 @@ Sie geben ein Ziel in einfachem Englisch und ein JSON-Schema vor, das die genaue
 Hier ist ein vollständiger Beispielbefehl:
 ```
 verboisy run \
-  --goal "Find the latest AI startups from YCombinator W24" \
+  --goal "Finde die neuesten KI-Startups von Y Combinator W24" \
   --schema examples/yc_startups/schema.json \
   --export result.json
 ```
@@ -51,11 +51,11 @@ Aufschlüsselung des Befehls:
 
 *run*: Der Hauptbefehl zum Starten des autonomen Agenten.
 
-*--goal* (or -g): Teilen Sie dem Agenten genau mit, wonach er suchen und wohin er navigieren soll. Seien Sie so spezifisch wie möglich.
+*--goal* (oder -g): Teilen Sie dem Agenten genau mit, wonach er suchen und wohin er navigieren soll. Seien Sie so spezifisch wie möglich.
 
-*--schema* (or -s): Der Dateipfad zu Ihrem benutzerdefinierten JSON-Schema. Diese Datei teilt Verboisy genau mit, welche Datenfelder extrahiert werden sollen (z. B. Firmenname, Website, Beschreibung).
+*--schema* (oder -s): Der Dateipfad zu Ihrem benutzerdefinierten JSON-Schema. Diese Datei teilt Verboisy genau mit, welche Datenfelder extrahiert werden sollen (z. B. Firmenname, Website, Beschreibung).
 
-*--export* (or -e): (Optional) Der Dateipfad, in dem Sie die extrahierten Enddaten speichern möchten. Es werden die Formate .json und .csv unterstützt.
+*--export* (oder -e): (Optional) Der Dateipfad, in dem Sie die extrahierten Enddaten speichern möchten. Es werden die Formate .json und .csv unterstützt.
 
 Sobald Sie die Eingabetaste drücken, startet Verboisy einen Headless-Browser, navigiert autonom durchs Web, analysiert das Seiten-DOM, extrahiert die Ihrem Schema entsprechenden Daten und speichert sie in Ihrer result.json-Datei.
 
