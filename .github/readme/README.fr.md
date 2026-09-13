@@ -15,8 +15,8 @@
   <a href="README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
   <strong title="Français" aria-label="Français">🇫🇷</strong> ·
   <a href="README.es.md" title="Español" aria-label="Español">🇪🇸</a> ·
-  <a href="README.hi.md" title="हिन्दी" aria-label="हिन्दी">🇮🇳</a> ·
-  <a href="README.ar.md" title="العربية" aria-label="العربية">🇸🇦</a>
+  <a href="README.ko.md" title="한국어" aria-label="한국어">🇰🇷</a> ·
+  <a href="README.ja.md" title="日本語" aria-label="日本語">🇯🇵</a>
 </p>
 
 ## Comment installer :
