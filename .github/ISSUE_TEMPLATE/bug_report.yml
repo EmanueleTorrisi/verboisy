@@ -1,0 +1,121 @@
+name: "Bug Report"
+description: "Report a reproducible problem with Verboisy."
+title: "[BUG] "
+labels:
+  - bug
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for taking the time to report a bug
+
+        Please provide as much detail as possible. Clear reproduction steps and
+        environment information help us investigate and resolve issues faster.
+
+        Before submitting, please search the existing issues to make sure this
+        problem has not already been reported.
+
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Existing issues
+      description: Please confirm that you have searched the issue tracker.
+      options:
+        - label: I have searched the existing issues and could not find a matching report.
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clearly describe the problem you encountered.
+      placeholder: |
+        Describe what happened and where you encountered the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Provide the smallest set of steps that consistently reproduces the issue.
+      placeholder: |
+        1. Install Verboisy version ...
+        2. Run `...`
+        3. Configure `...`
+        4. Observe the error
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: Describe what you expected Verboisy to do.
+      placeholder: |
+        I expected Verboisy to ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: Describe what Verboisy actually did instead.
+      placeholder: |
+        Instead, Verboisy ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Output / Logs
+      description: |
+        Paste any relevant error messages, stack traces, or terminal output.
+        Please remove secrets, tokens, API keys, and other sensitive information.
+      placeholder: |
+        Paste logs here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Provide the versions and platform where the issue occurred.
+      placeholder: |
+        - OS: Ubuntu 24.04
+        - Python: 3.12.5
+        - Verboisy: 0.1.0
+        - Installation method: pip / source / other
+      render: yaml
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration
+      description: |
+        Include relevant Verboisy configuration or a minimal reproducible example.
+        Remove any sensitive information before submitting.
+      placeholder: |
+        Paste relevant configuration or example code here...
+      render: python
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add screenshots, links, related issues, or any other useful information.
+      placeholder: |
+        Anything else that may help us investigate the issue.
+    validations:
+      required: false

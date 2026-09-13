@@ -1,0 +1,67 @@
+name: "Feature Request"
+description: "Suggest an idea or improvement for Verboisy."
+title: "[FEATURE] "
+labels:
+  - enhancement
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for helping improve Verboisy
+
+        Please describe the problem you are trying to solve and the outcome
+        you would like to achieve.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Motivation
+      description: What problem would this feature solve?
+      placeholder: |
+        I am trying to ...
+        Currently, ...
+        This is difficult because ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature or behavior you would like to see.
+      placeholder: |
+        I would like Verboisy to ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or workarounds you have considered.
+      placeholder: |
+        I considered ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Explain how this feature would be useful in practice.
+      placeholder: |
+        This would be useful when ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add mockups, examples, links, or any other relevant information.
+      placeholder: |
+        Additional information...
+    validations:
+      required: false
