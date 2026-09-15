@@ -164,13 +164,11 @@ VERBOISY_HEADLESS=True
 | `LITELLM_MODEL` | `gpt-4o` | Any [LiteLLM](https://github.com/BerriAI/litellm)-supported model string. |
 | `MAX_TOKENS` | `4096` | Max tokens per planner/extraction call. |
 | `TEMPERATURE` | `0.0` | Sampling temperature for the planner. |
-| `VERBOISY_HEADLESS`¹ | `true` | Run Chromium headless. |
+| `VERBOISY_HEADLESS` | `true` | Run Chromium headless. |
 | `BROWSER_TIMEOUT_MS` | `30000` | Navigation timeout per page, in ms. |
 | `USER_AGENT_ROTATION` | `true` | Rotate user agents between requests. |
 | `SQLITE_DB_PATH` | `verboisy.db` | Where extracted records are persisted. |
-| `VERBOISY_LOG_LEVEL`¹ | `INFO` | Standard Python logging level. |
-
-¹ Not wired up yet — see below.
+| `VERBOISY_LOG_LEVEL` | `INFO` | Standard Python logging level. |
 
 ## Usage
 
