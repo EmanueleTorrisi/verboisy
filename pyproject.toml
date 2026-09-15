@@ -5,6 +5,8 @@ description = "Autonomous web research and structured scrape-to-JSON agent."
 authors = ["Emanuele Torrisi <emanueletorrisi98@gmail.com>"]
 readme = "README.md"
 packages = [{include = "verboisy", from = "src"}]
+include = ["src/verboisy/py.typed"]
+classifiers = ["Typing :: Typed"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -50,3 +52,17 @@ select = ["E", "F", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG", "PTH", "RUF"]
 python_version = "3.11"
 strict = true
 ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
