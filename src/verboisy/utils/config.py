@@ -4,6 +4,7 @@ Configuration management using Pydantic BaseSettings.
 
 from typing import Any
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -17,13 +18,13 @@ class Settings(BaseSettings):
     temperature: float = 0.0
 
     # Browser Settings
-    headless_browser: bool = True
+    headless_browser: bool = Field(default=True, validation_alias="VERBOISY_HEADLESS")
     browser_timeout_ms: int = 30000
     user_agent_rotation: bool = True
 
     # Application State / Storage
     sqlite_db_path: str = "verboisy.db"
-    log_level: str = "INFO"
+    log_level: str = Field(default="INFO", validation_alias="VERBOISY_LOG_LEVEL")
 
     model_config = SettingsConfigDict(
         env_file=".env",
