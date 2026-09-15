@@ -3,6 +3,8 @@ Unit tests for the DOMParser utility.
 """
 
 from verboisy.browser.dom_parser import DOMParser
+from tests.conftest import load_html_fixture
+from verboisy.browser.dom_parser import clean_html
 
 
 def test_clean_html_removes_scripts_and_styles() -> None:
@@ -51,3 +53,10 @@ def test_extract_interactive_elements() -> None:
     assert "<button id='submit-btn' class='primary' href=''>Submit</button>" in interactive
     assert "<input id='username' class='' href=''></input>" in interactive
     assert "Not interactive" not in interactive
+
+
+def test_clean_html_strips_nav_scripts_and_styles() -> None:
+    cleaned = clean_html(load_html_fixture("startup_directory.html"))
+    assert "analytics.js" not in cleaned
+    assert "cookie-banner" not in cleaned
+    assert "Aurora Labs" in cleaned

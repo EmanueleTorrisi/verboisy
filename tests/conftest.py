@@ -9,6 +9,19 @@ from typing import AsyncGenerator
 from verboisy.storage.sqlite import DatabaseManager
 from verboisy.utils.config import settings
 
+import json
+from pathlib import Path
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+def load_html_fixture(name: str) -> str:
+    return (FIXTURES_DIR / "pages" / name).read_text(encoding="utf-8")
+
+
+def load_json_fixture(name: str) -> list | dict:
+    return json.loads((FIXTURES_DIR / "expected" / name).read_text(encoding="utf-8"))
+
 
 @pytest.fixture(scope="session")
 def event_loop() -> AsyncGenerator[asyncio.AbstractEventLoop, None]:

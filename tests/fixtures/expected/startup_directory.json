@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Aurora Labs",
+    "tagline": "Battery diagnostics for EV fleets.",
+    "batch": "W24",
+    "website": "https://aurora-labs.example.com"
+  },
+  {
+    "name": "Fernbank",
+    "tagline": "Automated bookkeeping for small farms.",
+    "batch": "S23",
+    "website": "https://fernbank.example.com"
+  }
+]
