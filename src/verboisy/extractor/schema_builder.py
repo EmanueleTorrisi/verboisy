@@ -2,19 +2,21 @@
 Dynamically creates Pydantic v2 models from standard JSON schemas.
 """
 
-from typing import Any, Dict, Type, List, Optional
-from pydantic import BaseModel, create_model, Field
+from typing import Any, Optional, cast
 
-from verboisy.utils.logger import get_logger
+from pydantic import BaseModel, Field, create_model
+
 from verboisy.utils.exceptions import ExtractionError
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 class SchemaBuilder:
     """Utility class to parse JSON schemas and return Pydantic models."""
 
     @classmethod
-    def build_model(cls, schema_name: str, json_schema: Dict[str, Any]) -> Type[BaseModel]:
+    def build_model(cls, schema_name: str, json_schema: dict[str, Any]) -> type[BaseModel]:
         """
         Convert a simple JSON schema dict into a Pydantic Model class.
 
@@ -26,7 +28,7 @@ class SchemaBuilder:
         Returns:
             Type[BaseModel]: A dynamically generated Pydantic model class.
         """
-        fields = {}
+        fields: dict[str, tuple[Any, Any]] = {}
         properties = json_schema.get("properties", {})
         required_fields = set(json_schema.get("required", []))
 
@@ -41,26 +43,32 @@ class SchemaBuilder:
             is_required = field_name in required_fields
 
             if is_required:
-                fields[field_name] = (python_type, Field(..., description=field_def.get("description", "")))
+                fields[field_name] = (
+                    python_type,
+                    Field(..., description=field_def.get("description", "")),
+                )
             else:
-                fields[field_name] = (Optional[python_type], Field(None, description=field_def.get("description", "")))
+                fields[field_name] = (
+                    python_type | None,
+                    Field(None, description=field_def.get("description", "")),
+                )
 
         try:
-            model = create_model(schema_name, **fields) # type: ignore
-            return model
+            model = create_model(schema_name, **fields)
+            return cast(type[BaseModel], model)
         except Exception as e:
             logger.error("Failed to build dynamic schema", schema_name=schema_name, error=str(e))
-            raise ExtractionError(f"Failed to compile dynamic Pydantic model: {e}")
+            raise ExtractionError(f"Failed to compile dynamic Pydantic model: {e}") from e
 
     @staticmethod
     def _map_json_type(json_type: str) -> type:
         """Map JSON types to Python types."""
-        mapping: Dict[str, type] = {
+        mapping: dict[str, type] = {
             "string": str,
             "integer": int,
             "number": float,
             "boolean": bool,
             "array": list,
-            "object": dict
+            "object": dict,
         }
         return mapping.get(json_type.lower(), str)
