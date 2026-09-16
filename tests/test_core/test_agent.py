@@ -31,13 +31,13 @@ async def test_agent_initialization(dummy_schema: dict[str, Any]) -> None:
 @patch("verboisy.core.agent.BrowserManager")
 @patch("verboisy.core.agent.DatabaseManager")
 async def test_agent_run_completion(
-    mock_db: AsyncMock,
+    _mock_db: AsyncMock,
     mock_browser: AsyncMock,
     mock_planner: AsyncMock,
     dummy_schema: dict[str, Any],
 ) -> None:
     # Setup mock database
-    db_instance = mock_db.return_value
+    db_instance = _mock_db.return_value
     db_instance.connect = AsyncMock()
     db_instance.save_run = AsyncMock()
     db_instance.save_history_action = AsyncMock()
