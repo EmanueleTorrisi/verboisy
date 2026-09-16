@@ -3,15 +3,15 @@ Primary autonomous loop and state machine for Verboisy.
 """
 
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
-from verboisy.utils.logger import get_logger
-from verboisy.utils.exceptions import VerboisyError
-from verboisy.core.state import AgentState, ActionHistory
-from verboisy.core.planner import Planner
 from verboisy.browser.context import BrowserManager
+from verboisy.core.planner import Planner
+from verboisy.core.state import ActionHistory, AgentState
 from verboisy.extractor.engine import ExtractionEngine
 from verboisy.storage.sqlite import DatabaseManager
+from verboisy.utils.exceptions import VerboisyError
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -19,8 +19,12 @@ logger = get_logger(__name__)
 class Agent:
     """The central agent orchestrator."""
 
-    def __init__(self, goal: str, target_schema: Dict[str, Any], max_steps: int = 20) -> None:
-        self.state = AgentState(goal=goal, target_schema=target_schema, max_steps=max_steps)
+    def __init__(self, goal: str, target_schema: dict[str, Any], max_steps: int = 20) -> None:
+        self.state = AgentState(
+            goal=goal,
+            target_schema=target_schema,
+            max_steps=max_steps,
+        )
         self.browser = BrowserManager()
         self.planner = Planner()
         self.extractor = ExtractionEngine(target_schema)
@@ -34,7 +38,9 @@ class Agent:
         self.state.status = "RUNNING"
 
         await self.db.connect()
-        await self.db.save_run(self.state.run_id, self.state.goal, self.state.target_schema, self.state.status)
+        await self.db.save_run(
+            self.state.run_id, self.state.goal, self.state.target_schema, self.state.status
+        )
 
         try:
             page = await self.browser.start()
@@ -53,10 +59,12 @@ class Agent:
                     goal=self.state.goal,
                     current_url=current_url,
                     html_content=html_content,
-                    history=self.state.history
+                    history=self.state.history,
                 )
 
-                logger.info("Executing Action", action=action_req.action, parameters=action_req.parameters)
+                logger.info(
+                    "Executing Action", action=action_req.action, parameters=action_req.parameters
+                )
 
                 # 2. Execute action
                 if action_req.action == "FINISH":
@@ -94,9 +102,7 @@ class Agent:
 
                 # 3. Update History
                 history_record = ActionHistory(
-                    action=action_req.action,
-                    parameters=action_req.parameters,
-                    url=current_url
+                    action=action_req.action, parameters=action_req.parameters, url=current_url
                 )
                 self.state.history.append(history_record)
                 await self.db.save_history_action(
@@ -113,10 +119,12 @@ class Agent:
         except Exception as e:
             logger.error("Agent execution failed", error=str(e))
             self.state.status = "FAILED"
-            raise VerboisyError(f"Agent failed during execution: {e}")
+            raise VerboisyError(f"Agent failed during execution: {e}") from e
 
         finally:
-            await self.db.save_run(self.state.run_id, self.state.goal, self.state.target_schema, self.state.status)
+            await self.db.save_run(
+                self.state.run_id, self.state.goal, self.state.target_schema, self.state.status
+            )
             await self.browser.close()
             await self.db.close()
 
