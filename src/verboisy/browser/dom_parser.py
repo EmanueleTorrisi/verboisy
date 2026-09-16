@@ -73,6 +73,6 @@ class DOMParser:
 
         return "\n".join(elements[:100])  # Cap to 100 elements for token safety
 
-    def clean_html(html_content: str) -> str:
-        """Clean HTML using DOMParser."""
-        return DOMParser.clean_html(html_content)
+def clean_html(html_content: str) -> str:
+    """Clean HTML using DOMParser."""
+    return DOMParser.clean_html(html_content)
