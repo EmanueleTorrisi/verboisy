@@ -5,10 +5,9 @@ Utilities for exporting extracted data to various formats (JSON, CSV).
 import csv
 import json
 from pathlib import Path
-from typing import Any, List, Dict
+from typing import Any
 
 from verboisy.utils.logger import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -17,7 +16,7 @@ class DataExporter:
     """Handles exporting list of dictionaries to files."""
 
     @staticmethod
-    def export_json(data: List[Dict[str, Any]], filepath: str | Path) -> None:
+    def export_json(data: list[dict[str, Any]], filepath: str | Path) -> None:
         """
         Export a list of dictionaries to a JSON file.
 
@@ -29,7 +28,7 @@ class DataExporter:
         path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            with open(path, "w", encoding="utf-8") as f:
+            with path.open("w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             logger.info("Exported JSON successfully", filepath=str(path), count=len(data))
         except Exception as e:
@@ -37,7 +36,7 @@ class DataExporter:
             raise
 
     @staticmethod
-    def export_csv(data: List[Dict[str, Any]], filepath: str | Path) -> None:
+    def export_csv(data: list[dict[str, Any]], filepath: str | Path) -> None:
         """
         Export a list of dictionaries to a CSV file.
         Flattens nested dicts minimally. Best for flat schemas.
@@ -58,16 +57,16 @@ class DataExporter:
         for item in data:
             headers.update(item.keys())
 
-        header_list = sorted(list(headers))
+        header_list = sorted(headers)
 
         try:
-            with open(path, "w", newline="", encoding="utf-8") as f:
+            with path.open("w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=header_list)
                 writer.writeheader()
                 for row in data:
                     # Convert nested structures to strings for CSV compatibility
                     processed_row = {
-                        k: (json.dumps(v) if isinstance(v, (dict, list)) else v)
+                        k: (json.dumps(v) if isinstance(v, dict | list) else v)
                         for k, v in row.items()
                     }
                     writer.writerow(processed_row)
