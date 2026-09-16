@@ -46,7 +46,8 @@ class ExtractionEngine:
         {cleaned_html[:20000]}  # Truncated to avoid context overflow on massive pages
 
         Extract ALL instances that match the target schema from the HTML above.
-        Return the result as a JSON object containing a key 'results' which is an array of the extracted objects.
+        Return the result as a JSON object containing a key 'results' which is an
+        array of the extracted objects.
         """
 
         try:
