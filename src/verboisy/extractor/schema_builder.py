@@ -27,7 +27,8 @@ class SchemaBuilder:
         Args:
             schema_name: The name to assign to the generated model.
             json_schema: A dictionary describing the target schema fields.
-                         e.g., {"company_name": {"type": "string"}, "valuation": {"type": "integer"}}
+                         e.g., {"company_name": {"type": "string"},
+                        "valuation": {"type": "integer"}}
 
         Returns:
             Type[BaseModel]: A dynamically generated Pydantic model class.
