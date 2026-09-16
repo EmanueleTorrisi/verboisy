@@ -5,32 +5,59 @@ Typer application entrypoint for the Verbosiy CLI.
 import asyncio
 import json
 from pathlib import Path
-import typer
 
+import typer
+from typing import Annotated
+
+from verboisy.cli.ui import CLIUserInterface
 from verboisy.core.agent import Agent
 from verboisy.storage.exporters import DataExporter
-from verboisy.cli.ui import CLIUserInterface
 
 app = typer.Typer(
     name="verboisy",
     help="⛏️ Verboisy: Autonomous web research and scrape-to-JSON agent.",
-    add_completion=False
+    add_completion=False,
 )
 
 
 @app.command("run")
 def run_agent(
-    goal: str = typer.Option(..., "--goal", "-g", help="The research objective or starting point."),
-    schema_path: Path = typer.Option(..., "--schema", "-s", help="Path to the target JSON schema file.", exists=True),
-    export_path: Path = typer.Option(None, "--export", "-e", help="File path to save the extracted results (CSV or JSON)."),
-    max_steps: int = typer.Option(20, "--max-steps", "-m", help="Maximum number of browser actions allowed.")
+    goal: Annotated[
+        str,
+        typer.Option("--goal", "-g", help="The research objective or starting point."),
+    ],
+    schema_path: Annotated[
+        Path,
+        typer.Option(
+            "--schema",
+            "-s",
+            help="Path to the target JSON schema file.",
+            exists=True,
+        ),
+    ],
+    export_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--export",
+            "-e",
+            help="File path to save the extracted results (CSV or JSON).",
+        ),
+    ] = None,
+    max_steps: Annotated[
+        int,
+        typer.Option(
+            "--max-steps",
+            "-m",
+            help="Maximum number of browser actions allowed.",
+        ),
+    ] = 20,
 ) -> None:
     """Start an autonomous web research run based on a goal and a schema."""
     CLIUserInterface.print_header("Verboisy Agent", "Autonomous Web Extraction Initialized")
 
     # Load JSON schema
     try:
-        with open(schema_path, "r", encoding="utf-8") as f:
+        with schema_path.open(encoding="utf-8") as f:
             target_schema = json.load(f)
     except Exception as e:
         CLIUserInterface.print_error(f"Failed to load schema from {schema_path}: {e}")
@@ -46,13 +73,16 @@ def run_agent(
     except KeyboardInterrupt:
         CLIUserInterface.print_error("Run aborted by user.")
         raise typer.Exit(code=1)
+
     except Exception as e:
         CLIUserInterface.print_error(f"Agent execution failed unexpectedly: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
     # Display results summary
     if final_state.status == "COMPLETED":
-        CLIUserInterface.print_success(f"Agent finished successfully in {final_state.step_count} steps.")
+        CLIUserInterface.print_success(
+            f"Agent finished successfully in {final_state.step_count} steps."
+        )
         CLIUserInterface.display_results_table(final_state.extracted_data)
 
         # Export data if requested
