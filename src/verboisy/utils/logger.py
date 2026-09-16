@@ -4,7 +4,8 @@ Centralized structured logging using structlog.
 
 import logging
 import sys
-from typing import Any
+
+from typing import cast
 
 import structlog
 
@@ -49,7 +50,7 @@ def get_logger(name: str) -> structlog.BoundLogger:
     Returns:
         structlog.BoundLogger: The configured logger instance.
     """
-    return structlog.get_logger(name)
+    return cast(structlog.BoundLogger, structlog.get_logger(name))
 
 
 # Auto-initialize logging on module import
