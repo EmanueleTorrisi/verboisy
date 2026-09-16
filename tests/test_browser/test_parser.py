@@ -2,9 +2,9 @@
 Unit tests for the DOMParser utility.
 """
 
-from verboisy.browser.dom_parser import DOMParser
+from verboisy.browser.dom_parser import DOMParser, clean_html
+
 from tests.conftest import load_html_fixture
-from verboisy.browser.dom_parser import clean_html
 
 
 def test_clean_html_removes_scripts_and_styles() -> None:

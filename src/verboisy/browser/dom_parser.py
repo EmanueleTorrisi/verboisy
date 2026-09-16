@@ -68,11 +68,14 @@ class DOMParser:
             href = el.get("href", "")
             el_id = el.get("id", "")
             class_attr = el.get("class")
-            el_class = " ".join(str(value) for value in class_attr) if isinstance(class_attr, list) else ""
+            el_class = (
+                " ".join(str(value) for value in class_attr) if isinstance(class_attr, list) else ""
+            )
 
             elements.append(f"<{tag} id='{el_id}' class='{el_class}' href='{href}'>{text}</{tag}>")
 
         return "\n".join(elements[:100])  # Cap to 100 elements for token safety
+
 
 def clean_html(html_content: str) -> str:
     """Clean HTML using DOMParser."""

@@ -2,13 +2,15 @@
 Rich console wrappers for spinners, live panels, and tables.
 """
 
-from typing import Any, Dict, List
+from typing import Any
+
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 console = Console()
+
 
 class CLIUserInterface:
     """Provides structured terminal UI components for Verboisy CLI."""
@@ -19,7 +21,7 @@ class CLIUserInterface:
         panel = Panel(
             f"[bold cyan]{subtitle}[/bold cyan]",
             title=f"[bold green]⛏️ {title}[/bold green]",
-            expand=False
+            expand=False,
         )
         console.print(panel)
         console.print()
@@ -35,7 +37,7 @@ class CLIUserInterface:
         console.print(f"[bold green]✅ Success:[/bold green] {message}")
 
     @staticmethod
-    def display_results_table(data: List[Dict[str, Any]]) -> None:
+    def display_results_table(data: list[dict[str, Any]]) -> None:
         """
         Display extracted dictionary data in a formatted Rich table.
         Limits to first 5 rows and 5 columns for terminal readability.
@@ -68,5 +70,5 @@ class CLIUserInterface:
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             transient=True,
-            console=console
+            console=console,
         )

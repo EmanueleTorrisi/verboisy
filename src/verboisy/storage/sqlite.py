@@ -3,12 +3,12 @@ Asynchronous SQLite connection pool and state management.
 """
 
 import json
-from typing import Any, List, Dict
+from typing import Any
+
 import aiosqlite
 
-from verboisy.utils.logger import get_logger
 from verboisy.utils.config import settings
-
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -67,48 +67,52 @@ class DatabaseManager:
         )
         await self._conn.commit()
 
-    async def save_run(self, run_id: str, goal: str, schema_def: Dict[str, Any], status: str) -> None:
+    async def save_run(
+        self, run_id: str, goal: str, schema_def: dict[str, Any], status: str
+    ) -> None:
         """Save or update a run state."""
         if not self._conn:
             await self.connect()
 
-        await self._conn.execute( # type: ignore
+        await self._conn.execute(  # type: ignore
             """
             INSERT INTO runs (run_id, goal, schema_definition, status)
             VALUES (?, ?, ?, ?)
             ON CONFLICT(run_id) DO UPDATE SET status=excluded.status
             """,
-            (run_id, goal, json.dumps(schema_def), status)
+            (run_id, goal, json.dumps(schema_def), status),
         )
-        await self._conn.commit() # type: ignore
+        await self._conn.commit()  # type: ignore
 
-    async def save_extraction(self, run_id: str, url: str, data: Dict[str, Any]) -> None:
+    async def save_extraction(self, run_id: str, url: str, data: dict[str, Any]) -> None:
         """Save a successfully extracted JSON payload."""
         if not self._conn:
             await self.connect()
 
-        await self._conn.execute( # type: ignore
+        await self._conn.execute(  # type: ignore
             """
             INSERT INTO extractions (run_id, url, data)
             VALUES (?, ?, ?)
             """,
-            (run_id, url, json.dumps(data))
+            (run_id, url, json.dumps(data)),
         )
-        await self._conn.commit() # type: ignore
+        await self._conn.commit()  # type: ignore
 
-    async def save_history_action(self, run_id: str, action: str, parameters: Dict[str, Any], url: str) -> None:
+    async def save_history_action(
+        self, run_id: str, action: str, parameters: dict[str, Any], url: str
+    ) -> None:
         """Save an action executed by the agent."""
         if not self._conn:
             await self.connect()
 
-        await self._conn.execute( # type: ignore
+        await self._conn.execute(  # type: ignore
             """
             INSERT INTO history (run_id, action, parameters, url)
             VALUES (?, ?, ?, ?)
             """,
-            (run_id, action, json.dumps(parameters), url)
+            (run_id, action, json.dumps(parameters), url),
         )
-        await self._conn.commit() # type: ignore
+        await self._conn.commit()  # type: ignore
 
     async def close(self) -> None:
         """Close the database connection safely."""

@@ -3,7 +3,7 @@ Utility modules for configuration, logging, and exceptions.
 """
 
 from .config import settings
-from .exceptions import VerboisyError, NavigationError, ExtractionError, PlanningError
+from .exceptions import ExtractionError, NavigationError, PlanningError, VerboisyError
 from .logger import get_logger
 
 __all__ = [

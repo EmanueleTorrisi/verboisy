@@ -2,9 +2,8 @@
 Configuration management using Pydantic BaseSettings.
 """
 
-from typing import Any
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -26,11 +25,7 @@ class Settings(BaseSettings):
     sqlite_db_path: str = "verboisy.db"
     log_level: str = Field(default="INFO", validation_alias="VERBOISY_LOG_LEVEL")
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 # Global singleton settings object

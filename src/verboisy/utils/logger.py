@@ -4,7 +4,6 @@ Centralized structured logging using structlog.
 
 import logging
 import sys
-
 from typing import cast
 
 import structlog
