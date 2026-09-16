@@ -67,7 +67,8 @@ class DOMParser:
             text = el.get_text(strip=True)[:50]
             href = el.get("href", "")
             el_id = el.get("id", "")
-            el_class = " ".join(el.get("class", []))
+            class_attr = el.get("class")
+            el_class = " ".join(str(value) for value in class_attr) if isinstance(class_attr, list) else ""
 
             elements.append(f"<{tag} id='{el_id}' class='{el_class}' href='{href}'>{text}</{tag}>")
 
