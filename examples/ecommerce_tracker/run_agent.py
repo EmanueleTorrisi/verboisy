@@ -10,11 +10,12 @@ from verboisy.core.agent import Agent
 from verboisy.storage.exporters import DataExporter
 from verboisy.utils.config import settings
 
-settings.headless_browser = False # Show browser for demonstration
+settings.headless_browser = False  # Show browser for demonstration
+
 
 async def main() -> None:
     schema_path = Path(__file__).parent / "schema.json"
-    with open(schema_path, "r", encoding="utf-8") as f:
+    with schema_path.open(encoding="utf-8") as f:
         target_schema = json.load(f)
 
     goal = (

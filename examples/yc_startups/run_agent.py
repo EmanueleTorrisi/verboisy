@@ -14,12 +14,15 @@ from verboisy.utils.config import settings
 # Force console logging for the example
 settings.log_level = "DEBUG"
 
+
 async def main() -> None:
     schema_path = Path(__file__).parent / "schema.json"
-    with open(schema_path, "r", encoding="utf-8") as f:
+    with schema_path.open(encoding="utf-8") as f:
         target_schema = json.load(f)
 
-    goal = "Go to ycombinator.com/companies and extract the top 5 most recently launched AI startups."
+    goal = (
+        "Go to ycombinator.com/companies and extract the top 5 most recently launched AI startups."
+    )
 
     agent = Agent(goal=goal, target_schema=target_schema, max_steps=15)
 
