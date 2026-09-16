@@ -3,7 +3,7 @@ DOM cleaning and parsing utility for optimizing LLM context windows.
 """
 
 from bs4 import BeautifulSoup, Comment
-from typing import Any
+
 from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -71,4 +71,8 @@ class DOMParser:
 
             elements.append(f"<{tag} id='{el_id}' class='{el_class}' href='{href}'>{text}</{tag}>")
 
-        return "\n".join(elements[:100]) # Cap to 100 elements for token safety
+        return "\n".join(elements[:100])  # Cap to 100 elements for token safety
+    
+    def clean_html(html_content: str) -> str:
+        """Clean HTML using DOMParser."""
+        return DOMParser.clean_html(html_content)
