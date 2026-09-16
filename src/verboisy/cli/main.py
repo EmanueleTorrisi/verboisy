@@ -68,14 +68,18 @@ def run_agent(
     # Execute async agent loop with UI spinner
     try:
         with CLIUserInterface.create_spinner() as progress:
-            progress.add_task(description=f"[cyan]Executing goal: {goal}...", total=None)
+            progress.add_task(
+                description=f"[cyan]Executing goal: {goal}...",
+                total=None,
+            )
             final_state = asyncio.run(agent.run())
     except KeyboardInterrupt:
         CLIUserInterface.print_error("Run aborted by user.")
-        raise typer.Exit(code=1) from e
-
+        raise typer.Exit(code=1) from None
     except Exception as e:
-        CLIUserInterface.print_error(f"Agent execution failed unexpectedly: {e}")
+        CLIUserInterface.print_error(
+            f"Agent execution failed unexpectedly: {e}"
+    )
         raise typer.Exit(code=1) from e
 
     # Display results summary
