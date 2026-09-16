@@ -3,8 +3,6 @@ LiteLLM wrapper client supporting multiple providers.
 """
 
 import json
-from typing import Any
-
 from typing import Any, cast
 
 from litellm import completion
@@ -57,4 +55,4 @@ class LLMClient:
             return cast(dict[str, Any], parsed)
         except Exception as e:
             logger.error("LLM completion failed", model=self.model, error=str(e))
-            raise LLMError(f"LLM request failed: {e}", {"model": self.model})
+            raise LLMError(f"LLM request failed: {e}", {"model": self.model}) from e
