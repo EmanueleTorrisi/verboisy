@@ -2,14 +2,12 @@
 Asynchronous Playwright browser management.
 """
 
-from typing import Optional
-from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
+from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
 
-from verboisy.utils.logger import get_logger
+from verboisy.browser.stealth import StealthManager
 from verboisy.utils.config import settings
 from verboisy.utils.exceptions import NavigationError
-from verboisy.browser.stealth import StealthManager
-
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -18,10 +16,10 @@ class BrowserManager:
     """Manages the lifecycle of Playwright browsers, contexts, and pages."""
 
     def __init__(self) -> None:
-        self._playwright: Optional[Playwright] = None
-        self._browser: Optional[Browser] = None
-        self._context: Optional[BrowserContext] = None
-        self._page: Optional[Page] = None
+        self._playwright: Playwright | None = None
+        self._browser: Browser | None = None
+        self._context: BrowserContext | None = None
+        self._page: Page | None = None
 
     async def start(self) -> Page:
         """
@@ -38,15 +36,16 @@ class BrowserManager:
             logger.debug("Launching Chromium browser", headless=settings.headless_browser)
             self._browser = await self._playwright.chromium.launch(
                 headless=settings.headless_browser,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
+                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"],
             )
 
         if not self._context:
-            user_agent = StealthManager.get_random_user_agent() if settings.user_agent_rotation else None
+            user_agent = (
+                StealthManager.get_random_user_agent() if settings.user_agent_rotation else None
+            )
             logger.debug("Creating browser context", user_agent=user_agent)
             self._context = await self._browser.new_context(
-                user_agent=user_agent,
-                viewport={"width": 1920, "height": 1080}
+                user_agent=user_agent, viewport={"width": 1920, "height": 1080}
             )
 
         if not self._page:
@@ -68,7 +67,7 @@ class BrowserManager:
             await page.goto(url, timeout=settings.browser_timeout_ms, wait_until="domcontentloaded")
         except Exception as e:
             logger.error("Navigation failed", url=url, error=str(e))
-            raise NavigationError(f"Failed to navigate to {url}: {e}", {"url": url})
+            raise NavigationError(f"Failed to navigate to {url}: {e}", {"url": url}) from e
 
     async def get_page(self) -> Page:
         """Get the active page, starting the browser if necessary."""
