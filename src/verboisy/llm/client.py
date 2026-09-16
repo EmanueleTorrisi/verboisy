@@ -3,13 +3,15 @@ LiteLLM wrapper client supporting multiple providers.
 """
 
 import json
-from typing import Any, Dict
+from typing import Any
+
+from typing import Any, cast
+
 from litellm import completion
 
-from verboisy.utils.logger import get_logger
 from verboisy.utils.config import settings
 from verboisy.utils.exceptions import LLMError
-
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -20,7 +22,7 @@ class LLMClient:
     def __init__(self, model: str | None = None) -> None:
         self.model = model or settings.litellm_model
 
-    async def complete_json(self, system_prompt: str, user_prompt: str) -> Dict[str, Any]:
+    async def complete_json(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
         """
         Send a completion request and parse the response as JSON.
 
@@ -44,15 +46,15 @@ class LLMClient:
                 messages=messages,
                 temperature=settings.temperature,
                 max_tokens=settings.max_tokens,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
-            content = response.choices[0].message.content # type: ignore
+            content = cast(str | None, response.choices[0].message.content)
             if not content:
                 raise LLMError("Received empty response content from LLM model")
 
             parsed = json.loads(content)
-            return parsed
+            return cast(dict[str, Any], parsed)
         except Exception as e:
             logger.error("LLM completion failed", model=self.model, error=str(e))
             raise LLMError(f"LLM request failed: {e}", {"model": self.model})
