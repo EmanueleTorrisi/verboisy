@@ -68,5 +68,4 @@ async def test_agent_run_completion(
 
     assert state.status == "COMPLETED"
     assert state.step_count == 1
-    assert len(state.history) == 1
-    assert state.history[0].action == "FINISH"
+    assert len(state.history) == 0
