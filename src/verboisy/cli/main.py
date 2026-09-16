@@ -72,7 +72,7 @@ def run_agent(
             final_state = asyncio.run(agent.run())
     except KeyboardInterrupt:
         CLIUserInterface.print_error("Run aborted by user.")
-        raise typer.Exit(code=1) from e
+        raise typer.Exit(code=1)
 
     except Exception as e:
         CLIUserInterface.print_error(f"Agent execution failed unexpectedly: {e}")
