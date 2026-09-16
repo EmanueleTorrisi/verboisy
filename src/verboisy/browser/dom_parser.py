@@ -31,7 +31,7 @@ class DOMParser:
             tag.decompose()
 
         # Remove comments
-        comments = soup.findAll(text=lambda text: isinstance(text, Comment))
+        comments = soup.find_all(string=lambda text: isinstance(text, Comment))
         for comment in comments:
             comment.extract()
 
@@ -72,7 +72,7 @@ class DOMParser:
             elements.append(f"<{tag} id='{el_id}' class='{el_class}' href='{href}'>{text}</{tag}>")
 
         return "\n".join(elements[:100])  # Cap to 100 elements for token safety
-    
+
     def clean_html(html_content: str) -> str:
         """Clean HTML using DOMParser."""
         return DOMParser.clean_html(html_content)
