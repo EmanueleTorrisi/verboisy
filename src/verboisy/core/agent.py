@@ -32,7 +32,8 @@ class Agent:
 
     async def run(self) -> AgentState:
         """
-        Execute the autonomous agent loop until the goal is achieved, steps are exhausted, or an error occurs.
+        Execute the autonomous agent loop until the goal is achieved, steps are
+        exhausted, or an error occurs.
         """
         logger.info("Starting Agent Run", run_id=self.state.run_id, goal=self.state.goal)
         self.state.status = "RUNNING"
