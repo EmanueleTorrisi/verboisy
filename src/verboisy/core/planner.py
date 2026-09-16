@@ -53,7 +53,8 @@ class Planner:
         AVAILABLE INTERACTIVE ELEMENTS:
         {interactive_elements if interactive_elements else "No obvious interactive elements found."}
 
-        Based on the current state, determine the single next best action to progress towards the goal.
+        Based on the current state, determine the single next best action to
+        progress towards the goal.
         """
 
         try:
