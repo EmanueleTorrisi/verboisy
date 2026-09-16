@@ -2,15 +2,14 @@
 Data extraction engine leveraging the LLM and dynamically generated schemas.
 """
 
-from typing import Any, Dict, List, Type
-from pydantic import BaseModel
+from typing import Any
 
-from verboisy.utils.logger import get_logger
-from verboisy.utils.exceptions import ExtractionError
-from verboisy.llm.client import LLMClient
-from verboisy.llm.prompts import EXTRACTION_PROMPT
 from verboisy.browser.dom_parser import DOMParser
 from verboisy.extractor.schema_builder import SchemaBuilder
+from verboisy.llm.client import LLMClient
+from verboisy.llm.prompts import EXTRACTION_PROMPT
+from verboisy.utils.exceptions import ExtractionError
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -18,12 +17,12 @@ logger = get_logger(__name__)
 class ExtractionEngine:
     """Extracts structured JSON from HTML utilizing a target schema."""
 
-    def __init__(self, target_schema: Dict[str, Any]) -> None:
+    def __init__(self, target_schema: dict[str, Any]) -> None:
         self.target_schema = target_schema
         self.model_class = SchemaBuilder.build_model("ExtractionTarget", target_schema)
         self.llm = LLMClient()
 
-    async def extract_from_html(self, html_content: str) -> List[Dict[str, Any]]:
+    async def extract_from_html(self, html_content: str) -> list[dict[str, Any]]:
         """
         Analyze cleaned HTML and extract all instances matching the schema.
 
@@ -65,4 +64,4 @@ class ExtractionEngine:
 
         except Exception as e:
             logger.error("Extraction failed", error=str(e))
-            raise ExtractionError(f"Failed to extract structured data: {e}")
+            raise ExtractionError(f"Failed to extract structured data: {e}") from e
