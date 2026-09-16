@@ -5,9 +5,9 @@ Typer application entrypoint for the Verbosiy CLI.
 import asyncio
 import json
 from pathlib import Path
+from typing import Annotated
 
 import typer
-from typing import Annotated
 
 from verboisy.cli.ui import CLIUserInterface
 from verboisy.core.agent import Agent
@@ -61,7 +61,7 @@ def run_agent(
             target_schema = json.load(f)
     except Exception as e:
         CLIUserInterface.print_error(f"Failed to load schema from {schema_path}: {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
     agent = Agent(goal=goal, target_schema=target_schema, max_steps=max_steps)
 
