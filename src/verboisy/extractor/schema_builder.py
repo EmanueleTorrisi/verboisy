@@ -16,7 +16,11 @@ class SchemaBuilder:
     """Utility class to parse JSON schemas and return Pydantic models."""
 
     @classmethod
-    def build_model(cls, schema_name: str, json_schema: dict[str, Any]) -> type[BaseModel]:
+    def build_model(
+        cls,
+        schema_name: str,
+        json_schema: dict[str, Any],
+    ) -> type[BaseModel]:
         """
         Convert a simple JSON schema dict into a Pydantic Model class.
 
