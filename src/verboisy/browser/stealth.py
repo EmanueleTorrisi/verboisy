@@ -3,11 +3,12 @@ Stealth evasions and browser fingerprint masking.
 """
 
 import random
-from typing import List, Dict, Any
+
 from playwright.async_api import Page
 
-from verboisy.utils.logger import get_logger
+from typing import ClassVar
 
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -15,11 +16,24 @@ logger = get_logger(__name__)
 class StealthManager:
     """Manages user-agent rotation and anti-detection scripts for Playwright."""
 
-    USER_AGENTS: List[str] = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
+    USER_AGENTS: ClassVar[list[str]] = [
+        (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        ),
+        (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+            "Version/17.4.1 Safari/605.1.15"
+        ),
+        (
+            "Mozilla/5.0 (X11; Linux x86_64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/123.0.0.0 Safari/537.36"
+        ),
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) "
+        "Gecko/20100101 Firefox/125.0",
     ]
 
     @classmethod
