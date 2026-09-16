@@ -32,10 +32,7 @@ class ExtractionEngine:
         Returns:
             List[Dict[str, Any]]: A list of extracted items as dictionaries.
         """
-        logger.info(
-            "Extraction complete",
-            extracted_count=len(validated_results),
-        )
+
         cleaned_html = DOMParser.clean_html(html_content)
 
         # Instruct the LLM on the target JSON structure
@@ -63,6 +60,10 @@ class ExtractionEngine:
                 validated_results.append(validated_item.model_dump())
 
             logger.info("Extraction complete", extracted_count=len(validated_results))
+            logger.info(
+                "Extraction complete",
+                extracted_count=len(validated_results),
+            )
             return validated_results
 
         except Exception as e:
