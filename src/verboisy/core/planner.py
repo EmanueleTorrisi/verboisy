@@ -2,15 +2,12 @@
 LLM-driven decision-making engine for the agent.
 """
 
-from typing import Dict, Any, List
-
-from verboisy.utils.logger import get_logger
-from verboisy.utils.exceptions import PlanningError
+from verboisy.browser.dom_parser import DOMParser
+from verboisy.core.state import ActionHistory, ActionRequest
 from verboisy.llm.client import LLMClient
 from verboisy.llm.prompts import SYSTEM_PLANNER_PROMPT
-from verboisy.core.state import ActionRequest, ActionHistory
-from verboisy.browser.dom_parser import DOMParser
-
+from verboisy.utils.exceptions import PlanningError
+from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -22,11 +19,7 @@ class Planner:
         self.llm = LLMClient()
 
     async def decide_next_action(
-        self,
-        goal: str,
-        current_url: str,
-        html_content: str,
-        history: List[ActionHistory]
+        self, goal: str, current_url: str, html_content: str, history: list[ActionHistory]
     ) -> ActionRequest:
         """
         Analyze current state and formulate the next discrete action.
@@ -47,7 +40,7 @@ class Planner:
 
         # Serialize history safely
         history_summary = "\n".join(
-            [f"- {h.action} | {h.parameters} @ {h.url}" for h in history[-5:]] # Keep last 5 for context limits
+            f"- {h.action} | {h.parameters} @ {h.url}" for h in history[-5:]
         )
 
         user_prompt = f"""
@@ -68,4 +61,4 @@ class Planner:
             return ActionRequest.model_validate(response_json)
         except Exception as e:
             logger.error("Failed to generate plan", error=str(e))
-            raise PlanningError(f"Planner failed to generate valid action request: {e}")
+            raise PlanningError(f"Planner failed to generate valid action request: {e}") from e
