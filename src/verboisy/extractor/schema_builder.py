@@ -2,7 +2,7 @@
 Dynamically creates Pydantic v2 models from standard JSON schemas.
 """
 
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from pydantic import BaseModel, Field, create_model
 
@@ -28,7 +28,7 @@ class SchemaBuilder:
         Returns:
             Type[BaseModel]: A dynamically generated Pydantic model class.
         """
-        fields: dict[str, tuple[Any, Any]] = {}
+        fields: dict[str, Any] = {}
         properties = json_schema.get("properties", {})
         required_fields = set(json_schema.get("required", []))
 
