@@ -103,5 +103,5 @@ def run_agent(
         CLIUserInterface.print_error(f"Agent run failed. Status: {final_state.status}")
 
 
-if __name__ == "__main__":
-    app()
+if __name__ == "__main__":  # pragma: no cover
+    app()  # pragma: no cover
