@@ -49,3 +49,5 @@ venv.bak/
 .mypy_cache/
 .pyre/
 .pytype/
+
+coverage.xml
