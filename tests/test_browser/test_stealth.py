@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-
 from verboisy.browser.stealth import StealthManager
 
 

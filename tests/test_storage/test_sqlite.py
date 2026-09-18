@@ -2,7 +2,6 @@ import json
 
 import aiosqlite
 import pytest
-
 import verboisy.storage.sqlite as sqlite_module
 from verboisy.storage.sqlite import DatabaseManager
 

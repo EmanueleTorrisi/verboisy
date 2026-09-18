@@ -1,7 +1,6 @@
+import verboisy.cli.ui as ui
 from rich.console import Console
 from rich.progress import Progress
-
-import verboisy.cli.ui as ui
 from verboisy.cli.ui import CLIUserInterface
 
 

@@ -1,17 +1,11 @@
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, Mock
 
-from verboisy.cli import main
-
 import pytest
-from typer.testing import CliRunner
-
-import json
-from pathlib import Path
-
 import verboisy.cli.main as main
-
+from typer.testing import CliRunner
 
 runner = CliRunner()
 

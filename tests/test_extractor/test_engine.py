@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-
 from verboisy.extractor.engine import ExtractionEngine
 from verboisy.utils.exceptions import ExtractionError
 

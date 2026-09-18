@@ -2,7 +2,6 @@ import csv
 import json
 
 import pytest
-
 from verboisy.storage.exporters import DataExporter
 
 
@@ -26,7 +25,7 @@ def test_export_json_raises_when_file_cannot_be_written(tmp_path) -> None:
 
     filepath.mkdir()
 
-    with pytest.raises(Exception):
+    with pytest.raises(IsADirectoryError):
         DataExporter.export_json(
             [{"name": "Alice"}],
             filepath,
@@ -93,12 +92,12 @@ def test_export_csv_raises_when_writing_fails(tmp_path, monkeypatch) -> None:
         def __enter__(self):
             raise OSError("cannot open file")
 
-        def __exit__(self, exc_type, exc, tb):
+        def __exit__(self, _exc_type, _exc, _tb):
             return False
 
     monkeypatch.setattr(
         "verboisy.storage.exporters.Path.open",
-        lambda *args, **kwargs: BrokenFile(),
+        lambda _self, *_args, **_kwargs: BrokenFile(),
     )
 
     with pytest.raises(OSError, match="cannot open file"):

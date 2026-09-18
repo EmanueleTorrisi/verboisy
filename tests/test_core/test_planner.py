@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-
 from verboisy.core.planner import Planner
 from verboisy.core.state import ActionHistory
 from verboisy.utils.exceptions import PlanningError

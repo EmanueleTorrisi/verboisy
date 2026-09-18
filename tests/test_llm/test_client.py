@@ -2,7 +2,6 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-
 import verboisy.llm.client as client_module
 from verboisy.llm.client import LLMClient
 from verboisy.utils.exceptions import LLMError

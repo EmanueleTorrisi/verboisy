@@ -477,7 +477,7 @@ async def test_agent_run_max_steps_completes(
 async def test_agent_run_unexpected_exception_is_wrapped(
     mock_db: Mock,
     mock_browser: Mock,
-    mock_planner: Mock,
+    _mock_planner: Mock,
     dummy_schema: dict[str, Any],
 ) -> None:
     db = mock_db.return_value
@@ -495,8 +495,6 @@ async def test_agent_run_unexpected_exception_is_wrapped(
     browser = mock_browser.return_value
     browser.start = AsyncMock(return_value=page)
     browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
 
     agent = Agent("Exception test", dummy_schema, max_steps=5)
 

@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-
 import verboisy.browser.context as context
 from verboisy.browser.context import BrowserManager
 from verboisy.utils.exceptions import NavigationError
@@ -147,7 +146,7 @@ async def test_navigate_to_success(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_navigate_to_raises_navigation_error(monkeypatch) -> None:
+async def test_navigate_to_raises_navigation_error() -> None:
     manager = BrowserManager()
     page = Mock()
     page.goto = AsyncMock(side_effect=RuntimeError("connection failed"))
@@ -225,4 +224,3 @@ async def test_close_closes_all_resources() -> None:
 
     # Second close exercises all "resource absent" branches.
     await manager.close()
-

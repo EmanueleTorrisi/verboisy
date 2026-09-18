@@ -43,15 +43,9 @@ jobs:
         run: poetry run mypy src/
 
       - name: Run Pytest with coverage
-        run: |
-          poetry run pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml
-          echo "SHA:"
-          git rev-parse HEAD
-          echo "Coverage:"
-          grep -o 'line-rate="[^"]*"' coverage.xml | head -1
+        run: poetry run pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml
 
       - name: Upload coverage to Codecov
-        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
