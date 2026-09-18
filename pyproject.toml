@@ -15,7 +15,7 @@ pydantic-settings = "^2.2.1"
 playwright = "^1.43.0"
 litellm = "^1.37.16"
 beautifulsoup4 = "^4.12.3"
-typer = {extras = ["all"], version = "^0.12.3"}
+typer = "^0.27.2"
 rich = "^13.7.1"
 aiosqlite = "^0.20.0"
 structlog = "^24.1.0"
