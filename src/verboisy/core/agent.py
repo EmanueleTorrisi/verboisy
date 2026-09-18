@@ -95,7 +95,7 @@ class Agent:
                     await page.keyboard.press("Enter")
                     await page.wait_for_load_state("networkidle")
 
-                elif action_req.action == "EXTRACT":
+                elif action_req.action == "EXTRACT":  # pragma: no branch
                     extracted_items = await self.extractor.extract_from_html(html_content)
                     self.state.extracted_data.extend(extracted_items)
                     for item in extracted_items:
