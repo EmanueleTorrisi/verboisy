@@ -3,8 +3,28 @@ Unit tests for dynamic Pydantic schema generation.
 """
 
 import pytest
+
 from pydantic import ValidationError
 from verboisy.extractor.schema_builder import SchemaBuilder
+from verboisy.utils.exceptions import ExtractionError
+from unittest.mock import patch
+
+
+
+def test_build_model_raises_extraction_error_when_model_creation_fails() -> None:
+    with patch(
+        "verboisy.extractor.schema_builder.create_model",
+        side_effect=RuntimeError("model creation failed"),
+    ):
+        with pytest.raises(ExtractionError, match="Failed to compile dynamic Pydantic model"):
+            SchemaBuilder.build_model(
+                "BrokenModel",
+                {
+                    "properties": {
+                        "name": {"type": "string"},
+                    },
+                },
+            )
 
 
 def test_build_model_from_json_schema() -> None:
