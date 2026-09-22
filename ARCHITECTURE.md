@@ -1,6 +1,6 @@
 # Verboisy Architecture
 
-Verboisy is designed as an autonomous, state-driven agent. Rather than relying on rigid, pre-programmed scraping scripts, it operates on a dynamic event loop—**Plan → Act → Observe → Extract**—which repeats until the planner fulfills its structural requirements or reaches a predefined resource budget (e.g., max steps, max tokens, or timeouts).
+Verboisy is designed as an autonomous, state-driven agent. Rather than relying on rigid, pre-programmed scraping scripts, it operates on a dynamic event loop **Plan → Act → Observe → Extract** which repeats until the planner fulfills its structural requirements or reaches a predefined resource budget (e.g., max steps, max tokens, or timeouts).
 
 This document outlines the core loop, the module breakdown, and the underlying design philosophies that make the system resilient and extensible.
 
