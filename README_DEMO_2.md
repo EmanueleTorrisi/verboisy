@@ -84,7 +84,7 @@
 - **Bring your own model, keep your own infrastructure.** OpenAI, Anthropic, or a local Ollama model via [LiteLLM](https://github.com/BerriAI/litellm): one environment variable to switch. Runs on your machine or your servers, not a hosted black box.
 - **Resumable by construction.** Every record lands in SQLite the moment it validates. `verboisy run --resume` (or `run(resume=True)` in Python) picks up the latest incomplete run. A crash costs you the current step, not the work already saved.
 
-What ships around that loop: async Playwright (Chromium, headed or headless), DOM cleaning tuned for LLM context windows instead of raw HTML dumps, and JSON or CSV export — or query the SQLite database directly.
+What ships around that loop: async Playwright (Chromium, headed or headless), DOM cleaning tuned for LLM context windows instead of raw HTML dumps, and JSON or CSV export - or query the SQLite database directly.
 
 ## Compared to
 
@@ -205,7 +205,7 @@ flowchart LR
     A -->|done| E
 ```
 
-Every extracted record is committed to SQLite the moment it validates, under a `run_id`. Interrupt the loop at any point — a rate limit, a crash, a killed process — then `verboisy run --resume` (or `run(resume=True)`) reloads that run's goal, schema, and saved rows and continues. `--resume <id>` targets a specific run; `--resume` with no id takes the latest incomplete one.
+Every extracted record is committed to SQLite the moment it validates, under a `run_id`. Interrupt the loop at any point - a rate limit, a crash, a killed process - then `verboisy run --resume` (or `run(resume=True)`) reloads that run's goal, schema, and saved rows and continues. `--resume <id>` targets a specific run; `--resume` with no id takes the latest incomplete one.
 
 `--export` is written when the run finishes (or when a resumed run finishes). Partial results live in `SQLITE_DB_PATH` in the meantime.
 
@@ -249,8 +249,8 @@ VERBOISY_HEADLESS=true
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | — | OpenAI credentials. Required unless using Anthropic or a local model. |
-| `ANTHROPIC_API_KEY` | — | Anthropic credentials, used instead of OpenAI. |
+| `OPENAI_API_KEY` | - | OpenAI credentials. Required unless using Anthropic or a local model. |
+| `ANTHROPIC_API_KEY` | - | Anthropic credentials, used instead of OpenAI. |
 | `LITELLM_MODEL` | `gpt-4o` | Any [LiteLLM](https://github.com/BerriAI/litellm)-supported model string. |
 | `MAX_TOKENS` | `4096` | Max tokens per planner or extraction call. |
 | `TEMPERATURE` | `0.0` | Sampling temperature for the planner. |
