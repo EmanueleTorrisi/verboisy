@@ -1,6 +1,6 @@
 # Verboisy Architecture
 
-Verboisy is a state-driven agent, not a selector script. A run is a loop — **plan → act → observe → extract** — until the planner has enough validated records or hits its step / token / timeout budget.
+Verboisy is a state-driven agent, not a selector script. A run is a loop - **plan → act → observe → extract** - until the planner has enough validated records or hits its step / token / timeout budget.
 
 The LLM chooses the next transition. Python executes the side effects: browse, parse, validate, commit. That split is the whole design. It is why a crash does not wipe the run, why `dom_parser.py` can be tested without an API key, and why swapping OpenAI for Ollama does not touch the extractor.
 
@@ -53,7 +53,7 @@ A run is a finite state machine. `AgentState` is the only mutable object the loo
 ```mermaid
 flowchart TD
     Start["run() / verboisy run"] --> R{resume?}
-    R -->|no| Init[Mint run_id — persist AgentState]
+    R -->|no| Init[Mint run_id - persist AgentState]
     R -->|yes| Restore[Load AgentState + records from SQLite]
     Init --> P
     Restore --> P
@@ -77,7 +77,7 @@ LLM calls, Playwright, and SQLite do not import each other. They meet only in `c
 ```text
 verboisy/
   __init__.py          RunResult, run
-  api.py               run() — create/restore state, drive the loop, return
+  api.py               run() - create/restore state, drive the loop, return
   cli.py               argparse/typer wrapper around run()
   core/
     state.py           AgentState
@@ -99,24 +99,24 @@ verboisy/
     config.py          Pydantic settings from env
 ```
 
-### `core/` — orchestration
+### `core/` - orchestration
 
-- **`state.py` — `AgentState`.** Source of truth for one `run_id`: goal, JSON Schema, compiled Pydantic model, action history, extracted records, remaining step/token budget, `completed`, optional export path. Serialize this (minus the live Pydantic class, which is rebuilt from the stored schema) and you can resume.
+- **`state.py` - `AgentState`.** Source of truth for one `run_id`: goal, JSON Schema, compiled Pydantic model, action history, extracted records, remaining step/token budget, `completed`, optional export path. Serialize this (minus the live Pydantic class, which is rebuilt from the stored schema) and you can resume.
 - **`planner.py`.** Reads `AgentState` plus the current cleaned DOM. Calls `llm/client.py`. Returns one action: `search`, `navigate`, `click`, `extract`, or `done`. It does not touch the browser.
 - **`agent.py`.** The `while` loop. Routes the action to browser or extractor, updates state, stops on `done` or exhausted budget.
 
-### `browser/` — the page
+### `browser/` - the page
 
 - **`context.py`.** Playwright Chromium: navigate, click, type, wait. Headless from config or `run(headless=...)`.
 - **`stealth.py`.** Applied once per browser context, before the first navigation. Masks obvious automation signals (`navigator.webdriver`, default UA). This is not a bypass product; it is why a public directory does not 403 on the first request. Keep the details here, not in the README.
 - **`dom_parser.py`.** Strips scripts, styles, and boilerplate into a representation that fits an LLM context window. Deterministic. Tested against `tests/fixtures/` with no LLM in the loop. If a parse is wrong, fix this file, do not "prompt harder".
 
-### `extractor/` — DOM to rows
+### `extractor/` - DOM to rows
 
 - **`schema_builder.py`.** JSON Schema (file or dict) → Pydantic model, at runtime. The top level is an `array` of record `object`s.
 - **`engine.py`.** On `extract`, maps the cleaned DOM through the model. Invalid rows never reach SQLite. Valid rows go to `storage/sqlite.py` immediately, then back into `AgentState.records` so the planner can see what it already has.
 
-### `storage/` — fault tolerance
+### `storage/` - fault tolerance
 
 - **`sqlite.py`.** Two tables, one file (`SQLITE_DB_PATH`, default `verboisy.db`):
 
@@ -131,11 +131,11 @@ verboisy/
 
 `--resume` / `run(resume=...)` is a load, not a new feature: `SELECT` the run, rebuild `AgentState`, skip hashes already stored, continue the loop.
 
-### `llm/` — the only model boundary
+### `llm/` - the only model boundary
 
 - **`client.py`.** LiteLLM. Planner and extractor both call this. Provider, model, `MAX_TOKENS`, and `TEMPERATURE` come from `utils/config.py`. OpenAI → Anthropic → `ollama/llama3` is an env var, not a refactor.
 
-### `utils/` — config
+### `utils/` - config
 
 - **`config.py`.** Pydantic settings. Matches the table in the README. No second source of defaults.
 
