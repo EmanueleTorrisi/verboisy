@@ -1,6 +1,6 @@
 <a id="readme-top"></a>
 <p align="center">
-  <img src="./logo.png" alt="Verboisy" width="300" />
+  <img src="../../logo.png" alt="Verboisy" width="300" />
 </p>
 <p align="center">
   <strong>Ein autonomer Web-Research- und strukturierter Scrape-to-JSON-Agent.</strong>
@@ -24,14 +24,14 @@
 </p>
 
 <p align="center">
-  <strong title="English" aria-label="English">🇬🇧</strong> ·
-  <a href=".github/readme/README.it.md" title="Italiano" aria-label="Italiano">🇮🇹</a> ·
-  <a href=".github/readme/README.de.md" title="Deutsch" aria-label="Deutsch">🇩🇪</a> ·
-  <a href=".github/readme/README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
-  <a href=".github/readme/README.fr.md" title="Français" aria-label="Français">🇫🇷</a> ·
-  <a href=".github/readme/README.es.md" title="Español" aria-label="Español">🇪🇸</a> ·
-  <a href=".github/readme/README.ko.md" title="한국어" aria-label="한국어">🇰🇷</a> ·
-  <a href=".github/readme/README.ja.md" title="日本語" aria-label="日本語">🇯🇵</a>
+  <a href="../../README.md" title="English" aria-label="English">🇬🇧</a> ·
+  <a href="README.it.md" title="Italiano" aria-label="Italiano">🇮🇹</a> ·
+  <strong title="Deutsch" aria-label="Deutsch">🇩🇪</strong> ·
+  <a href="README.zh-CN.md" title="简体中文" aria-label="简体中文">🇨🇳</a> ·
+  <a href="README.fr.md" title="Français" aria-label="Français">🇫🇷</a> ·
+  <a href="README.es.md" title="Español" aria-label="Español">🇪🇸</a> ·
+  <a href="README.ko.md" title="한국어" aria-label="한국어">🇰🇷</a> ·
+  <a href="README.ja.md" title="日本語" aria-label="日本語">🇯🇵</a>
 </p>
 
 ## Inhaltsverzeichnis
@@ -189,7 +189,7 @@ Jeder extrahierte Datensatz wird in SQLite gespeichert, sobald er validiert ist,
 
 `--export` wird geschrieben, wenn der Lauf endet (oder wenn ein fortgesetzter Lauf endet). Teilweise Ergebnisse verbleiben in der Zwischenzeit in `SQLITE_DB_PATH`.
 
-Vollständige Aufschlüsselung jedes Moduls in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+Vollständige Aufschlüsselung jedes Moduls in [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
 
 ## Installation
 
@@ -399,15 +399,15 @@ Die vollständige Dokumentation, einschließlich der kompletten Konfigurationsre
 
 ## Mitwirken
 
-Beiträge sind willkommen. Siehe [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) für das lokale Setup und Konventionen, und folgen Sie bitte dem [Code of Conduct](.github/CODE_OF_CONDUCT.md). Suchen Sie nach einem Einstieg? Schauen Sie sich Issues an, die mit [`good first issue`](https://github.com/EmanueleTorrisi/verboisy/labels/good%20first%20issue) getaggt sind.
+Beiträge sind willkommen. Siehe [`CONTRIBUTING.md`](../CONTRIBUTING.md) für das lokale Setup und Konventionen, und folgen Sie bitte dem [Code of Conduct](../CODE_OF_CONDUCT.md). Suchen Sie nach einem Einstieg? Schauen Sie sich Issues an, die mit [`good first issue`](https://github.com/EmanueleTorrisi/verboisy/labels/good%20first%20issue) getaggt sind.
 
 ## Sicherheit
 
-Eine Sicherheitslücke gefunden? Bitte öffnen Sie kein öffentliches Issue: Nutzen Sie die [private Meldung von Sicherheitslücken](https://github.com/EmanueleTorrisi/verboisy/security/advisories/new) oder lesen Sie [`SECURITY.md`](.github/SECURITY.md).
+Eine Sicherheitslücke gefunden? Bitte öffnen Sie kein öffentliches Issue: Nutzen Sie die [private Meldung von Sicherheitslücken](https://github.com/EmanueleTorrisi/verboisy/security/advisories/new) oder lesen Sie [`SECURITY.md`](../SECURITY.md).
 
 ## Lizenz
 
-BSD 2-Clause: Siehe [`LICENSE`](LICENSE) für den vollständigen Text.
+BSD 2-Clause: Siehe [`LICENSE`](../../LICENSE) für den vollständigen Text.
 
 ---
 
