@@ -55,7 +55,7 @@
 
 ## Demo
 
-*Recording in progress: the CLI works today; see [Quick Example](#quick-example) below for real input and output in the meantime.*
+[![asciinema demo of verboisy run](https://asciinema.org/a/SuEF6spdkWvbVxrv.svg)](https://asciinema.org/a/SuEF6spdkWvbVxrv)
 
 ## Why Verboisy
 
