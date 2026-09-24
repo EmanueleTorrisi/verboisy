@@ -55,7 +55,9 @@
 
 ## 演示
 
-*演示视频制作中：CLI 命令行工具现已完全可用；在此期间请参阅下方的 [快速示例](#快速示例) 查看真实输入与输出。*
+<p align="center">
+  <img src="../../docs/demo.gif" alt="Verboisy CLI demo">
+</p>
 
 ## 为什么选择 Verboisy
 

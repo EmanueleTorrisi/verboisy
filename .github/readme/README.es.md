@@ -55,7 +55,9 @@
 
 ## Demo
 
-*Grabación en curso: la CLI ya funciona hoy; consulta el [Ejemplo rápido](#ejemplo-rápido) a continuación para ver entradas y salidas reales mientras tanto.*
+<p align="center">
+  <img src="../../docs/demo.gif" alt="Verboisy CLI demo">
+</p>
 
 ## Por qué Verboisy
 

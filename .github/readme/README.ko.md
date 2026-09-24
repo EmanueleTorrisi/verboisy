@@ -55,7 +55,9 @@
 
 ## 데모
 
-*녹화 진행 중: CLI는 현재 정상 작동합니다. 그동안 실제 입력 및 출력 예시는 아래 [빠른 예시](#빠른-예시)를 참고하세요.*
+<p align="center">
+  <img src="../../docs/demo.gif" alt="Verboisy CLI demo">
+</p>
 
 ## Verboisy를 선택해야 하는 이유
 

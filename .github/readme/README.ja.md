@@ -55,7 +55,9 @@
 
 ## デモ
 
-*動画作成中: CLIは現在すでに動作します。実際の入力と出力については、以下の[クイック例](#クイック例)を参照してください。*
+<p align="center">
+  <img src="../../docs/demo.gif" alt="Verboisy CLI demo">
+</p>
 
 ## Verboisyの特長
 
