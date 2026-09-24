@@ -55,7 +55,7 @@
 
 ## Demo
 
-[![asciinema demo of verboisy run](https://asciinema.org/a/SuEF6spdkWvbVxrv.svg)](https://asciinema.org/a/SuEF6spdkWvbVxrv)
+![Verboisy CLI demo](./docs/demo.gif)
 
 ## Why Verboisy
 
