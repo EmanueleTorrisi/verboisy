@@ -55,7 +55,9 @@
 
 ## Demo
 
-![Verboisy CLI demo](./docs/demo.gif)
+<p align="center">
+  <img src="./docs/demo.gif" alt="Verboisy CLI demo">
+</p>
 
 ## Why Verboisy
 
