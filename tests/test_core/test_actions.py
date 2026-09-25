@@ -29,3 +29,32 @@ def test_clear_input_is_valid():
         thought="Clear", action="TYPE", parameters={"selector": "#q", "text": ""}
     )
     assert request.parameters["text"] == ""
+
+
+@pytest.mark.parametrize(
+    ("action", "parameters"),
+    [
+        ("NAVIGATE", {"url": "x" * 8001}),
+        ("CLICK", {"selector": "x" * 8001}),
+        ("TYPE", {"selector": "#q", "text": "x" * 8001}),
+    ],
+)
+def test_required_parameters_exceed_maximum_length(action, parameters):
+    """Reject required string parameters longer than 8000 characters."""
+    with pytest.raises(ValidationError, match="exceeds 8000 characters"):
+        ActionRequest(
+            thought="fixture",
+            action=action,
+            parameters=parameters,
+        )
+
+
+def test_required_parameter_at_maximum_length():
+    """Accept a required string parameter of exactly 8000 characters."""
+    request = ActionRequest(
+        thought="fixture",
+        action="NAVIGATE",
+        parameters={"url": "x" * 8000},
+    )
+
+    assert len(request.parameters["url"]) == 8000
