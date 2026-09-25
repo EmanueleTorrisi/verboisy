@@ -1,132 +1,160 @@
-"""
-Primary autonomous loop and state machine for Verboisy.
-"""
+"""Checkpointed research loop. Only FINISH can complete a run."""
 
 import asyncio
 from typing import Any
+from urllib.parse import quote_plus
 
 from verboisy.browser.context import BrowserManager
+from verboisy.browser.policy import validate_url
 from verboisy.core.planner import Planner
-from verboisy.core.state import ActionHistory, AgentState
+from verboisy.core.state import ActionHistory, ActionRequest, AgentState
 from verboisy.extractor.engine import ExtractionEngine
+from verboisy.llm.client import LLMClient
 from verboisy.storage.sqlite import DatabaseManager
-from verboisy.utils.exceptions import VerboisyError
+from verboisy.utils.config import Settings, settings
+from verboisy.utils.exceptions import BudgetExceededError, VerboisyError
 from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 
 class Agent:
-    """The central agent orchestrator."""
-
-    def __init__(self, goal: str, target_schema: dict[str, Any], max_steps: int = 20) -> None:
-        self.state = AgentState(
-            goal=goal,
-            target_schema=target_schema,
-            max_steps=max_steps,
+    def __init__(
+        self,
+        goal: str,
+        target_schema: dict[str, Any],
+        max_steps: int = 20,
+        *,
+        config: Settings | None = None,
+        state: AgentState | None = None,
+        db: DatabaseManager | None = None,
+    ) -> None:
+        self.config = config or settings
+        self.state = state or AgentState(
+            goal=goal, target_schema=target_schema, max_steps=max_steps
         )
-        self.browser = BrowserManager()
-        self.planner = Planner()
-        self.extractor = ExtractionEngine(target_schema)
-        self.db = DatabaseManager()
+        self.state.max_steps = max_steps
+        self.llm = LLMClient(config=self.config)
+        self.browser = BrowserManager(config=self.config)
+        self.planner = Planner(llm=self.llm, config=self.config)
+        self.extractor = ExtractionEngine(target_schema, llm=self.llm, config=self.config)
+        self.db = db or DatabaseManager(self.config.sqlite_db_path)
+
+    async def _execute(self, request: ActionRequest, html: str) -> None:
+        page = await self.browser.get_page()
+        parameters = request.parameters
+        action = request.action
+        if action == "FINISH":
+            self.extractor.validate_collection(self.state.extracted_data)
+            self.state.status = "COMPLETED"
+            self.state.stop_reason = "planner_finished"
+        elif action in ("NAVIGATE", "SEARCH"):
+            url = (
+                parameters["url"]
+                if action == "NAVIGATE"
+                else ("https://www.google.com/search?q=" + quote_plus(parameters["query"]))
+            )
+            await self.browser.navigate_to(url)
+        elif action == "CLICK":
+            await page.click(parameters["selector"])
+            await page.wait_for_load_state("domcontentloaded")
+        elif action == "TYPE":
+            await page.fill(parameters["selector"], parameters["text"])
+            if parameters.get("submit", True):
+                await page.press(parameters["selector"], "Enter")
+                await page.wait_for_load_state("domcontentloaded")
+        elif action == "SCROLL":
+            await page.mouse.wheel(0, parameters.get("pixels", 700))
+        elif action == "WAIT":
+            await asyncio.sleep(parameters.get("milliseconds", 1000) / 1000)
+        elif action == "EXTRACT":
+            async for item in self.extractor.iter_from_html(html, self.state.goal):
+                if await self.db.save_extraction(self.state.run_id, page.url, item):
+                    self.state.extracted_data.append(item)
+                    logger.info(
+                        "SAVE", run_id=self.state.run_id, records=len(self.state.extracted_data)
+                    )
+        if page.url != "about:blank":
+            await validate_url(page.url, self.config)
+        self.state.current_url = page.url
 
     async def run(self) -> AgentState:
-        """
-        Execute the autonomous agent loop until the goal is achieved, steps are
-        exhausted, or an error occurs.
-        """
-        logger.info("Starting Agent Run", run_id=self.state.run_id, goal=self.state.goal)
-        self.state.status = "RUNNING"
-
-        await self.db.connect()
-        await self.db.save_run(
-            self.state.run_id, self.state.goal, self.state.target_schema, self.state.status
-        )
-
+        token_start = self.state.token_count
+        error_active = False
         try:
-            page = await self.browser.start()
-
-            while self.state.step_count < self.state.max_steps:
-                self.state.step_count += 1
-                current_url = page.url
-                self.state.current_url = current_url
-
-                logger.info("Agent Step", step=self.state.step_count, url=current_url)
-
-                html_content = await page.content()
-
-                # 1. Plan next action
-                action_req = await self.planner.decide_next_action(
-                    goal=self.state.goal,
-                    current_url=current_url,
-                    html_content=html_content,
-                    history=self.state.history,
-                )
-
-                logger.info(
-                    "Executing Action", action=action_req.action, parameters=action_req.parameters
-                )
-
-                # 2. Execute action
-                if action_req.action == "FINISH":
-                    self.state.status = "COMPLETED"
-                    logger.info("Agent decided goal is completed")
-                    break
-
-                elif action_req.action == "NAVIGATE":
-                    url = action_req.parameters.get("url")
-                    if not url:
-                        raise ValueError("NAVIGATE action requires 'url' parameter")
-                    await self.browser.navigate_to(url)
-
-                elif action_req.action == "CLICK":
-                    selector = action_req.parameters.get("selector")
-                    if not selector:
-                        raise ValueError("CLICK action requires 'selector' parameter")
-                    await page.click(selector, timeout=5000)
-                    await page.wait_for_load_state("networkidle")
-
-                elif action_req.action == "TYPE":
-                    selector = action_req.parameters.get("selector")
-                    text = action_req.parameters.get("text")
-                    if not selector or not text:
-                        raise ValueError("TYPE action requires 'selector' and 'text' parameters")
-                    await page.fill(selector, text, timeout=5000)
-                    await page.keyboard.press("Enter")
-                    await page.wait_for_load_state("networkidle")
-
-                elif action_req.action == "EXTRACT":  # pragma: no branch
-                    extracted_items = await self.extractor.extract_from_html(html_content)
-                    self.state.extracted_data.extend(extracted_items)
-                    for item in extracted_items:
-                        await self.db.save_extraction(self.state.run_id, current_url, item)
-
-                # 3. Update History
-                history_record = ActionHistory(
-                    action=action_req.action, parameters=action_req.parameters, url=current_url
-                )
-                self.state.history.append(history_record)
-                await self.db.save_history_action(
-                    self.state.run_id, action_req.action, action_req.parameters, current_url
-                )
-
-                # Add slight delay to mimic human behavior
-                await asyncio.sleep(2)
-
-            if self.state.status != "COMPLETED":
-                logger.warning("Max steps reached before FINISH action")
-                self.state.status = "COMPLETED"
-
-        except Exception as e:
-            logger.error("Agent execution failed", error=str(e))
-            self.state.status = "FAILED"
-            raise VerboisyError(f"Agent failed during execution: {e}") from e
-
-        finally:
-            await self.db.save_run(
-                self.state.run_id, self.state.goal, self.state.target_schema, self.state.status
+            self.db.acquire_run_lock()
+            await self.db.connect()
+            self.state.status = "RUNNING"
+            self.state.stop_reason = None
+            await self.db.checkpoint(self.state)
+            logger.info(
+                "RUN", run_id=self.state.run_id, saved_records=len(self.state.extracted_data)
             )
-            await self.browser.close()
-            await self.db.close()
-
+            async with asyncio.timeout(self.config.run_timeout_seconds):
+                page = await self.browser.start()
+                if self.state.current_url and self.state.current_url != "about:blank":
+                    await self.browser.navigate_to(self.state.current_url)
+                for _ in range(self.state.max_steps):
+                    self.state.step_count += 1
+                    self.state.current_url = page.url
+                    if page.url != "about:blank":
+                        await validate_url(page.url, self.config)
+                    html = await page.content()
+                    request = await self.planner.decide_next_action(
+                        self.state.goal,
+                        page.url,
+                        html,
+                        self.state.history,
+                        records=self.state.extracted_data,
+                        schema=self.state.target_schema,
+                    )
+                    logger.info("ACT", action=request.action, step=self.state.step_count)
+                    await self._execute(request, html)
+                    history = ActionHistory(
+                        action=request.action, parameters=request.parameters, url=page.url
+                    )
+                    self.state.history.append(history)
+                    self.state.token_count = token_start + self.llm.total_tokens
+                    await self.db.checkpoint(self.state, history)
+                    if request.action == "FINISH":
+                        break
+                    await asyncio.sleep(self.config.action_delay_seconds)
+                else:
+                    self.state.status = "PAUSED"
+                    self.state.stop_reason = "max_steps"
+        except (BudgetExceededError, TimeoutError) as exc:
+            self.state.status = "PAUSED"
+            self.state.stop_reason = (
+                "model_budget" if isinstance(exc, BudgetExceededError) else "run_timeout"
+            )
+        except asyncio.CancelledError:
+            error_active = True
+            self.state.status = "INTERRUPTED"
+            self.state.stop_reason = "cancelled"
+            raise
+        except Exception as exc:
+            error_active = True
+            self.state.status = "FAILED"
+            self.state.stop_reason = type(exc).__name__
+            detail = str(exc) if isinstance(exc, VerboisyError) else type(exc).__name__
+            raise VerboisyError(
+                f"Run {self.state.run_id} failed: {detail}. "
+                f"Committed records remain in {self.db.db_path}; use --resume {self.state.run_id}."
+            ) from exc
+        finally:
+            self.state.token_count = token_start + self.llm.total_tokens
+            try:
+                # Do not overwrite another worker's state when lock acquisition failed.
+                if self.db._lock is not None and self.db._conn is not None:
+                    try:
+                        await self.db.checkpoint(self.state)
+                    except Exception:
+                        if not error_active:
+                            raise
+                        logger.error("Final checkpoint failed; earlier commits remain durable")
+            finally:
+                try:
+                    await self.browser.close()
+                finally:
+                    await self.db.close()
         return self.state
