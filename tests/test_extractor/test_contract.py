@@ -110,3 +110,60 @@ def test_reference_named_properties_and_literal_defaults():
     )
     value = {"$ref": "literal", "model_dump": "x", "field_0": "y"}
     assert model.model_validate(value).model_dump(by_alias=True, exclude_unset=True) == value
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [
+        None,
+        [],
+        "not a schema",
+    ],
+)
+def test_normalize_rejects_non_object_schema(schema):
+    """The schema itself must be a JSON object."""
+    with pytest.raises(
+        ExtractionError,
+        match="Schema must be a JSON object",
+    ):
+        SchemaBuilder.normalize(schema)
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [
+        {
+            "type": "object",
+            "properties": [],
+        },
+        {
+            "type": "object",
+            "allOf": {},
+        },
+    ],
+)
+def test_reject_invalid_schema_keyword_containers(schema):
+    """Reject schema-bearing keywords with incorrect container types."""
+    with pytest.raises(
+        ExtractionError,
+        match="Invalid JSON Schema",
+    ):
+        SchemaBuilder.normalize(schema)
+
+
+def test_references_inside_allof_are_checked():
+    """Reject external references nested inside composition keywords."""
+    schema = {
+        "type": "object",
+        "allOf": [
+            {
+                "$ref": "https://example.com/external-schema",
+            }
+        ],
+    }
+
+    with pytest.raises(
+        ExtractionError,
+        match="Only local fragment schema references are supported",
+    ):
+        SchemaBuilder.normalize(schema)
