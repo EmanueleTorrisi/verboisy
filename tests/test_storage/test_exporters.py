@@ -32,12 +32,12 @@ def test_export_json_raises_when_file_cannot_be_written(tmp_path) -> None:
         )
 
 
-def test_export_csv_returns_without_writing_for_empty_data(tmp_path) -> None:
+def test_export_csv_writes_empty_output(tmp_path) -> None:
     filepath = tmp_path / "results.csv"
 
     DataExporter.export_csv([], filepath)
 
-    assert not filepath.exists()
+    assert filepath.read_text() == ""
 
 
 def test_export_csv_writes_headers_and_rows(tmp_path) -> None:
@@ -87,21 +87,22 @@ def test_export_csv_serializes_nested_values(tmp_path) -> None:
 
 def test_export_csv_raises_when_writing_fails(tmp_path, monkeypatch) -> None:
     filepath = tmp_path / "results.csv"
+    filepath.write_text("previous output")
 
-    class BrokenFile:
-        def __enter__(self):
-            raise OSError("cannot open file")
+    def fail_replace(_self, _target):
+        raise OSError("cannot replace file")
 
-        def __exit__(self, _exc_type, _exc, _tb):
-            return False
+    monkeypatch.setattr("verboisy.storage.exporters.Path.replace", fail_replace)
+    with pytest.raises(OSError, match="cannot replace file"):
+        DataExporter.export_csv([{"name": "Alice"}], filepath)
+    assert filepath.read_text() == "previous output"
+    assert len(list(tmp_path.iterdir())) == 1
 
-    monkeypatch.setattr(
-        "verboisy.storage.exporters.Path.open",
-        lambda _self, *_args, **_kwargs: BrokenFile(),
-    )
 
-    with pytest.raises(OSError, match="cannot open file"):
-        DataExporter.export_csv(
-            [{"name": "Alice"}],
-            filepath,
-        )
+def test_csv_formula_cells_and_headers_are_text(tmp_path):
+    filepath = tmp_path / "safe.csv"
+    DataExporter.export_csv([{"=header": "  =1+1", "negative": -3}], filepath)
+    with filepath.open(newline="") as stream:
+        rows = list(csv.reader(stream))
+    assert rows[0] == ["'=header", "negative"]
+    assert rows[1] == ["'  =1+1", "-3"]
