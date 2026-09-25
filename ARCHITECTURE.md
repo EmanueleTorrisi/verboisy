@@ -1,270 +1,160 @@
-# Verboisy Architecture
+# Verboisy architecture
 
-Verboisy is a state-driven agent, not a selector script. A run is a loop - **plan → act → observe → extract** - until the planner has enough validated records or hits its step / token / timeout budget.
+Verboisy is a single-user, asynchronous browser research agent. The public contract is
+`run()` / `arun()` plus `verboisy run`. A model chooses actions; Python validates
+the action, performs it, validates records, and commits them to SQLite.
 
-The LLM chooses the next transition. Python executes the side effects: browse, parse, validate, commit. That split is the whole design. It is why a crash does not wipe the run, why `dom_parser.py` can be tested without an API key, and why swapping OpenAI for Ollama does not touch the extractor.
+This document describes the implementation in this repository. Live model accuracy,
+exact restoration of JavaScript state, and target-site availability are separate
+acceptance questions; passing offline tests does not establish them.
 
-This document is the map of that loop. The user-facing contract lives in [`README.md`](README.md). If the two disagree, the README is what you ship and this file is wrong.
+## Modules and ownership
 
-## Public surface
-
-Everything outside the loop is a thin wrapper around one function:
-
-```python
-from verboisy import RunResult, run
-
-result: RunResult = run(
-    goal="...",
-    schema="schema.json",  # path, Path, or dict
-    export="result.json",
-)
-
-result = run(resume=True)
-result = run(resume=result.run_id, export="result.json")
-```
-
-```bash
-verboisy run --goal "..." --schema schema.json --export result.json
-verboisy run --resume
-verboisy run --resume 7f3a2c1b --export result.json
-```
-
-The CLI in `cli.py` parses flags and calls `run()`. `run()` lives in `api.py` (re-exported from `verboisy/__init__.py`). It owns: create-or-restore `AgentState`, run the dispatch loop, return `RunResult`.
-
-| `RunResult` field | Meaning |
+| Module | Responsibility |
 | --- | --- |
-| `run_id` | Stable id in SQLite. Pass it to `run(resume=...)`. |
-| `records` | Every validated row for this run so far. |
-| `export_path` | Where the export was written, if asked and the run finished. |
-| `db_path` | The SQLite file used. |
-| `completed` | `True` only when the planner chose `done`, not when the process died. |
+| `api.py` | Validate input, create/restore a run, invoke the agent, export completed results, return `RunResult` |
+| `cli/main.py` | Parse the actual `run` subcommand and optional-value `--resume`; invoke the public API |
+| `core/state.py` | Serializable run state, action history, validated action vocabulary |
+| `core/planner.py` | Give the model cleaned page text, controls, schema, recent history and records |
+| `core/agent.py` | Execute actions, commit records, checkpoint progress, handle stop conditions and cleanup |
+| `browser/context.py` | Chromium lifecycle, request interception, timeouts, optional browser fingerprint adjustments |
+| `browser/policy.py` | HTTP(S), credential-free URLs, optional exact domain allowlist, public-address checks |
+| `browser/dom_parser.py` | Deterministic HTML cleanup and interactive-control summary |
+| `extractor/schema_builder.py` | Draft 2020-12 JSON Schema validation wrapped in dynamic Pydantic models |
+| `extractor/engine.py` | Model response to validated record iterator; final collection validation |
+| `llm/client.py` | Async LiteLLM calls, key routing, bounded transient retries, request budget and usage |
+| `storage/sqlite.py` | Additive schema migration, per-record commits, checkpoints, exact-content deduplication, run lock |
+| `storage/exporters.py` | Atomic JSON/CSV writes; CSV formula escaping |
+| `utils/config.py` | One validated configuration per public invocation; no eager environment validation on import |
 
-Rules `run()` must enforce:
+The browser and storage do not call model SDKs. The CLI does not own a second
+execution loop. The synchronous wrapper rejects an already-running event loop;
+notebooks and async applications use `await arun(...)`.
 
-- New run: `goal` and `schema` required; `resume` omitted or `False`.
-- Resume: `resume=True` (latest incomplete) or `resume="<id>"`; saved goal/schema win.
-- Nothing to resume → raise / exit non-zero, naming `SQLITE_DB_PATH`.
-- `headless=None` reads `VERBOISY_HEADLESS`.
-
-## The core loop
-
-A run is a finite state machine. `AgentState` is the only mutable object the loop trusts.
+## Execution and state
 
 ```mermaid
 flowchart TD
-    Start["run() / verboisy run"] --> R{resume?}
-    R -->|no| Init[Mint run_id - persist AgentState]
-    R -->|yes| Restore[Load AgentState + records from SQLite]
-    Init --> P
-    Restore --> P
-    P[Planner: next action] -->|search / navigate / click| B[Browser: execute]
-    P -->|extract| X[Extractor: DOM → Pydantic]
-    P -->|done| Out[Export + mark completed]
-    B --> D[DOM parser: clean HTML for the LLM]
-    D --> P
-    X --> S[SQLite: commit row under run_id]
-    S --> P
+    Input["API / CLI"] --> Restore{"New or saved run"}
+    Restore --> Plan["Plan from page and saved progress"]
+    Plan --> Action{"Validated action"}
+    Action -->|Browse| Browser["Chromium"]
+    Browser --> Plan
+    Action -->|Extract| Records["Validate and commit each record"]
+    Records --> Plan
+    Action -->|Finish| Finish["Validate collection and checkpoint"]
+    Finish --> Export["Atomic export"]
 ```
 
-On `extract`, the row is validated **then** committed, then the planner is called again. Saving is not a final step. `done` is.
+Action names are `NAVIGATE`, `SEARCH`, `CLICK`, `TYPE`, `SCROLL`, `WAIT`,
+`EXTRACT`, and `FINISH`. SEARCH navigates to a public Google results URL; it is
+not a separate search API or a guarantee that Google will accept automation.
+TYPE submits with Enter by default; `submit:false` only fills, including empty text.
+No action accepts arbitrary JavaScript, operating-system commands, or file paths.
 
-Budget is part of state, not a hope. If max steps, max tokens, or a page timeout fires, the run stops, `completed` stays `False`, and `--resume` can continue it.
+Only a successfully validated FINISH produces COMPLETED. Exhausted steps, request
+budget, or invocation time produce PAUSED. Errors produce FAILED. Async cancellation
+produces INTERRUPTED. All except COMPLETED are candidates for bare resume.
 
-## Module breakdown
+Every invocation gets a fresh step/time/request allowance. `step_count` and
+provider-reported `token_count` remain cumulative. The local request budget reserves
+UTF-8 prompt bytes plus the maximum response tokens for each attempt. It bounds
+request volume conservatively; it is not an exact provider billing or hidden-token cap.
 
-LLM calls, Playwright, and SQLite do not import each other. They meet only in `core/agent.py`.
+A successful action's resulting URL and history entry are checkpointed together.
+Validated rows are committed separately before adding them to in-memory results.
+Thus a malformed later candidate cannot discard previously committed candidates.
+A crash between a record commit and an action checkpoint can repeat extraction;
+the database suppresses duplicate canonical JSON records within that run.
 
-```text
-verboisy/
-  __init__.py          RunResult, run
-  api.py               run() - create/restore state, drive the loop, return
-  cli.py               argparse/typer wrapper around run()
-  core/
-    state.py           AgentState
-    planner.py         next action
-    agent.py           dispatch loop
-  browser/
-    context.py         Playwright session
-    stealth.py         browser defaults that look like a real client
-    dom_parser.py      HTML → token-cheap page context
-  extractor/
-    engine.py          cleaned DOM + schema → candidate rows
-    schema_builder.py  JSON Schema → Pydantic model
-  storage/
-    sqlite.py          runs + records
-    exporters.py       SQLite → .json / .csv
-  llm/
-    client.py          LiteLLM wrapper
-  utils/
-    config.py          Pydantic settings from env
-```
+## Schema contract
 
-### `core/` - orchestration
+Accepted roots are an array with object items, an object schema, and the legacy
+flat property mapping. Normalization preserves the original rules. Draft 2020-12
+constraints, nested objects/arrays, enum, patterns, numeric bounds, required fields,
+additionalProperties and supported formats are enforced by `jsonschema`.
+The explicit format dependency extra is essential: otherwise some format checks
+silently do nothing. Pydantic wraps the validated values; it does not coerce a string
+into a number. Missing optional properties stay absent; explicit null must be allowed.
 
-- **`state.py` - `AgentState`.** Source of truth for one `run_id`: goal, JSON Schema, compiled Pydantic model, action history, extracted records, remaining step/token budget, `completed`, optional export path. Serialize this (minus the live Pydantic class, which is rebuilt from the stored schema) and you can resume.
-- **`planner.py`.** Reads `AgentState` plus the current cleaned DOM. Calls `llm/client.py`. Returns one action: `search`, `navigate`, `click`, `extract`, or `done`. It does not touch the browser.
-- **`agent.py`.** The `while` loop. Routes the action to browser or extractor, updates state, stops on `done` or exhausted budget.
+Only local fragment references are accepted. Remote schema fetching is disabled
+using an empty reference registry. Schemas should still come from a trusted author:
+pathological regular expressions or recursive constraints can consume resources.
+Collection constraints such as minItems are checked over all saved rows on FINISH.
 
-### `browser/` - the page
+Schema validity proves shape and constraints, not that a model's statements are true.
+The extraction prompt includes the goal and directs the model to use page evidence.
+The example website field additionally requires an HTTP(S) URI. Values such as batch
+must come from the page; prompt instructions alone cannot guarantee factual accuracy.
 
-- **`context.py`.** Playwright Chromium: navigate, click, type, wait. Headless from config or `run(headless=...)`.
-- **`stealth.py`.** Applied once per browser context, before the first navigation. Masks obvious automation signals (`navigator.webdriver`, default UA). This is not a bypass product; it is why a public directory does not 403 on the first request. Keep the details here, not in the README.
-- **`dom_parser.py`.** Strips scripts, styles, and boilerplate into a representation that fits an LLM context window. Deterministic. Golden files: `tests/fixtures/startup_directory.html` → `startup_directory.cleaned.html`. No LLM in that test. If a parse is wrong, fix this file, do not "prompt harder".
+## Database and recovery
 
-### `extractor/` - DOM to rows
+The actual tables are `runs`, `extractions`, and `history`; existing names are retained.
 
-- **`schema_builder.py`.** JSON Schema (file or dict) → Pydantic model, at runtime. The top level is an `array` of record `object`s.
-- **`engine.py`.** On `extract`, maps the cleaned DOM through the model. Invalid rows never reach SQLite. Valid rows go to `storage/sqlite.py` immediately, then back into `AgentState.records` so the planner can see what it already has.
-
-### `storage/` - fault tolerance
-
-- **`sqlite.py`.** Two tables, one file (`SQLITE_DB_PATH`, default `verboisy.db`):
-
-  | Table | Role |
-  | --- | --- |
-  | `runs` | `run_id`, goal, schema JSON, status (`running` / `completed` / `failed`), step count, timestamps, optional export path |
-  | `records` | `run_id`, validated JSON payload, inserted_at, optional content hash |
-
-  A row is `INSERT`ed as soon as it validates. That commit is the resume checkpoint. Dedup on `(run_id, hash)` so `--resume` cannot double-write the same record.
-
-- **`exporters.py`.** Reads records for a `run_id` and writes `.json` or `.csv`. Called when the planner returns `done`, not on every extract. Keep this decoupled from `sqlite.py`.
-
-`--resume` / `run(resume=...)` is a load, not a new feature: `SELECT` the run, rebuild `AgentState`, skip hashes already stored, continue the loop.
-
-### `llm/` - the only model boundary
-
-- **`client.py`.** LiteLLM. Planner and extractor both call this. Provider, model, `MAX_TOKENS`, and `TEMPERATURE` come from `utils/config.py`. OpenAI → Anthropic → `ollama/llama3` is an env var, not a refactor.
-
-### `utils/` - config
-
-- **`config.py`.** Pydantic settings. Matches the table in the README. No second source of defaults.
-
-## Worked example: HTML → clean DOM → rows
-
-The README's Quick Example is a live YC F26 goal. Tests do not hit the network. They use a local directory page that is noisy on purpose: analytics, a cookie banner, nav, two company cards.
-
-Drop these three files into `tests/fixtures/`.
-
-**`startup_directory.html`** (Playwright `page.content()`, more or less):
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Startup Directory - Example</title>
-  <style>body { font-family: sans-serif; }</style>
-  <script src="/assets/analytics.js"></script>
-</head>
-<body>
-  <header class="site-header">
-    <nav><a href="/">Home</a><a href="/login">Log in</a></nav>
-  </header>
-  <main>
-    <section id="listings">
-      <article class="company-card">
-        <h2 class="company-name">Aurora Labs</h2>
-        <p class="tagline">Battery diagnostics for EV fleets.</p>
-        <span class="batch">W24</span>
-        <a class="website" href="https://aurora-labs.example.com">Website</a>
-      </article>
-      <article class="company-card">
-        <h2 class="company-name">Fernbank</h2>
-        <p class="tagline">Automated bookkeeping for small farms.</p>
-        <span class="batch">S23</span>
-        <a class="website" href="https://fernbank.example.com">Website</a>
-      </article>
-    </section>
-  </main>
-  <footer class="site-footer">
-    <div class="cookie-banner">This site uses cookies. <button>Accept</button></div>
-  </footer>
-  <script>console.log("tracking pixel fired");</script>
-</body>
-</html>
-```
-
-**`dom_parser.py` must drop:** `<script>`, `<style>`, `<header class="site-header">`, `<footer>`, cookie banner, anything whose only job is chrome or tracking.
-
-**`dom_parser.py` must keep:** the listings, company name, tagline, batch, and the website `href` (the visible word "Website" is useless without the URL).
-
-**`startup_directory.cleaned.html`:**
-
-```html
-<main>
-  <section id="listings">
-    <article class="company-card">
-      <h2 class="company-name">Aurora Labs</h2>
-      <p class="tagline">Battery diagnostics for EV fleets.</p>
-      <span class="batch">W24</span>
-      <a class="website" href="https://aurora-labs.example.com">Website</a>
-    </article>
-    <article class="company-card">
-      <h2 class="company-name">Fernbank</h2>
-      <p class="tagline">Automated bookkeeping for small farms.</p>
-      <span class="batch">S23</span>
-      <a class="website" href="https://fernbank.example.com">Website</a>
-    </article>
-  </section>
-</main>
-```
-
-Whitespace can collapse; the test should compare on a normalized tree, not a byte string. Classes on the cards can stay - they are cheap and they name the fields. Do not convert this to markdown. The extractor wants structure, not a prose blob.
-
-**`startup_directory.json`** - what `extractor/engine.py` must emit against the README schema (`name`, `website`, `description`, `batch`):
-
-```json
-[
-  {
-    "name": "Aurora Labs",
-    "website": "https://aurora-labs.example.com",
-    "description": "Battery diagnostics for EV fleets.",
-    "batch": "W24"
-  },
-  {
-    "name": "Fernbank",
-    "website": "https://fernbank.example.com",
-    "description": "Automated bookkeeping for small farms.",
-    "batch": "S23"
-  }
-]
-```
-
-Two assertions that are easy to get wrong:
-
-1. **Batch comes from the card, not the goal.** Aurora is `W24`, Fernbank is `S23`. A parser that stamps one batch on every row is broken.
-2. **`website` is the `href`, not the link text.** `"Website"` must fail schema-or-sanity before it ever hits SQLite.
-
-The `dom_parser` test has no LLM. The extractor test may call the model *or* use a recorded fixture; either way it must round-trip to that JSON.
-
-## Design philosophy
-
-> Why a state machine instead of one mega-prompt?
-
-A single expanding prompt is simpler to demo and worse at everything else.
-
-1. **Resumability is a commit, not a flag.** `--resume` only works because every validated row is already on disk. The flag reloads state. The architecture made the flag cheap.
-2. **Testability without tokens.** `dom_parser.py`, `schema_builder.py`, and `exporters.py` are pure. Fixture in, structure out. Keep LLM calls behind `llm/client.py` so unit tests do not need a key.
-3. **Provider agnosticism.** Browser and storage must not import an SDK. If they do, the LiteLLM story is fake.
-4. **Schema is a gate, not a hint.** Pydantic failure means the row does not exist. The planner may retry extract; storage never sees the miss.
-
-## Extending
-
-| You want | You change |
+| Table | Data |
 | --- | --- |
-| A new action (`scroll`, `type`, `wait`) | Action enum in `planner.py` + handler in `agent.py`. If it needs the page, add a method on `browser/context.py`. |
-| A new LLM provider | Nothing, if LiteLLM supports the model string. If it does not, wrap it in `llm/client.py` only. |
-| A new export (`parquet`, `ndjson`) | One function in `storage/exporters.py`. Detect by suffix in `run(export=...)`. |
-| A new planner signal (e.g. current URL) | Field on `AgentState`, filled by `agent.py` after the browser acts. Do not sneak it into the prompt from `context.py`. |
-| Dedup / crawl budget tweaks | `storage/sqlite.py` hashes and the budget fields on `AgentState`. |
+| runs | run id, goal, schema, status, timestamps, serialized checkpoint in state_json |
+| extractions | run id, source URL, JSON record, created_at, canonical record_hash |
+| history | run id, action, parameters, resulting URL, timestamp |
 
-Do not add a second persistence path. If it is a record, it goes through SQLite first.
+Migration adds state_json and record_hash without dropping tables or records. Existing
+duplicate legacy rows are retained; only the first receives the dedup hash. Legacy
+runs lacking a checkpoint retain records/goal/schema, but cannot recover a URL or
+step budget that the original software never saved. Original COMPLETED rows remain
+COMPLETED, including any that the defective old budget logic marked incorrectly;
+there is insufficient evidence to relabel them automatically.
 
-## What this is not
+Foreign keys are enforced for new writes. Queries use bound parameters. A per-database
+OS-backed lock allows one cooperating research invocation at a time, released on close
+or process death. Direct SQL writers are outside that cooperative protocol.
+The database belongs on a local filesystem; distributed or multi-host workers are
+outside the supported architecture.
 
-- Not a hosted job queue. `run_id` lives in a local file.
-- Not a scheduler. `--resume` is for crashes and rate limits.
-- Not a general computer-use agent. The action set is browsing plus extract. Filesystem, email, and OS control are out of scope.
-- Not vision-first. The planner sees cleaned DOM, not screenshots. Adding screenshots is a new observation channel, not a one-line change.
+Resume accepts a full id, a unique prefix, or the latest incomplete run. It restores
+goal, schema, records, history, export destination, counters and last checkpointed URL.
+Saved goal/schema override replacement arguments. Browser cookies, session storage,
+open tabs, scroll position, and transient JavaScript widgets are not restored.
+The planner must navigate again when those states matter. Previously saved identical
+rows cannot be duplicated by replay, but repeated browser actions themselves are not
+transactional and are not guaranteed exactly once.
 
-Pre-1.0: module paths can move; the loop, the commit-before-continue rule, and `run()` as the only public entrypoint should not.
+A completed run selected by id can be re-exported without model/browser access.
+Export failure is nonzero and preserves the completed database rows. JSON and CSV
+replace the destination only after a successful temporary write; empty results are
+also exported. CSV nests dictionaries/lists as JSON and prefixes formula-like string
+cells and headers with an apostrophe.
+
+## Security boundary
+
+Chromium sandboxing is enabled by default; downloads and service workers are disabled,
+and WebSockets are closed. Main actions and intercepted HTTP requests use the URL
+policy. Private, loopback, link-local, and non-public destinations are blocked unless
+the operator explicitly sets ALLOW_PRIVATE_NETWORK=true. ALLOWED_DOMAINS can restrict
+destinations to exact hostnames, including asset hosts the target requires.
+
+These application checks are defense in depth, not a complete network sandbox.
+DNS rebinding, browser protocol details, browser vulnerabilities, popups and in-page
+code need an OS/container network boundary for hostile sites. Use an isolated account,
+no personal browser session or sensitive mounts, and network egress controls.
+The shipped container is a deployment starting point; its sandbox support needs validation.
+
+Model prompts mark page text as untrusted. There is no claim of complete prompt-injection
+resistance, anti-bot bypass, automatic legal compliance, or guaranteed research completeness.
+Provider keys loaded from .env are passed explicitly to the selected provider and hidden
+in configuration representations. Verboisy error messages avoid raw provider responses;
+third-party SDK logging remains part of the operator's review.
+
+## Tests, build and release
+
+Unit tests cover schemas, parsers, actions, exporters and configuration. Integration
+tests exercise real SQLite migration, interruption, replay and export. A local HTTP
+stub tests the production LiteLLM transport. The browser test drives actual Chromium
+and the actual CLI against a local page and an explicitly simulated model endpoint.
+It is a transport/orchestration test, not evidence of autonomous model intelligence.
+
+`VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser` fails if Chromium cannot run.
+The ordinary suite skips that one test when Chromium is unavailable. Live provider
+acceptance and the authentic recording workflow are in `docs/demo.md`.
+CI runs locked dependencies, lint, type checks, unit/integration tests, a required browser
+job, docs build and package build. Release publication builds the tag's source only after
+its own checks, and verifies that the release tag matches package metadata.
