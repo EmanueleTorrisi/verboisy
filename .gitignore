@@ -55,3 +55,15 @@ coverage.xml
 
 
 .vscode/
+
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+site/
+*.db.lock
+*.db-journal
+*.db-wal
+*.db-shm
+
+demo-runs/
+pytest-of-*/
