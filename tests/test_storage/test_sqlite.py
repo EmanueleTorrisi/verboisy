@@ -127,6 +127,7 @@ async def test_save_extraction_auto_connects_and_saves_data(tmp_path) -> None:
     db_path = tmp_path / "extractions.db"
     manager = DatabaseManager(str(db_path))
 
+    await manager.save_run("run-1", "find users", {}, "RUNNING")
     data = {"name": "Alice", "age": 30}
 
     await manager.save_extraction(
@@ -166,6 +167,7 @@ async def test_save_history_action_auto_connects_and_saves_parameters(
     db_path = tmp_path / "history.db"
     manager = DatabaseManager(str(db_path))
 
+    await manager.save_run("run-1", "find users", {}, "RUNNING")
     parameters = {"selector": "#login", "timeout": 5000}
 
     await manager.save_history_action(
