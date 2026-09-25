@@ -1,5 +1,8 @@
 """Playwright lifecycle with request restrictions and reliable cleanup."""
 
+import asyncio
+import sys
+
 from playwright.async_api import (
     Browser,
     BrowserContext,
@@ -8,6 +11,9 @@ from playwright.async_api import (
     Route,
     WebSocketRoute,
     async_playwright,
+)
+from playwright.async_api import (
+    Error as PlaywrightError,
 )
 
 from verboisy.browser.policy import validate_url
@@ -44,10 +50,55 @@ class BrowserManager:
             if self._playwright is None:
                 self._playwright = await async_playwright().start()
             if self._browser is None:
-                self._browser = await self._playwright.chromium.launch(
-                    headless=self.config.headless_browser,
-                    chromium_sandbox=self.config.browser_sandbox,
-                )
+                try:
+                    self._browser = await self._playwright.chromium.launch(
+                        headless=self.config.headless_browser,
+                        chromium_sandbox=self.config.browser_sandbox,
+                    )
+
+                except PlaywrightError as exc:
+                    # Only install Chromium if the browser executable is missing.
+                    # Other errors should not trigger a reinstall.
+                    if "Executable doesn't exist at" not in str(exc):
+                        raise
+
+                    logger.info(
+                        "Chromium not found. Installing automatically..."
+                    )
+
+                    command = [
+                        sys.executable,
+                        "-m",
+                        "playwright",
+                        "install",
+                    ]
+
+                    # Install Linux system dependencies when necessary.
+                    if sys.platform.startswith("linux"):
+                        command.append("--with-deps")
+
+                    command.append("chromium")
+
+                    process = await asyncio.create_subprocess_exec(
+                        *command
+                    )
+
+                    return_code = await process.wait()
+
+                    if return_code != 0:
+                        raise RuntimeError(
+                            "Automatic Chromium installation failed."
+                        ) from exc
+
+                    logger.info(
+                        "Chromium installed successfully."
+                    )
+
+                    # Retry browser launch after installation.
+                    self._browser = await self._playwright.chromium.launch(
+                        headless=self.config.headless_browser,
+                        chromium_sandbox=self.config.browser_sandbox,
+                    )
             if self._context is None:
                 user_agent = (
                     StealthManager.get_random_user_agent()
@@ -72,9 +123,9 @@ class BrowserManager:
             await self.close()
             raise NavigationError(
                 f"Browser startup failed ({type(exc).__name__}). "
-                "Install Chromium with python -m playwright install chromium; "
-                "check system dependencies and BROWSER_SANDBOX support."
-            ) from None
+                "Check Chromium installation, system dependencies "
+                "and BROWSER_SANDBOX support."
+            ) from exc
         except BaseException:
             await self.close()
             raise
