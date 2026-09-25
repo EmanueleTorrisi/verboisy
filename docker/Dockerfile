@@ -2,41 +2,27 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.8.2 \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
-    PYSETUP_PATH="/opt/pysetup" \
-    VENV_PATH="/opt/pysetup/.venv"
+    PLAYWRIGHT_BROWSERS_PATH=/opt/playwright-browsers
 
-# Pre-requisites for poetry and playwright
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        curl \
-        build-essential \
-        libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN python -m pip install --no-cache-dir poetry==2.5.1 \
+    && python -m venv /opt/venv
 
-ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
-
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
-WORKDIR $PYSETUP_PATH
-COPY pyproject.toml poetry.lock ./
-
-RUN poetry install --only main --no-root
-
-# Install Playwright dependencies
-RUN poetry run playwright install --with-deps chromium
-
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 WORKDIR /app
-COPY . /app/
-
-# Install the project itself
-RUN poetry install --only main
-
+COPY pyproject.toml poetry.lock README.md LICENSE ./
+COPY src ./src
+RUN poetry install --only main \
+    && python -m playwright install --with-deps chromium
+COPY examples ./examples
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+    && useradd --create-home --uid 10001 verboisy \
+    && mkdir -p /data \
+    && chown verboisy:verboisy /data
 
+ENV SQLITE_DB_PATH=/data/verboisy.db
+USER verboisy
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["verboisy", "--help"]
