@@ -91,3 +91,55 @@ async def test_extract_from_html_raises_extraction_error_on_invalid_result() -> 
 
     with pytest.raises(ExtractionError, match="failed JSON Schema validation"):
         await engine.extract_from_html("<html><body>Invalid data</body></html>")
+
+
+async def test_extraction_rejects_missing_results_array():
+    """Reject model responses without a results array."""
+    engine = ExtractionEngine(
+        {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+            },
+        }
+    )
+
+    engine.llm.complete_json = AsyncMock(return_value={"message": "No results"})
+
+    with pytest.raises(
+        ExtractionError,
+        match="Extraction response must contain a results array",
+    ):
+        await engine.extract_from_html("<html></html>")
+
+
+def test_validate_object_collection():
+    """Validate each saved record against an object schema."""
+    engine = ExtractionEngine(
+        {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+            },
+            "required": ["name"],
+        }
+    )
+
+    engine.validate_collection([])
+
+    engine.validate_collection(
+        [
+            {"name": "Alice"},
+            {"name": "Bob"},
+        ]
+    )
+
+    with pytest.raises(
+        ExtractionError,
+        match="Saved collection does not satisfy the target schema",
+    ):
+        engine.validate_collection(
+            [
+                {"name": 123},
+            ]
+        )
