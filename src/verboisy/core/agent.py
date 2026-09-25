@@ -74,6 +74,8 @@ class Agent:
                     logger.info(
                         "SAVE", run_id=self.state.run_id, records=len(self.state.extracted_data)
                     )
+        else:
+            raise VerboisyError(f"Unsupported action: {action}")
         if page.url != "about:blank":
             await validate_url(page.url, self.config)
         self.state.current_url = page.url

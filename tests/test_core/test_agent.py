@@ -3,10 +3,12 @@
 import asyncio
 import json
 import sqlite3
+from unittest.mock import Mock
 
 import pytest
 from verboisy import arun
 from verboisy.core.agent import Agent
+from verboisy.core.state import ActionRequest
 from verboisy.storage.sqlite import DatabaseManager
 from verboisy.utils.exceptions import VerboisyError
 
@@ -164,3 +166,125 @@ async def test_navigation_failure_preserves_run(config, fake_browser, model_scri
 async def test_state_construction(config):
     agent = Agent("Find people", SCHEMA, 3, config=config)
     assert agent.state.status == "INITIALIZED" and agent.state.max_steps == 3
+
+
+async def test_type_action_with_submit(config, fake_browser, model_script):
+    """Submitting a typed value should press Enter."""
+    model_script(
+        action("TYPE", selector="#q", text="Alice", submit=True),
+        action("FINISH"),
+    )
+
+    result = await arun(
+        goal="Find names",
+        schema=SCHEMA,
+        config=config,
+    )
+
+    assert result.completed
+
+    fake_browser.page.fill.assert_awaited_once_with(
+        "#q",
+        "Alice",
+    )
+
+    fake_browser.page.press.assert_awaited_once_with(
+        "#q",
+        "Enter",
+    )
+
+    fake_browser.page.wait_for_load_state.assert_awaited_once_with("domcontentloaded")
+
+
+async def test_agent_lock_failure_still_cleans_up(config, fake_browser, monkeypatch):
+    """Do not checkpoint when the run lock was not acquired."""
+    agent = Agent(
+        "Find names",
+        SCHEMA,
+        config=config,
+    )
+
+    acquire = Mock(side_effect=VerboisyError("lock unavailable"))
+
+    monkeypatch.setattr(
+        agent.db,
+        "acquire_run_lock",
+        acquire,
+    )
+
+    with pytest.raises(
+        VerboisyError,
+        match="lock unavailable",
+    ):
+        await agent.run()
+
+    acquire.assert_called_once()
+
+    fake_browser.close.assert_awaited()
+
+    assert agent.db._lock is None
+    assert agent.db._conn is None
+
+
+async def test_final_checkpoint_failure_propagates(config, fake_browser, model_script, monkeypatch):
+    """A final checkpoint failure must propagate and release resources."""
+    model_script(action("FINISH"))
+
+    agent = Agent(
+        "Find names",
+        SCHEMA,
+        config=config,
+    )
+
+    original_checkpoint = agent.db.checkpoint
+    calls = 0
+
+    async def failing_checkpoint(*args, **kwargs):
+        nonlocal calls
+
+        calls += 1
+
+        if calls == 3:
+            raise sqlite3.OperationalError("final checkpoint failed")
+
+        return await original_checkpoint(*args, **kwargs)
+
+    monkeypatch.setattr(
+        agent.db,
+        "checkpoint",
+        failing_checkpoint,
+    )
+
+    with pytest.raises(
+        sqlite3.OperationalError,
+        match="final checkpoint failed",
+    ):
+        await agent.run()
+
+    assert calls == 3
+
+    fake_browser.close.assert_awaited()
+
+    assert agent.db._conn is None
+    assert agent.db._lock is None
+
+
+async def test_unsupported_action_is_rejected(config, fake_browser):
+    """Reject an invalid internal action rather than silently ignoring it."""
+    agent = Agent(
+        "Find names",
+        SCHEMA,
+        config=config,
+    )
+
+    request = ActionRequest.model_construct(
+        thought="fixture",
+        action="INVALID",
+        parameters={},
+    )
+
+    with pytest.raises(
+        VerboisyError,
+        match="Unsupported action: INVALID",
+    ):
+        await agent._execute(request, "")
