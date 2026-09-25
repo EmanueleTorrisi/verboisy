@@ -1,11 +1,18 @@
-"""
-Asynchronous Playwright browser management.
-"""
+"""Playwright lifecycle with request restrictions and reliable cleanup."""
 
-from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
+from playwright.async_api import (
+    Browser,
+    BrowserContext,
+    Page,
+    Playwright,
+    Route,
+    WebSocketRoute,
+    async_playwright,
+)
 
+from verboisy.browser.policy import validate_url
 from verboisy.browser.stealth import StealthManager
-from verboisy.utils.config import settings
+from verboisy.utils.config import Settings, settings
 from verboisy.utils.exceptions import NavigationError
 from verboisy.utils.logger import get_logger
 
@@ -13,81 +20,96 @@ logger = get_logger(__name__)
 
 
 class BrowserManager:
-    """Manages the lifecycle of Playwright browsers, contexts, and pages."""
-
-    def __init__(self) -> None:
+    def __init__(self, config: Settings | None = None) -> None:
+        self.config = config or settings
         self._playwright: Playwright | None = None
         self._browser: Browser | None = None
         self._context: BrowserContext | None = None
         self._page: Page | None = None
 
+    async def _route(self, route: Route) -> None:
+        try:
+            await validate_url(route.request.url, self.config)
+        except NavigationError:
+            await route.abort("blockedbyclient")
+        else:
+            await route.continue_()
+
+    async def _websocket(self, route: WebSocketRoute) -> None:
+        # WebSocket routing would otherwise bypass the HTTP request policy.
+        await route.close()
+
     async def start(self) -> Page:
-        """
-        Start Playwright and open a secure browser page.
-
-        Returns:
-            Page: The active Playwright page instance.
-        """
-        if not self._playwright:
-            logger.debug("Starting Playwright instance")
-            self._playwright = await async_playwright().start()
-
-        if not self._browser:
-            logger.debug("Launching Chromium browser", headless=settings.headless_browser)
-            self._browser = await self._playwright.chromium.launch(
-                headless=settings.headless_browser,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"],
-            )
-
-        if not self._context:
-            user_agent = (
-                StealthManager.get_random_user_agent() if settings.user_agent_rotation else None
-            )
-            logger.debug("Creating browser context", user_agent=user_agent)
-            self._context = await self._browser.new_context(
-                user_agent=user_agent, viewport={"width": 1920, "height": 1080}
-            )
-
-        if not self._page:
-            self._page = await self._context.new_page()
-            await StealthManager.apply_stealth(self._page)
-
-        return self._page
+        try:
+            if self._playwright is None:
+                self._playwright = await async_playwright().start()
+            if self._browser is None:
+                self._browser = await self._playwright.chromium.launch(
+                    headless=self.config.headless_browser,
+                    chromium_sandbox=self.config.browser_sandbox,
+                )
+            if self._context is None:
+                user_agent = (
+                    StealthManager.get_random_user_agent()
+                    if self.config.user_agent_rotation
+                    else None
+                )
+                self._context = await self._browser.new_context(
+                    user_agent=user_agent,
+                    viewport={"width": 1920, "height": 1080},
+                    accept_downloads=False,
+                    service_workers="block",
+                )
+                self._context.set_default_timeout(self.config.browser_timeout_ms)
+                self._context.set_default_navigation_timeout(self.config.browser_timeout_ms)
+                await self._context.route("**/*", self._route)
+                await self._context.route_web_socket("**/*", self._websocket)
+            if self._page is None:
+                self._page = await self._context.new_page()
+                await StealthManager.apply_stealth(self._page)
+            return self._page
+        except Exception as exc:
+            await self.close()
+            raise NavigationError(
+                f"Browser startup failed ({type(exc).__name__}). "
+                "Install Chromium with python -m playwright install chromium; "
+                "check system dependencies and BROWSER_SANDBOX support."
+            ) from None
+        except BaseException:
+            await self.close()
+            raise
 
     async def navigate_to(self, url: str) -> None:
-        """
-        Navigate to a specific URL with timeout handling.
-
-        Args:
-            url: The destination URL.
-        """
+        await validate_url(url, self.config)
         page = await self.start()
-        logger.info("Navigating to URL", url=url)
         try:
-            await page.goto(url, timeout=settings.browser_timeout_ms, wait_until="domcontentloaded")
-        except Exception as e:
-            logger.error("Navigation failed", url=url, error=str(e))
-            raise NavigationError(f"Failed to navigate to {url}: {e}", {"url": url}) from e
+            response = await page.goto(
+                url, timeout=self.config.browser_timeout_ms, wait_until="domcontentloaded"
+            )
+            if response is not None and response.status >= 400:
+                raise NavigationError(f"Destination returned HTTP {response.status}")
+            await validate_url(page.url, self.config)
+        except NavigationError:
+            raise
+        except Exception as exc:
+            raise NavigationError(f"Navigation failed ({type(exc).__name__})") from None
 
     async def get_page(self) -> Page:
-        """Get the active page, starting the browser if necessary."""
-        if not self._page:
-            await self.start()
-        assert self._page is not None
-        return self._page
+        return self._page if self._page is not None else await self.start()
 
     async def close(self) -> None:
-        """Close browser resources cleanly."""
-        logger.debug("Closing browser resources")
-        if self._page:
-            await self._page.close()
-            self._page = None
-        if self._context:
-            await self._context.close()
-            self._context = None
-        if self._browser:
-            await self._browser.close()
-            self._browser = None
-        if self._playwright:
-            await self._playwright.stop()
-            self._playwright = None
+        for attribute, method in (
+            ("_page", "close"),
+            ("_context", "close"),
+            ("_browser", "close"),
+            ("_playwright", "stop"),
+        ):
+            resource = getattr(self, attribute)
+            setattr(self, attribute, None)
+            if resource is not None:
+                try:
+                    await getattr(resource, method)()
+                except Exception as exc:
+                    logger.warning(
+                        "Browser cleanup failed", resource=attribute, error_type=type(exc).__name__
+                    )
