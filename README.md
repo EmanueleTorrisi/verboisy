@@ -207,14 +207,12 @@ Not on PyPI yet. Install from source:
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
 cd verboisy && pip install -e .
-playwright install --with-deps chromium
 ```
 
 Once the first release ships, this will be:
 
 ```bash
 pip install verboisy
-playwright install --with-deps chromium
 ```
 
 ## Configuration
