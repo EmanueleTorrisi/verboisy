@@ -31,7 +31,6 @@ def test_build_model_raises_extraction_error_when_model_creation_fails() -> None
         )
 
 
-
 def test_build_model_from_json_schema() -> None:
     json_schema = {
         "properties": {
