@@ -38,7 +38,18 @@ class DOMParser:
         # Strip attributes that bloat tokens (e.g. inline styles, massive classes)
         for tag in soup.find_all(True):
             allowed_attrs = {}
-            for attr in ["href", "src", "alt", "title", "id", "name"]:
+            for attr in [
+                "href",
+                "alt",
+                "title",
+                "id",
+                "name",
+                "class",
+                "type",
+                "role",
+                "aria-label",
+                "placeholder",
+            ]:
                 if tag.has_attr(attr):
                     allowed_attrs[attr] = tag[attr]
             tag.attrs = allowed_attrs
