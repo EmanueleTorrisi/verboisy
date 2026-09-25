@@ -69,8 +69,8 @@ jobs:
           matrix.os == 'ubuntu-latest' &&
           matrix.python == '3.11' &&
           (github.event_name != 'pull_request' ||
-           github.event.pull_request.head.repo.full_name == github.repository)
-        uses: codecov/codecov-action@v5
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
