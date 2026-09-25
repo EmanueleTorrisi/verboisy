@@ -1,40 +1,21 @@
-"""
-Example script to extract pricing data from an e-commerce catalog.
-"""
+"""Live pricing example using the shared async public API."""
 
 import asyncio
-import json
 from pathlib import Path
 
-from verboisy.core.agent import Agent
-from verboisy.storage.exporters import DataExporter
-from verboisy.utils.config import settings
-
-settings.headless_browser = False  # Show browser for demonstration
+from verboisy import arun
 
 
 async def main() -> None:
-    schema_path = Path(__file__).parent / "schema.json"
-    with schema_path.open(encoding="utf-8") as f:
-        target_schema = json.load(f)
-
-    goal = (
-        "Navigate to https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops "
-        "and extract the details of the first 3 laptops shown on the page."
+    result = await arun(
+        goal="Open https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops "
+        "and extract the first three laptops shown, with only values supported by the page.",
+        schema=Path(__file__).with_name("schema.json"),
+        export=Path(__file__).with_name("laptops_pricing.csv"),
     )
-
-    agent = Agent(goal=goal, target_schema=target_schema, max_steps=5)
-
-    print(f"Extracting e-commerce data...\nGoal: {goal}")
-    final_state = await agent.run()
-
-    if final_state.status == "COMPLETED" and final_state.extracted_data:
-        export_path = Path(__file__).parent / "laptops_pricing.csv"
-        DataExporter.export_csv(final_state.extracted_data, export_path)
-        print(f"\nSuccessfully extracted {len(final_state.extracted_data)} products.")
-        print(f"Data exported to {export_path}")
-    else:
-        print("\nFailed to extract data or run did not complete successfully.")
+    print(result.run_id, result.status, len(result.records))
+    if not result.completed:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
