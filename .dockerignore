@@ -20,7 +20,6 @@ htmlcov/
 
 docs/
 mkdocs.yml
-examples/
 tests/
 *.md
 !README.md
@@ -31,3 +30,7 @@ tests/
 .vscode/
 .idea/
 .DS_Store
+
+demo-runs/
+pytest-of-*/
+*.db*
