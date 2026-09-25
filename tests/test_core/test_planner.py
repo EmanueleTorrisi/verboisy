@@ -68,9 +68,7 @@ async def test_planner_handles_history() -> None:
 async def test_planner_wraps_llm_errors() -> None:
     planner = Planner()
 
-    planner.llm.complete_json = AsyncMock(
-        side_effect=RuntimeError("LLM unavailable")
-    )
+    planner.llm.complete_json = AsyncMock(side_effect=RuntimeError("LLM unavailable"))
 
     with pytest.raises(
         PlanningError,
