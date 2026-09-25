@@ -24,6 +24,7 @@ colorama = "^0.4.6"
 python-dotenv = "^1.0.1"
 jsonschema = {version = "^4.23", extras = ["format-nongpl"]}
 filelock = ">=3.20,<4"
+rfc3986-validator = "^0.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
