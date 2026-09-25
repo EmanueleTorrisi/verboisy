@@ -3,11 +3,10 @@ site_description: Autonomous web research and scrape-to-JSON agent.
 theme:
   name: material
   features:
-    - navigation.tabs
     - navigation.sections
-    - search.suggest
-    - search.highlight
     - content.code.copy
 nav:
   - Home: index.md
-  - API Reference: api.md
+  - API: api.md
+  - Demo: demo.md
+  - Validation: validation.md
