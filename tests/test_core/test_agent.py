@@ -1,506 +1,166 @@
-"""
-Unit tests for the Core Agent loop and state machine.
-"""
+"""Integration regressions with real model parsing and SQLite; fake browser/provider."""
 
-from typing import Any
-from unittest.mock import AsyncMock, Mock, patch
+import asyncio
+import json
+import sqlite3
 
 import pytest
+from verboisy import arun
 from verboisy.core.agent import Agent
-from verboisy.core.state import ActionRequest
+from verboisy.storage.sqlite import DatabaseManager
 from verboisy.utils.exceptions import VerboisyError
 
+from tests.conftest import action
 
-@pytest.fixture
-def dummy_schema() -> dict[str, Any]:
-    return {"properties": {"name": {"type": "string"}, "age": {"type": "integer"}}}
-
-
-@pytest.mark.asyncio
-async def test_agent_initialization(dummy_schema: dict[str, Any]) -> None:
-    goal = "Find people"
-    agent = Agent(goal=goal, target_schema=dummy_schema, max_steps=10)
-
-    assert agent.state.goal == goal
-    assert agent.state.max_steps == 10
-    assert agent.state.status == "INITIALIZED"
-    assert len(agent.state.history) == 0
+SCHEMA = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {"name": {"type": "string"}},
+        "required": ["name"],
+        "additionalProperties": False,
+    },
+}
 
 
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_completion(
-    _mock_db: AsyncMock,
-    mock_browser: AsyncMock,
-    mock_planner: AsyncMock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    # Setup mock database
-    db_instance = _mock_db.return_value
-    db_instance.connect = AsyncMock()
-    db_instance.save_run = AsyncMock()
-    db_instance.save_history_action = AsyncMock()
-    db_instance.close = AsyncMock()
+async def saved(config):
+    db = DatabaseManager(config.sqlite_db_path)
+    try:
+        return await db.load_run()
+    finally:
+        await db.close()
 
-    # Setup mock browser
-    mock_page = AsyncMock()
-    mock_page.url = "http://example.com"
-    mock_page.content.return_value = "<html><body>Data</body></html>"
 
-    browser_instance = mock_browser.return_value
-    browser_instance.start = AsyncMock(return_value=mock_page)
-    browser_instance.close = AsyncMock()
-
-    # Setup mock planner to FINISH immediately
-    planner_instance = mock_planner.return_value
-    planner_instance.decide_next_action = AsyncMock(
-        return_value=ActionRequest(
-            thought="I am done",
-            action="FINISH",
-            parameters={},
-        )
+async def test_run_resume_dedup_export(config, fake_browser, model_script, tmp_path):
+    output = tmp_path / "result.json"
+    first_model = model_script(
+        action("NAVIGATE", url="https://example.com/page2"),
+        action("EXTRACT"),
+        {"results": [{"name": "Alice"}]},
     )
-
-    agent = Agent(goal="Test completion", target_schema=dummy_schema, max_steps=5)
-
-    state = await agent.run()
-
-    assert state.status == "COMPLETED"
-    assert state.step_count == 1
-    assert len(state.history) == 0
-
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_navigate(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
-
-    page = Mock()
-    page.url = "https://start.example"
-    page.content = AsyncMock(return_value="<html></html>")
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.navigate_to = AsyncMock()
-    browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        side_effect=[
-            ActionRequest(
-                thought="Navigate",
-                action="NAVIGATE",
-                parameters={"url": "https://example.com"},
-            ),
-            ActionRequest(
-                thought="Done",
-                action="FINISH",
-                parameters={},
-            ),
-        ]
+    result = await arun(goal="Find names", schema=SCHEMA, export=output, max_steps=2, config=config)
+    assert not result.completed and result.stop_reason == "max_steps"
+    assert not output.exists()
+    checkpoint = await saved(config)
+    assert checkpoint.current_url == "https://example.com/page2"
+    assert checkpoint.step_count == 2 and checkpoint.token_count == 36
+    assert checkpoint.extracted_data == [{"name": "Alice"}]
+    assert first_model.await_count == 3
+    fake_browser.page.url = "about:blank"
+    mock = model_script(
+        action("EXTRACT"), {"results": [{"name": "Alice"}, {"name": "Bob"}]}, action("FINISH")
     )
+    final = await arun(resume=True, goal="ignored", schema="missing.json", config=config)
+    assert final.completed and final.run_id == result.run_id
+    assert final.records == [{"name": "Alice"}, {"name": "Bob"}]
+    assert json.loads(output.read_text()) == final.records
+    prompt = json.loads(mock.await_args_list[0].kwargs["messages"][1]["content"])
+    assert prompt["saved_record_count"] == 1
+    assert prompt["recent_records"] == [{"name": "Alice"}]
+    assert "Aurora Labs" in prompt["page_html"]
+    assert prompt["goal"] == "Find names"
+    fake_browser.navigate_to.assert_awaited_with("https://example.com/page2")
 
-    agent = Agent("Navigate test", dummy_schema, max_steps=5)
 
-    with patch("verboisy.core.agent.asyncio.sleep", new_callable=AsyncMock):
-        state = await agent.run()
+async def test_valid_record_survives_later_invalid_record(config, fake_browser, model_script):
+    model_script(action("EXTRACT"), {"results": [{"name": "Alice"}, {"name": 17}]})
+    with pytest.raises(VerboisyError):
+        await arun(goal="Find names", schema=SCHEMA, config=config)
+    state = await saved(config)
+    assert state.status == "FAILED"
+    assert state.extracted_data == [{"name": "Alice"}]
+    fake_browser.close.assert_awaited()
 
-    browser.navigate_to.assert_awaited_once_with("https://example.com")
-    assert state.step_count == 2
-    assert len(state.history) == 1
-    assert state.history[0].action == "NAVIGATE"
+
+async def test_cancellation_preserves_rows_and_releases_lock(
+    config, fake_browser, model_script, monkeypatch
+):
+    model_script(action("EXTRACT"), {"results": [{"name": "Alice"}]}, asyncio.CancelledError())
+    with pytest.raises(asyncio.CancelledError):
+        await arun(goal="Find names", schema=SCHEMA, config=config)
+    state = await saved(config)
+    assert state.status == "INTERRUPTED" and len(state.extracted_data) == 1
+    model_script(action("FINISH"))
+    final = await arun(resume=state.run_id, config=config)
+    assert final.completed
 
 
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_click(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
+async def test_timeout_is_incomplete(config, fake_browser, model_script):
+    async def stalled(**_kwargs):
+        await asyncio.Event().wait()
 
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(return_value="<button>Click</button>")
-    page.click = AsyncMock()
-    page.wait_for_load_state = AsyncMock()
+    fake_browser.start.side_effect = stalled
+    config.run_timeout_seconds = 0.01
+    result = await arun(goal="Find names", schema=SCHEMA, config=config)
+    assert not result.completed and result.stop_reason == "run_timeout"
+    fake_browser.close.assert_awaited()
 
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.close = AsyncMock()
 
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        side_effect=[
-            ActionRequest(
-                thought="Click button",
-                action="CLICK",
-                parameters={"selector": "#submit"},
-            ),
-            ActionRequest(
-                thought="Done",
-                action="FINISH",
-                parameters={},
-            ),
-        ]
+async def test_model_budget_is_incomplete(config, fake_browser, model_script):
+    mock = model_script()
+    config.max_total_tokens = 1
+    result = await arun(goal="Find names", schema=SCHEMA, config=config)
+    assert result.status == "PAUSED" and result.stop_reason == "model_budget"
+    mock.assert_not_called()
+
+
+async def test_collection_constraints_checked_at_finish(config, fake_browser, model_script):
+    schema = {**SCHEMA, "minItems": 2}
+    model_script(action("EXTRACT"), {"results": [{"name": "Alice"}]}, action("FINISH"))
+    with pytest.raises(VerboisyError):
+        await arun(goal="Two names", schema=schema, config=config)
+    assert (await saved(config)).status == "FAILED"
+
+
+async def test_real_dispatch_controls(config, fake_browser, model_script):
+    model_script(
+        action("CLICK", selector="#next"),
+        action("TYPE", selector="#q", text="", submit=False),
+        action("SCROLL", pixels=321),
+        action("WAIT", milliseconds=0),
+        action("SEARCH", query="a & b"),
+        action("FINISH"),
     )
-
-    agent = Agent("Click test", dummy_schema, max_steps=5)
-
-    with patch("verboisy.core.agent.asyncio.sleep", new_callable=AsyncMock):
-        state = await agent.run()
-
-    page.click.assert_awaited_once_with("#submit", timeout=5000)
-    page.wait_for_load_state.assert_awaited_once_with("networkidle")
-    assert state.history[0].action == "CLICK"
+    result = await arun(goal="Find names", schema=SCHEMA, config=config)
+    assert result.completed
+    fake_browser.page.click.assert_awaited_once_with("#next")
+    fake_browser.page.fill.assert_awaited_once_with("#q", "")
+    fake_browser.page.press.assert_not_awaited()
+    fake_browser.page.mouse.wheel.assert_awaited_once_with(0, 321)
+    fake_browser.navigate_to.assert_awaited_once_with("https://www.google.com/search?q=a+%26+b")
 
 
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_type(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
+async def test_database_failure_still_closes_browser(
+    config, fake_browser, model_script, monkeypatch
+):
+    model_script(action("FINISH"))
+    original = DatabaseManager.checkpoint
+    calls = 0
 
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(return_value="<input>")
-    page.fill = AsyncMock()
-    page.wait_for_load_state = AsyncMock()
+    async def broken(self, *args, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls > 1:
+            raise sqlite3.OperationalError("disk full")
+        await original(self, *args, **kwargs)
 
-    keyboard = Mock()
-    keyboard.press = AsyncMock()
-    page.keyboard = keyboard
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        side_effect=[
-            ActionRequest(
-                thought="Type query",
-                action="TYPE",
-                parameters={"selector": "#search", "text": "python"},
-            ),
-            ActionRequest(
-                thought="Done",
-                action="FINISH",
-                parameters={},
-            ),
-        ]
-    )
-
-    agent = Agent("Type test", dummy_schema, max_steps=5)
-
-    with patch("verboisy.core.agent.asyncio.sleep", new_callable=AsyncMock):
-        state = await agent.run()
-
-    page.fill.assert_awaited_once_with(
-        "#search",
-        "python",
-        timeout=5000,
-    )
-    keyboard.press.assert_awaited_once_with("Enter")
-    page.wait_for_load_state.assert_awaited_once_with("networkidle")
-    assert state.history[0].action == "TYPE"
+    monkeypatch.setattr(DatabaseManager, "checkpoint", broken)
+    with pytest.raises(VerboisyError):
+        await arun(goal="Find names", schema=SCHEMA, config=config)
+    fake_browser.close.assert_awaited()
+    db = DatabaseManager(config.sqlite_db_path)
+    db.acquire_run_lock()
+    await db.close()
 
 
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_extract(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.save_extraction = AsyncMock()
-    db.close = AsyncMock()
-
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(return_value="<html>data</html>")
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        side_effect=[
-            ActionRequest(
-                thought="Extract data",
-                action="EXTRACT",
-                parameters={},
-            ),
-            ActionRequest(
-                thought="Done",
-                action="FINISH",
-                parameters={},
-            ),
-        ]
-    )
-
-    agent = Agent("Extract test", dummy_schema, max_steps=5)
-    agent.extractor.extract_from_html = AsyncMock(
-        return_value=[
-            {"name": "Alice", "age": 30},
-            {"name": "Bob", "age": 25},
-        ]
-    )
-
-    with patch("verboisy.core.agent.asyncio.sleep", new_callable=AsyncMock):
-        state = await agent.run()
-
-    agent.extractor.extract_from_html.assert_awaited_once_with("<html>data</html>")
-    assert state.extracted_data == [
-        {"name": "Alice", "age": 30},
-        {"name": "Bob", "age": 25},
-    ]
-    assert db.save_extraction.await_count == 2
+async def test_navigation_failure_preserves_run(config, fake_browser, model_script):
+    model_script(action("NAVIGATE", url="https://example.com"))
+    fake_browser.navigate_to.side_effect = RuntimeError("navigation failed")
+    with pytest.raises(VerboisyError):
+        await arun(goal="Find names", schema=SCHEMA, config=config)
+    assert (await saved(config)).status == "FAILED"
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    ("action", "parameters"),
-    [
-        ("NAVIGATE", {}),
-        ("CLICK", {}),
-    ],
-)
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_missing_required_action_parameter(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-    action: str,
-    parameters: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
-
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(return_value="<html></html>")
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        return_value=ActionRequest(
-            thought="Invalid action",
-            action=action,
-            parameters=parameters,
-        )
-    )
-
-    agent = Agent("Invalid parameter test", dummy_schema, max_steps=5)
-
-    with pytest.raises(VerboisyError, match="Agent failed during execution"):
-        await agent.run()
-
-    browser.close.assert_awaited_once()
-    db.close.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_type_missing_selector(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
-
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(return_value="<html></html>")
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        return_value=ActionRequest(
-            thought="Invalid type",
-            action="TYPE",
-            parameters={"text": "hello"},
-        )
-    )
-
-    agent = Agent("Invalid type test", dummy_schema)
-
-    with pytest.raises(VerboisyError, match="Agent failed during execution"):
-        await agent.run()
-
-
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_type_missing_text(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
-
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(return_value="<html></html>")
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        return_value=ActionRequest(
-            thought="Invalid type",
-            action="TYPE",
-            parameters={"selector": "#search"},
-        )
-    )
-
-    agent = Agent("Invalid type test", dummy_schema)
-
-    with pytest.raises(VerboisyError, match="Agent failed during execution"):
-        await agent.run()
-
-
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_max_steps_completes(
-    mock_db: Mock,
-    mock_browser: Mock,
-    mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
-
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(return_value="<html></html>")
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.navigate_to = AsyncMock()
-    browser.close = AsyncMock()
-
-    planner = mock_planner.return_value
-    planner.decide_next_action = AsyncMock(
-        return_value=ActionRequest(
-            thought="Navigate",
-            action="NAVIGATE",
-            parameters={"url": "https://example.org"},
-        )
-    )
-
-    agent = Agent("Max steps test", dummy_schema, max_steps=1)
-
-    with patch("verboisy.core.agent.asyncio.sleep", new_callable=AsyncMock):
-        state = await agent.run()
-
-    assert state.status == "COMPLETED"
-    assert state.step_count == 1
-    assert len(state.history) == 1
-    browser.navigate_to.assert_awaited_once_with("https://example.org")
-
-
-@pytest.mark.asyncio
-@patch("verboisy.core.agent.Planner")
-@patch("verboisy.core.agent.BrowserManager")
-@patch("verboisy.core.agent.DatabaseManager")
-async def test_agent_run_unexpected_exception_is_wrapped(
-    mock_db: Mock,
-    mock_browser: Mock,
-    _mock_planner: Mock,
-    dummy_schema: dict[str, Any],
-) -> None:
-    db = mock_db.return_value
-    db.connect = AsyncMock()
-    db.save_run = AsyncMock()
-    db.save_history_action = AsyncMock()
-    db.close = AsyncMock()
-
-    page = Mock()
-    page.url = "https://example.com"
-    page.content = AsyncMock(
-        side_effect=RuntimeError("browser exploded")
-    )
-
-    browser = mock_browser.return_value
-    browser.start = AsyncMock(return_value=page)
-    browser.close = AsyncMock()
-
-    agent = Agent("Exception test", dummy_schema, max_steps=5)
-
-    with pytest.raises(VerboisyError, match="browser exploded"):
-        await agent.run()
-
-    browser.close.assert_awaited_once()
-    db.save_run.assert_awaited()
-    db.close.assert_awaited_once()
+async def test_state_construction(config):
+    agent = Agent("Find people", SCHEMA, 3, config=config)
+    assert agent.state.status == "INITIALIZED" and agent.state.max_steps == 3
