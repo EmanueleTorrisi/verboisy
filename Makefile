@@ -5,7 +5,7 @@ install:
 	poetry run playwright install --with-deps chromium
 
 test:
-	poetry run pytest -m "not browser" --cov=src --cov-report=term-missing
+	poetry run pytest -m "not browser" --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=100
 
 test-browser:
 	VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser -v
@@ -31,4 +31,4 @@ docs:
 validate: lint test test-browser security docs build
 
 clean:
-	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov dist build site
+	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov dist build site .coverage coverage.xml
