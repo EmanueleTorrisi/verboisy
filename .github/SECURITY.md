@@ -49,3 +49,20 @@ Please do not publicly disclose the vulnerability before a fix has been released
 Once a vulnerability has been investigated and resolved, maintainers may publish a GitHub Security Advisory containing relevant information about the issue, affected versions, and the available fix.
 
 Thank you for helping keep Verboisy and its users secure.
+
+## Runtime trust boundaries
+
+Use an isolated OS account/container without personal browser profiles or sensitive
+mounts. The browser has network access and processes untrusted web content. Default
+HTTP URL checks block private addresses, but do not replace network egress controls
+or provide complete DNS-rebinding and browser-protocol isolation. Prompt instructions
+are not a complete prompt-injection defense.
+
+Only use schemas from trusted authors; regex/recursive validation is not process-isolated.
+SQLite contains scraped records, source URLs, goals and action history in plaintext.
+Protect it with filesystem permissions. Do not type credentials through the agent.
+Third-party model SDKs have their own logging and telemetry configuration.
+
+Run `poetry run pip-audit --local` before release. A successful audit only covers known
+advisories for the installed packages at that time. The supplied pytest dependency
+was updated to address GHSA-6w46-j5rx-g56g; no exploit test was performed.
