@@ -1,5 +1,6 @@
 """Browser lifecycle and network-boundary tests."""
 
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
@@ -162,3 +163,47 @@ async def test_requests_are_intercepted(runtime, config):
 async def test_get_page(runtime):
     assert await runtime.manager.get_page() is runtime.page
     assert await runtime.manager.get_page() is runtime.page
+
+
+async def test_requests_are_allowed(runtime, config):
+    """Allow browser requests to public network destinations."""
+    config.allow_private_network = False
+    config.allowed_domains = []
+
+    route = SimpleNamespace(
+        request=SimpleNamespace(url="https://8.8.8.8"),
+        abort=AsyncMock(),
+        continue_=AsyncMock(),
+    )
+
+    await runtime.manager._route(route)
+
+    route.continue_.assert_awaited_once()
+    route.abort.assert_not_awaited()
+
+
+async def test_websocket_connections_are_blocked(runtime):
+    """Block WebSocket connections to prevent bypassing HTTP policy."""
+    route = SimpleNamespace(
+        close=AsyncMock(),
+    )
+
+    await runtime.manager._websocket(route)
+
+    route.close.assert_awaited_once()
+
+
+async def test_start_cancellation_cleans_up(runtime):
+    """Clean up browser resources when startup is cancelled."""
+    runtime.browser.new_context.side_effect = asyncio.CancelledError()
+
+    with pytest.raises(asyncio.CancelledError):
+        await runtime.manager.start()
+
+    runtime.browser.close.assert_awaited_once()
+    runtime.playwright.stop.assert_awaited_once()
+
+    assert runtime.manager._page is None
+    assert runtime.manager._context is None
+    assert runtime.manager._browser is None
+    assert runtime.manager._playwright is None
