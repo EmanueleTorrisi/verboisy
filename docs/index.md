@@ -1,18 +1,24 @@
-# Verboisy Documentation
+# Verboisy
 
-Welcome to the official documentation for **Verboisy**.
+Verboisy combines model-directed browser navigation, schema validation and durable
+SQLite records. The CLI and Python API share one implementation.
 
-Verboisy is an autonomous web research and structured scrape-to-JSON agent. It combines the power of Playwright for robust web interaction with LLM-driven planning and extraction via LiteLLM.
-
-## Features
-- Autonomous DOM Navigation
-- LLM-Driven Extraction and Typing (Pydantic v2)
-- Built-in Browser Stealth
-- Export to SQLite, JSON, CSV
-
-## Quickstart
+Install the checked-out source (a published package is not assumed):
 
 ```bash
-pip install verboisy
-verboisy run --goal "Find YCombinator startups in AI from W24" --schema schema.json
+python -m pip install -e .
+python -m playwright install chromium
+verboisy run --help
 ```
+
+Configure a LiteLLM model and its credentials before a live run. System dependencies
+may be required for Chromium. Linux installations can use
+`python -m playwright install --with-deps chromium` with appropriate system privileges.
+
+The release audit, exact reproduction steps, requirement matrix, and verification
+limits are in the delivered engineering report. Browser and live-model acceptance
+must be checked separately from offline test coverage.
+
+- [API](api.md)
+- [Authentic demo and live acceptance](demo.md)
+- [Validation and release](validation.md)
