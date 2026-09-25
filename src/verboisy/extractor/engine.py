@@ -1,72 +1,74 @@
-"""
-Data extraction engine leveraging the LLM and dynamically generated schemas.
-"""
+"""Extract candidates, validate each, and yield rows for immediate commit."""
 
+import json
+from collections.abc import AsyncIterator
 from typing import Any
 
 from verboisy.browser.dom_parser import DOMParser
 from verboisy.extractor.schema_builder import SchemaBuilder
 from verboisy.llm.client import LLMClient
 from verboisy.llm.prompts import EXTRACTION_PROMPT
-from verboisy.utils.exceptions import ExtractionError
-from verboisy.utils.logger import get_logger
-
-logger = get_logger(__name__)
+from verboisy.utils.config import Settings, settings
+from verboisy.utils.exceptions import BudgetExceededError, ExtractionError
 
 
 class ExtractionEngine:
-    """Extracts structured JSON from HTML utilizing a target schema."""
+    def __init__(
+        self,
+        target_schema: dict[str, Any],
+        llm: LLMClient | None = None,
+        config: Settings | None = None,
+    ) -> None:
+        self.config = config or settings
+        self.target_schema = SchemaBuilder.normalize(target_schema)
+        self.model_class = SchemaBuilder.build_model("ExtractionTarget", self.target_schema)
+        self.llm = llm or LLMClient(config=self.config)
 
-    def __init__(self, target_schema: dict[str, Any]) -> None:
-        self.target_schema = target_schema
-        self.model_class = SchemaBuilder.build_model("ExtractionTarget", target_schema)
-        self.llm = LLMClient()
-
-    async def extract_from_html(self, html_content: str) -> list[dict[str, Any]]:
-        """
-        Analyze cleaned HTML and extract all instances matching the schema.
-
-        Args:
-            html_content: The raw HTML to parse.
-
-        Returns:
-            List[Dict[str, Any]]: A list of extracted items as dictionaries.
-        """
-
-        cleaned_html = DOMParser.clean_html(html_content)
-
-        # Instruct the LLM on the target JSON structure
-        schema_json_str = self.model_class.model_json_schema()
-
-        user_prompt = f"""
-        TARGET SCHEMA (JSON Schema format):
-        {schema_json_str}
-
-        HTML CONTENT TO ANALYZE:
-        {cleaned_html[:20000]}  # Truncated to avoid context overflow on massive pages
-
-        Extract ALL instances that match the target schema from the HTML above.
-        Return the result as a JSON object containing a key 'results' which is an
-        array of the extracted objects.
-        """
-
+    async def iter_from_html(
+        self, html_content: str, goal: str = ""
+    ) -> AsyncIterator[dict[str, Any]]:
+        cleaned = DOMParser.clean_html(html_content)
+        prompt = json.dumps(
+            {
+                "goal": goal,
+                "schema": self.target_schema,
+                "html": cleaned[: self.config.max_dom_chars],
+                "html_truncated": len(cleaned) > self.config.max_dom_chars,
+                "response": {
+                    "results": "array of records supported by the page and matching the goal"
+                },
+            },
+            ensure_ascii=False,
+        )
         try:
-            response = await self.llm.complete_json(EXTRACTION_PROMPT, user_prompt)
-            results_array = response.get("results", [])
+            response = await self.llm.complete_json(EXTRACTION_PROMPT, prompt)
+            candidates = response.get("results")
+            if not isinstance(candidates, list):
+                raise ExtractionError("Extraction response must contain a results array")
+            for index, candidate in enumerate(candidates):
+                try:
+                    record = self.model_class.model_validate(candidate)
+                except Exception:
+                    raise ExtractionError(
+                        f"Record {index + 1} failed JSON Schema validation"
+                    ) from None
+                yield record.model_dump(by_alias=True, exclude_unset=True)
+        except (ExtractionError, BudgetExceededError):
+            raise
+        except Exception as exc:
+            raise ExtractionError(
+                f"Failed to extract structured data ({type(exc).__name__})"
+            ) from None
 
-            validated_results = []
-            for item in results_array:
-                # Validate against the dynamic Pydantic model
-                validated_item = self.model_class.model_validate(item)
-                validated_results.append(validated_item.model_dump())
+    async def extract_from_html(self, html_content: str, goal: str = "") -> list[dict[str, Any]]:
+        return [record async for record in self.iter_from_html(html_content, goal)]
 
-            logger.info("Extraction complete", extracted_count=len(validated_results))
-            logger.info(
-                "Extraction complete",
-                extracted_count=len(validated_results),
-            )
-            return validated_results
-
-        except Exception as e:
-            logger.error("Extraction failed", error=str(e))
-            raise ExtractionError(f"Failed to extract structured data: {e}") from e
+    def validate_collection(self, records: list[dict[str, Any]]) -> None:
+        try:
+            if self.target_schema["type"] == "array":
+                SchemaBuilder.validator(self.target_schema).validate(records)
+            else:
+                for record in records:
+                    self.model_class.model_validate(record)
+        except Exception:
+            raise ExtractionError("Saved collection does not satisfy the target schema") from None
