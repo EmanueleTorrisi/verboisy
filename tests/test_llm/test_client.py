@@ -114,3 +114,24 @@ async def test_local_model_does_not_receive_cloud_key(config, monkeypatch):
     monkeypatch.setattr("verboisy.llm.client._complete", mock)
     await LLMClient(config=config).complete_json("system", "user")
     assert "api_key" not in mock.await_args.kwargs
+
+
+async def test_non_integer_token_usage(config, monkeypatch):
+    """Non-integer token usage should not increase the token counter."""
+    value = response('{"answer":"hello"}')
+    value.usage.total_tokens = None
+
+    mock = AsyncMock(return_value=value)
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(config=config)
+
+    result = await client.complete_json("system", "user")
+
+    assert result == {"answer": "hello"}
+    assert client.total_tokens == 0
+    mock.assert_awaited_once()
