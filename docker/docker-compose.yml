@@ -1,13 +1,17 @@
-version: '3.8'
-
 services:
   verboisy:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    volumes:
-      - ../:/app
+    env_file:
+      - ../.env
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - VERBOISY_LOG_LEVEL=DEBUG
-    command: tail -f /dev/null # Keep alive for manual CLI execution
+      SQLITE_DB_PATH: /data/verboisy.db
+      VERBOISY_HEADLESS: "true"
+    volumes:
+      - verboisy-data:/data
+    init: true
+    command: ["sleep", "infinity"]
+
+volumes:
+  verboisy-data:
