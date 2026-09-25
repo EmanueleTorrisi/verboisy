@@ -11,11 +11,11 @@ from verboisy.api import RunResult
 runner = CliRunner()
 
 
-def result(tmp_path, completed=True):
+def result(tmp_path, completed=True, export_path=None):
     return RunResult(
         "saved-id",
         [],
-        None,
+        export_path,
         tmp_path / "db",
         completed,
         "COMPLETED" if completed else "PAUSED",
@@ -103,3 +103,20 @@ def test_failure_nonzero(monkeypatch):
 
 def test_invalid_max_steps():
     assert runner.invoke(main.app, ["run", "--max-steps", "0"]).exit_code == 2
+
+
+def test_completed_run_displays_export_path(monkeypatch, tmp_path):
+    """Display the export destination after a successful run."""
+    export_path = tmp_path / "results.csv"
+
+    mock = Mock(return_value=result(tmp_path, export_path=export_path))
+    monkeypatch.setattr(main, "run", mock)
+
+    invocation = runner.invoke(main.app, ["run", "--resume"])
+
+    assert invocation.exit_code == 0, invocation.output
+    assert "Exported to" in invocation.output
+    assert str(export_path) in invocation.output
+    assert "Completed" in invocation.output
+
+    mock.assert_called_once()
