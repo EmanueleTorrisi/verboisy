@@ -55,16 +55,21 @@
 
 ## Demo
 
-<p align="center">
-  <img src="./docs/demo.gif" alt="Verboisy CLI demo">
-</p>
+The [historical animation](docs/demo.gif) is illustrative and does not verify the product.
+The supplied recording predates the implementation of resume. Use the
+[authentic live-demo workflow](docs/demo.md) to record actual browser, model, SQLite,
+interruption and export behavior. A replacement live recording remains an acceptance gate.
+
+This revision includes executable offline regressions and a required Chromium integration
+check. Read [validation and release checks](docs/validation.md) before deployment;
+it is not a claim of production readiness.
 
 ## Why Verboisy
 
-- **Goal-driven, not selector-driven.** Describe the objective in plain English. The planner decides the next click, scroll, or read from the page actually in front of it. Nothing hardcoded to rewrite when a site redesigns.
-- **Schema-first, not best-effort.** Every record is checked against a Pydantic model built from your JSON Schema before it's saved. Malformed data never reaches your database.
+- **Goal-driven, not selector-driven.** Describe the objective in plain English. The planner decides the next click, scroll, or read from the page actually in front of it. The model attempts to adapt to the observed DOM; redesigns can still break a run.
+- **Schema-first, not best-effort.** Every record is checked against your JSON Schema, then wrapped in a Pydantic model before it is saved. Validation checks structure and constraints; it does not prove factual accuracy.
 - **Bring your own model, keep your own infrastructure.** OpenAI, Anthropic, or a local Ollama model via [LiteLLM](https://github.com/BerriAI/litellm): one environment variable to switch. Runs on your machine or your servers, not a hosted black box.
-- **Resumable by construction.** Every record lands in SQLite the moment it validates. `verboisy run --resume` (or `run(resume=True)` in Python) picks up the latest incomplete run. A crash costs you the current step, not the work already saved.
+- **Resumable by construction.** Each validated record is committed to SQLite before processing the next candidate. `verboisy run --resume` (or `run(resume=True)` in Python) picks up the latest incomplete run. Earlier commits survive an interrupted step. Resume restores saved progress and the last checkpointed URL; browser session state is not restored.
 
 What ships around that loop: async Playwright (Chromium, headed or headless), DOM cleaning tuned for LLM context windows instead of raw HTML dumps, and JSON or CSV export - or query the SQLite database directly.
 
@@ -76,7 +81,7 @@ Verboisy is the overlap of an autonomous browser agent and a schema-validated ex
 | --- | --- | --- | --- | --- |
 | You describe | a goal **and** a JSON Schema | a goal | a URL + prompt or schema | crawl rules + a prompt |
 | Navigation | planner chooses clicks | planner chooses clicks | crawl / sitemap | crawl |
-| Validation | Pydantic from your schema, before write | your code | optional extract schema | your code |
+| Validation | JSON Schema + Pydantic, before write | your code | optional extract schema | your code |
 | Persistence | SQLite per record, `--resume` | in-memory / your code | API or your DB | your code |
 | Where it runs | your machine | your machine | hosted or self-host | your machine |
 
@@ -129,7 +134,7 @@ for row in result.records:
     print(row["name"], row["website"])
 ```
 
-Either form produces this:
+A possible illustrative output shape is:
 
 ```json
 [
@@ -187,7 +192,7 @@ flowchart LR
     A -->|done| E
 ```
 
-Every extracted record is committed to SQLite the moment it validates, under a `run_id`. Interrupt the loop at any point - a rate limit, a crash, a killed process - then `verboisy run --resume` (or `run(resume=True)`) reloads that run's goal, schema, and saved rows and continues. `--resume <id>` targets a specific run; `--resume` with no id takes the latest incomplete one.
+Every extracted record is committed to SQLite the moment it validates, under a `run_id`. Interrupt the loop at any point - a rate limit, a crash, a killed process - then `verboisy run --resume` (or `run(resume=True)`) reloads that run's goal, schema, saved rows, history and last checkpointed URL, then continues. `--resume <id>` targets a specific run; `--resume` with no id takes the latest incomplete one.
 
 `--export` is written when the run finishes (or when a resumed run finishes). Partial results live in `SQLITE_DB_PATH` in the meantime.
 
@@ -238,11 +243,11 @@ VERBOISY_HEADLESS=true
 | `TEMPERATURE` | `0.0` | Sampling temperature for the planner. |
 | `VERBOISY_HEADLESS` | `true` | Run Chromium headless. Set `false` to watch the browser. |
 | `BROWSER_TIMEOUT_MS` | `30000` | Navigation timeout per page, in ms. |
-| `USER_AGENT_ROTATION` | `true` | Rotate user agents between requests. |
+| `USER_AGENT_ROTATION` | `true` | Choose a user agent when creating a browser context; no per-request rotation. |
 | `SQLITE_DB_PATH` | `verboisy.db` | Where runs and extracted records are persisted. |
 | `VERBOISY_LOG_LEVEL` | `INFO` | Standard Python logging level. `DEBUG` prints every planner step. |
 
-You pay the LLM provider directly. Planner and extraction calls are capped at `MAX_TOKENS` (default 4096) with `TEMPERATURE` 0.0. A directory-sized goal is typically tens of calls, not hundreds. There is no hosted meter.
+You pay the LLM provider directly. Planner and extraction calls are capped at `MAX_TOKENS` (default 4096) with `TEMPERATURE` 0.0. The number of calls depends on navigation, extraction and retries. There is no hosted meter.
 
 ## Usage
 
@@ -255,7 +260,7 @@ verboisy run \
   --export result.json
 ```
 
-The command prints a `run_id` (also stored in SQLite). Use it to resume later.
+The command logs a `run_id` (also stored in SQLite). Budget exhaustion returns an incomplete result and exits 2; errors exit 1 and Ctrl-C exits 130. Only FINISH plus successful collection validation completes a run. Use it to resume later.
 
 | Flag | Alias | Required | Description |
 | --- | --- | --- | --- |
@@ -265,6 +270,11 @@ The command prints a `run_id` (also stored in SQLite). Use it to resume later.
 | `--resume` | `-r` | No | Resume a run. Bare `--resume` continues the latest incomplete run in `SQLITE_DB_PATH`. `--resume <id>` continues that run. Goal and schema are loaded from the saved run; `--export` / headedness can still be overridden. |
 
 Run `verboisy run --help` for the full flag reference.
+
+Additional flags are `--max-steps/-m` and `--headless/--headed`. The step allowance renews
+on resume; saved counters remain cumulative. A unique run-id prefix is accepted.
+A completed id can be re-exported without a browser/model call. Export errors are
+nonzero and can be retried this way. Empty results create an output file too.
 
 ### Resume
 
@@ -276,11 +286,11 @@ verboisy run --resume
 verboisy run --resume 7f3a2c1b --export result.json
 ```
 
-Already-validated rows are not extracted again. If there is no incomplete run, the command exits non-zero with an error naming the database it looked in.
+A page may be read or extracted again after interruption. Canonically identical rows are not inserted again within the run. Cookies, open tabs, scroll position and transient JavaScript state are not restored. If there is no incomplete run, the command exits non-zero with an error naming the database it looked in.
 
 ### Python
 
-`run()` is the public API. The CLI is a thin wrapper around it.
+`run()` is the synchronous public API; use `await arun(...)` inside notebooks or async applications. The CLI is a thin wrapper around it.
 
 ```python
 from pathlib import Path
@@ -339,6 +349,8 @@ def run(
     export: str | Path | None = None,
     resume: bool | str = False,
     headless: bool | None = None,
+    max_steps: int | None = None,
+    config: Settings | None = None,
 ) -> RunResult: ...
 ```
 
@@ -350,7 +362,9 @@ def run(
 | `records` | `list[dict]` | Every validated row for this run so far. |
 | `export_path` | `Path \| None` | Where the export was written, if `--export` / `export=` was set and the run finished. |
 | `db_path` | `Path` | The SQLite file used. |
-| `completed` | `bool` | `True` when the planner stopped because it was done, not because it crashed. |
+| `completed` | `bool` | `True` after FINISH and successful collection validation. |
+| `status` | `str` | COMPLETED or PAUSED on a normal return. |
+| `stop_reason` | `str \| None` | Why the invocation stopped. |
 
 Rules:
 
@@ -368,21 +382,70 @@ VERBOISY_HEADLESS=false VERBOISY_LOG_LEVEL=DEBUG \
     --export result.json
 ```
 
+Schema details: roots may be an array of objects or a single record object schema.
+Legacy property maps still work. Draft 2020-12 validation covers nested types,
+required/optional/null differences, enum, patterns, numeric bounds, additionalProperties
+and standard formats. Only local fragment schema references are allowed. Collection
+constraints such as minItems are checked over all saved rows before completion.
+JSON exports retain values; CSV prefixes formula-like text with an apostrophe and
+encodes nested values as JSON.
+
 ## Docker
 
 ```bash
+# Create and configure .env first.
 docker compose -f docker/docker-compose.yml up -d --build
 docker compose -f docker/docker-compose.yml exec verboisy verboisy run \
   --goal "Find AI startups from the Y Combinator Fall 2026 (F26) batch" \
   --schema examples/yc_startups/schema.json \
-  --export result.json
+  --export /data/result.json
+docker compose -f docker/docker-compose.yml cp verboisy:/data/result.json ./result.json
 ```
 
-The container starts and stays running, with Playwright's browser dependencies already installed, so commands run via `exec` rather than as the container's entrypoint. Mount or persist `SQLITE_DB_PATH` if you want `--resume` to work across container restarts. `OPENAI_API_KEY` is passed through from your shell automatically: export it first. To pass through other variables (`ANTHROPIC_API_KEY`, `LITELLM_MODEL`, etc.), either export those too or swap the `environment:` list in `docker/docker-compose.yml` for `env_file: [../.env]`.
+The container runs as an unprivileged user and reads `../.env` through Compose.
+A named volume persists `/data/verboisy.db` and exports across restarts. Examples
+are included in the image. Chromium sandbox support must be tested on the target
+container host; the default remains enabled. Docker build and deployment were not
+executed in the audit environment.
+
+## Additional configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| LITELLM_API_KEY | unset | Explicit credential for another provider/proxy |
+| LITELLM_API_BASE | unset | Explicit LiteLLM endpoint, including local models |
+| MAX_STEPS | 20 | Action allowance per invocation; CLI/API can override |
+| MAX_TOTAL_TOKENS | 1000000 | Local request budget: prompt bytes plus reserved response tokens per attempt; not an exact billing cap |
+| LLM_TIMEOUT_SECONDS | 60 | Deadline for one model request |
+| LLM_RETRIES | 2 | Retries for transient failures; malformed JSON is not retried |
+| RUN_TIMEOUT_SECONDS | 900 | Deadline for one invocation |
+| MAX_DOM_CHARS | 20000 | Cleaned page context character limit |
+| ACTION_DELAY_SECONDS | 0.5 | Pause between actions |
+| BROWSER_SANDBOX | true | Enable Chromium sandboxing |
+| ALLOW_PRIVATE_NETWORK | false | Explicitly permit internal/loopback destinations |
+| ALLOWED_DOMAINS | [] | JSON array of permitted exact destination hostnames; empty means public hosts |
+
+Settings load afresh for each public invocation. OpenAI and Anthropic keys in `.env`
+are explicitly routed to the selected provider. Local models can use `LITELLM_API_BASE`.
+Do not change provider or budgets mid-invocation through global variables.
 
 ## Known Limitations
 
-Beta software, and upfront about it:
+This revision repairs the documented core paths but still requires live-model and
+real-browser acceptance on the intended deployment platform. Offline tests alone do
+not certify autonomous research accuracy.
+
+- Resume restores the last saved URL, not a complete browser session. SPA pagination,
+  authenticated sessions and in-flight actions may need fresh navigation.
+- Private-network blocking and domain checks are defense in depth. DNS rebinding,
+  browser code and prompt injection require deployment isolation and egress controls.
+- Schema authors are trusted; adversarial regex/recursive schemas are not resource-isolated.
+- DOM context is bounded. Long pages may need scrolling/pagination and can omit data.
+- Model FINISH means the model elected to stop; independently check factual completeness.
+- One cooperating invocation per local database is supported. Existing legacy duplicates
+  are preserved during migration; old incorrect COMPLETED statuses cannot be inferred away.
+
+Other limits:
 
 - **No accounts or hosted job history:** single-user. Run ids live in the local SQLite file, not a dashboard.
 - **No scheduling:** trigger runs manually or wire them into your own cron or orchestrator. `--resume` is for crashes and rate limits, not a scheduler.
