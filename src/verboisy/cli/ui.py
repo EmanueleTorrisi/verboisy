@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
+from rich.text import Text
 
 console = Console()
 
@@ -19,8 +20,8 @@ class CLIUserInterface:
     def print_header(title: str, subtitle: str) -> None:
         """Display a formatted panel header."""
         panel = Panel(
-            f"[bold cyan]{subtitle}[/bold cyan]",
-            title=f"[bold green]⛏️ {title}[/bold green]",
+            Text(subtitle, style="bold cyan"),
+            title=Text(title, style="bold green"),
             expand=False,
         )
         console.print(panel)
@@ -29,12 +30,12 @@ class CLIUserInterface:
     @staticmethod
     def print_error(message: str) -> None:
         """Display a formatted error message."""
-        console.print(f"[bold red]❌ Error:[/bold red] {message}")
+        console.print(Text("Error: " + message, style="bold red"))
 
     @staticmethod
     def print_success(message: str) -> None:
         """Display a formatted success message."""
-        console.print(f"[bold green]✅ Success:[/bold green] {message}")
+        console.print(Text("Success: " + message, style="bold green"))
 
     @staticmethod
     def display_results_table(data: list[dict[str, Any]]) -> None:
@@ -51,12 +52,12 @@ class CLIUserInterface:
         # Get up to 5 headers
         headers = list(data[0].keys())[:5]
         for header in headers:
-            table.add_column(header)
+            table.add_column(Text(header))
 
         # Add up to 5 rows
         for row in data[:5]:
             row_values = [str(row.get(h, ""))[:50] for h in headers]
-            table.add_row(*row_values)
+            table.add_row(*(Text(value) for value in row_values))
 
         console.print(table)
 
