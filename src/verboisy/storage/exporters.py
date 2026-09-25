@@ -45,8 +45,7 @@ def _csv_value(value: Any) -> Any:
         value = json.dumps(value, ensure_ascii=False, allow_nan=False)
 
     if isinstance(value, str) and (
-        value.lstrip().startswith(("=", "+", "-", "@"))
-        or value.startswith(("\t", "\r", "\n"))
+        value.lstrip().startswith(("=", "+", "-", "@")) or value.startswith(("\t", "\r", "\n"))
     ):
         return "'" + value
 
@@ -70,9 +69,6 @@ class DataExporter:
             if headers:
                 writer = csv.writer(stream)
                 writer.writerow([_csv_value(key) for key in headers])
-                writer.writerows(
-                    [_csv_value(row.get(key, "")) for key in headers]
-                    for row in data
-                )
+                writer.writerows([_csv_value(row.get(key, "")) for key in headers] for row in data)
 
         _atomic_write(filepath, write)
