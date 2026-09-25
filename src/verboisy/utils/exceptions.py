@@ -34,3 +34,11 @@ class LLMError(VerboisyError):
     """Raised when an API call to the underlying LLM provider fails."""
 
     pass
+
+
+class BudgetExceededError(VerboisyError):
+    """The invocation's model budget has been exhausted."""
+
+
+class ResumeError(VerboisyError):
+    """No unique saved run could be restored."""
