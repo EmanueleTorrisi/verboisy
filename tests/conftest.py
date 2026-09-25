@@ -1,14 +1,14 @@
-"""
-Pytest configuration and global fixtures.
-"""
+"""Offline fixtures. Only explicitly marked live tests call a real model."""
 
 import json
 from collections.abc import AsyncGenerator
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 from verboisy.storage.sqlite import DatabaseManager
-from verboisy.utils.config import settings
+from verboisy.utils.config import Settings
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -22,15 +22,76 @@ def load_json_fixture(name: str) -> list | dict:
 
 
 @pytest.fixture
-async def test_db(tmp_path: pytest.TempPathFactory) -> AsyncGenerator[DatabaseManager, None]:
-    """Provides an isolated database for tests."""
-    # Use a temporary file for the sqlite DB
-    db_file = tmp_path / "test_verboisy.db"  # type: ignore
-    settings.sqlite_db_path = str(db_file)
+def config(tmp_path):
+    return Settings(
+        _env_file=None,
+        sqlite_db_path=str(tmp_path / "runs.db"),
+        action_delay_seconds=0,
+        allow_private_network=True,
+        browser_sandbox=False,
+        llm_retries=0,
+        litellm_model="openai/test",
+        user_agent_rotation=False,
+    )
 
-    db_manager = DatabaseManager(db_path=str(db_file))
-    await db_manager.connect()
 
-    yield db_manager
+@pytest.fixture
+async def test_db(config) -> AsyncGenerator[DatabaseManager, None]:
+    manager = DatabaseManager(config.sqlite_db_path)
+    await manager.connect()
+    try:
+        yield manager
+    finally:
+        await manager.close()
 
-    await db_manager.close()
+
+@pytest.fixture
+def fake_browser(monkeypatch):
+    page = SimpleNamespace(
+        url="about:blank",
+        content=AsyncMock(return_value=load_html_fixture("startup_directory.html")),
+        click=AsyncMock(),
+        fill=AsyncMock(),
+        press=AsyncMock(),
+        wait_for_load_state=AsyncMock(),
+        mouse=SimpleNamespace(wheel=AsyncMock()),
+    )
+
+    async def navigate(url):
+        page.url = url
+
+    browser = SimpleNamespace(
+        start=AsyncMock(return_value=page),
+        get_page=AsyncMock(return_value=page),
+        navigate_to=AsyncMock(side_effect=navigate),
+        close=AsyncMock(),
+        page=page,
+    )
+    monkeypatch.setattr("verboisy.core.agent.BrowserManager", lambda **_kwargs: browser)
+    return browser
+
+
+@pytest.fixture
+def model_script(monkeypatch):
+    def configure(*responses):
+        def convert(payload):
+            if isinstance(payload, BaseException):
+                return payload
+            return SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        message=SimpleNamespace(content=json.dumps(payload)), finish_reason="stop"
+                    )
+                ],
+                usage=SimpleNamespace(total_tokens=12),
+            )
+
+        mock = AsyncMock(side_effect=[convert(r) for r in responses])
+        monkeypatch.setattr("verboisy.llm.client._complete", mock)
+        return mock
+
+    return configure
+
+
+def action(name, **parameters):
+    return {"thought": "test fixture decision", "action": name, "parameters": parameters}
