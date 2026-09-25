@@ -150,3 +150,36 @@ asyncio.run(main())
 
     with FileLock(config.sqlite_db_path + ".lock", timeout=0):
         pass
+
+
+async def test_checkpoint_failure_rolls_back_insert(test_db):
+    """A failed checkpoint must not leave a partially inserted run."""
+    conn = await test_db._connection()
+
+    await conn.execute("DROP TABLE history")
+    await conn.commit()
+
+    state = AgentState(
+        goal="Find names",
+        target_schema={},
+    )
+
+    action = ActionHistory(
+        action="CLICK",
+        parameters={"selector": "#next"},
+        url="https://example.com",
+    )
+
+    with pytest.raises(
+        sqlite3.OperationalError,
+        match="no such table",
+    ):
+        await test_db.checkpoint(state, action)
+
+    async with conn.execute(
+        "SELECT COUNT(*) FROM runs WHERE run_id = ?",
+        (state.run_id,),
+    ) as cursor:
+        row = await cursor.fetchone()
+
+    assert row[0] == 0
