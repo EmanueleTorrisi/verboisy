@@ -95,7 +95,7 @@ def run_agent(
     CLIUserInterface.display_results_table(result.records)
     if result.completed:
         if result.export_path is not None:
-            CLIUserInterface.print_success(f"Exported to {result.export_path}")
+            typer.echo(f"Exported to {result.export_path}")
         CLIUserInterface.print_success("Completed")
     else:
         CLIUserInterface.print_error(
