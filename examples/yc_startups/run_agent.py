@@ -1,43 +1,23 @@
-"""
-Example script directly importing and running the Verboisy Agent
-to find YC startups.
-"""
+"""Run the public API against a live directory; results depend on the site and model."""
 
-import asyncio
-import json
 from pathlib import Path
-from pprint import pprint
 
-from verboisy.core.agent import Agent
-from verboisy.utils.config import settings
-
-# Force console logging for the example
-settings.log_level = "DEBUG"
+from verboisy import run
 
 
-async def main() -> None:
-    schema_path = Path(__file__).parent / "schema.json"
-    with schema_path.open(encoding="utf-8") as f:
-        target_schema = json.load(f)
-
-    goal = (
-        "Go to ycombinator.com/companies and extract the top 5 most recently launched AI startups."
+def main() -> None:
+    result = run(
+        goal=(
+            "Open https://www.ycombinator.com/companies "
+            "and find the five most recently launched AI startups."
+        ),
+        schema=Path(__file__).with_name("schema.json"),
+        export=Path(__file__).with_name("startups.json"),
     )
-
-    agent = Agent(goal=goal, target_schema=target_schema, max_steps=15)
-
-    print(f"Starting Verboisy run for goal: {goal}")
-    final_state = await agent.run()
-
-    print("\n--- Run Complete ---")
-    print(f"Status: {final_state.status}")
-    print(f"Steps taken: {final_state.step_count}")
-    print(f"Extracted Records: {len(final_state.extracted_data)}")
-
-    if final_state.extracted_data:
-        print("\nExtracted Data:")
-        pprint(final_state.extracted_data)
+    print(result.run_id, result.status, len(result.records))
+    if not result.completed:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
