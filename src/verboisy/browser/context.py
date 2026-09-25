@@ -62,9 +62,7 @@ class BrowserManager:
                     if "Executable doesn't exist at" not in str(exc):
                         raise
 
-                    logger.info(
-                        "Chromium not found. Installing automatically..."
-                    )
+                    logger.info("Chromium not found. Installing automatically...")
 
                     command = [
                         sys.executable,
@@ -79,20 +77,14 @@ class BrowserManager:
 
                     command.append("chromium")
 
-                    process = await asyncio.create_subprocess_exec(
-                        *command
-                    )
+                    process = await asyncio.create_subprocess_exec(*command)
 
                     return_code = await process.wait()
 
                     if return_code != 0:
-                        raise RuntimeError(
-                            "Automatic Chromium installation failed."
-                        ) from exc
+                        raise RuntimeError("Automatic Chromium installation failed.") from exc
 
-                    logger.info(
-                        "Chromium installed successfully."
-                    )
+                    logger.info("Chromium installed successfully.")
 
                     # Retry browser launch after installation.
                     self._browser = await self._playwright.chromium.launch(
