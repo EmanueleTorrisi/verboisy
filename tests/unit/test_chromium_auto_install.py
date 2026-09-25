@@ -35,9 +35,7 @@ def browser_case(monkeypatch):
     browser.close = AsyncMock()
 
     playwright = MagicMock()
-    playwright.chromium.launch = AsyncMock(
-        return_value=browser
-    )
+    playwright.chromium.launch = AsyncMock(return_value=browser)
     playwright.stop = AsyncMock()
 
     starter = MagicMock()
@@ -106,9 +104,7 @@ async def test_chromium_installs_when_missing(
     )
 
     case.playwright.chromium.launch.side_effect = [
-        PlaywrightError(
-            "Executable doesn't exist at /missing/chromium"
-        ),
+        PlaywrightError("Executable doesn't exist at /missing/chromium"),
         case.browser,
     ]
 
@@ -116,9 +112,7 @@ async def test_chromium_installs_when_missing(
 
     assert page is case.page
 
-    assert (
-        case.playwright.chromium.launch.await_count == 2
-    )
+    assert case.playwright.chromium.launch.await_count == 2
 
     case.installer.assert_awaited_once_with(
         sys.executable,
@@ -138,10 +132,8 @@ async def test_chromium_installation_failure(
 
     case = browser_case
 
-    case.playwright.chromium.launch.side_effect = (
-        PlaywrightError(
-            "Executable doesn't exist at /missing/chromium"
-        )
+    case.playwright.chromium.launch.side_effect = PlaywrightError(
+        "Executable doesn't exist at /missing/chromium"
     )
 
     case.process.wait.return_value = 1
@@ -166,9 +158,7 @@ async def test_unrelated_browser_error_does_not_install(
 
     case = browser_case
 
-    case.playwright.chromium.launch.side_effect = (
-        PlaywrightError("Browser crashed unexpectedly")
-    )
+    case.playwright.chromium.launch.side_effect = PlaywrightError("Browser crashed unexpectedly")
 
     with pytest.raises(
         NavigationError,
@@ -188,12 +178,8 @@ async def test_chromium_retry_failure(
     case = browser_case
 
     case.playwright.chromium.launch.side_effect = [
-        PlaywrightError(
-            "Executable doesn't exist at /missing/chromium"
-        ),
-        PlaywrightError(
-            "Chromium failed to launch after installation"
-        ),
+        PlaywrightError("Executable doesn't exist at /missing/chromium"),
+        PlaywrightError("Chromium failed to launch after installation"),
     ]
 
     with pytest.raises(
@@ -204,9 +190,7 @@ async def test_chromium_retry_failure(
 
     case.installer.assert_awaited_once()
 
-    assert (
-        case.playwright.chromium.launch.await_count == 2
-    )
+    assert case.playwright.chromium.launch.await_count == 2
 
 
 @pytest.mark.asyncio
