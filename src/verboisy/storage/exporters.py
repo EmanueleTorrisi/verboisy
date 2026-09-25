@@ -1,6 +1,7 @@
 """Atomic JSON and CSV exports. CSV cells are safe to open as text."""
 
 import csv
+import errno
 import json
 import os
 import tempfile
@@ -12,13 +13,29 @@ from typing import Any, TextIO
 def _atomic_write(filepath: str | Path, write: Callable[[TextIO], None]) -> None:
     path = Path(filepath)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+
+    # Ensure consistent behavior across Windows, Linux, and macOS.
+    if path.is_dir():
+        raise IsADirectoryError(
+            errno.EISDIR,
+            os.strerror(errno.EISDIR),
+            str(path),
+        )
+
+    fd, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        dir=path.parent,
+    )
+
     try:
         with os.fdopen(fd, "w", encoding="utf-8", newline="") as stream:
             write(stream)
             stream.flush()
             os.fsync(stream.fileno())
+
         Path(temporary).replace(path)
+
     finally:
         Path(temporary).unlink(missing_ok=True)
 
@@ -26,10 +43,13 @@ def _atomic_write(filepath: str | Path, write: Callable[[TextIO], None]) -> None
 def _csv_value(value: Any) -> Any:
     if isinstance(value, dict | list):
         value = json.dumps(value, ensure_ascii=False, allow_nan=False)
+
     if isinstance(value, str) and (
-        value.lstrip().startswith(("=", "+", "-", "@")) or value.startswith(("\t", "\r", "\n"))
+        value.lstrip().startswith(("=", "+", "-", "@"))
+        or value.startswith(("\t", "\r", "\n"))
     ):
         return "'" + value
+
     return value
 
 
@@ -50,6 +70,9 @@ class DataExporter:
             if headers:
                 writer = csv.writer(stream)
                 writer.writerow([_csv_value(key) for key in headers])
-                writer.writerows([_csv_value(row.get(key, "")) for key in headers] for row in data)
+                writer.writerows(
+                    [_csv_value(row.get(key, "")) for key in headers]
+                    for row in data
+                )
 
         _atomic_write(filepath, write)
