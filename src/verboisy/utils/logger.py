@@ -8,16 +8,16 @@ from typing import cast
 
 import structlog
 
-from verboisy.utils.config import settings
+from verboisy.utils.config import Settings, settings
 
 
-def setup_logging() -> None:
+def setup_logging(config: Settings | None = None) -> None:
     """Initialize structured logging based on the application configuration."""
-    log_level = getattr(logging, settings.log_level.upper(), logging.INFO)
+    log_level = getattr(logging, (config or settings).log_level.upper(), logging.INFO)
 
     logging.basicConfig(
         format="%(message)s",
-        stream=sys.stdout,
+        stream=sys.stderr,
         level=log_level,
     )
 
@@ -29,7 +29,7 @@ def setup_logging() -> None:
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.dev.ConsoleRenderer(colors=True)
-            if sys.stdout.isatty()
+            if sys.stderr.isatty()
             else structlog.processors.JSONRenderer(),
         ],
         context_class=dict,
@@ -50,7 +50,3 @@ def get_logger(name: str) -> structlog.BoundLogger:
         structlog.BoundLogger: The configured logger instance.
     """
     return cast(structlog.BoundLogger, structlog.get_logger(name))
-
-
-# Auto-initialize logging on module import
-setup_logging()
