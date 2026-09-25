@@ -75,3 +75,29 @@ async def test_database_export_collision(config):
     config.sqlite_db_path = config.sqlite_db_path + ".json"
     with pytest.raises(VerboisyError, match="differ"):
         await arun(goal="x", schema={}, export=config.sqlite_db_path, config=config)
+
+
+async def test_explicit_headless_and_csv_export(config, fake_browser, model_script, tmp_path):
+    """Honor the headless override and export completed records as CSV."""
+    model_script(
+        action("EXTRACT"),
+        {"results": [{"name": "Alice"}]},
+        action("FINISH"),
+    )
+
+    output = tmp_path / "results.csv"
+
+    result = await arun(
+        goal="Find names",
+        schema=SCHEMA,
+        export=output,
+        headless=False,
+        config=config,
+    )
+
+    assert result.completed
+    assert result.export_path == output.resolve()
+    assert result.records == [{"name": "Alice"}]
+
+    assert output.exists()
+    assert "Alice" in output.read_text(encoding="utf-8")
