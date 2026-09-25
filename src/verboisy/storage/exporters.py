@@ -1,76 +1,55 @@
-"""
-Utilities for exporting extracted data to various formats (JSON, CSV).
-"""
+"""Atomic JSON and CSV exports. CSV cells are safe to open as text."""
 
 import csv
 import json
+import os
+import tempfile
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO
 
-from verboisy.utils.logger import get_logger
 
-logger = get_logger(__name__)
+def _atomic_write(filepath: str | Path, write: Callable[[TextIO], None]) -> None:
+    path = Path(filepath)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as stream:
+            write(stream)
+            stream.flush()
+            os.fsync(stream.fileno())
+        Path(temporary).replace(path)
+    finally:
+        Path(temporary).unlink(missing_ok=True)
+
+
+def _csv_value(value: Any) -> Any:
+    if isinstance(value, dict | list):
+        value = json.dumps(value, ensure_ascii=False, allow_nan=False)
+    if isinstance(value, str) and (
+        value.lstrip().startswith(("=", "+", "-", "@")) or value.startswith(("\t", "\r", "\n"))
+    ):
+        return "'" + value
+    return value
 
 
 class DataExporter:
-    """Handles exporting list of dictionaries to files."""
-
     @staticmethod
     def export_json(data: list[dict[str, Any]], filepath: str | Path) -> None:
-        """
-        Export a list of dictionaries to a JSON file.
+        def write(stream: TextIO) -> None:
+            json.dump(data, stream, indent=2, ensure_ascii=False, allow_nan=False)
+            stream.write("\n")
 
-        Args:
-            data: The list of dicts to export.
-            filepath: Destination file path.
-        """
-        path = Path(filepath)
-        path.parent.mkdir(parents=True, exist_ok=True)
-
-        try:
-            with path.open("w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            logger.info("Exported JSON successfully", filepath=str(path), count=len(data))
-        except Exception as e:
-            logger.error("Failed to export JSON", filepath=str(path), error=str(e))
-            raise
+        _atomic_write(filepath, write)
 
     @staticmethod
     def export_csv(data: list[dict[str, Any]], filepath: str | Path) -> None:
-        """
-        Export a list of dictionaries to a CSV file.
-        Flattens nested dicts minimally. Best for flat schemas.
+        headers = sorted({key for row in data for key in row})
 
-        Args:
-            data: The list of dicts to export.
-            filepath: Destination file path.
-        """
-        if not data:
-            logger.warning("No data provided to export", filepath=str(filepath))
-            return
+        def write(stream: TextIO) -> None:
+            if headers:
+                writer = csv.writer(stream)
+                writer.writerow([_csv_value(key) for key in headers])
+                writer.writerows([_csv_value(row.get(key, "")) for key in headers] for row in data)
 
-        path = Path(filepath)
-        path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Collect all possible headers
-        headers: set[str] = set()
-        for item in data:
-            headers.update(item.keys())
-
-        header_list = sorted(headers)
-
-        try:
-            with path.open("w", newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(f, fieldnames=header_list)
-                writer.writeheader()
-                for row in data:
-                    # Convert nested structures to strings for CSV compatibility
-                    processed_row = {
-                        k: (json.dumps(v) if isinstance(v, dict | list) else v)
-                        for k, v in row.items()
-                    }
-                    writer.writerow(processed_row)
-            logger.info("Exported CSV successfully", filepath=str(path), count=len(data))
-        except Exception as e:
-            logger.error("Failed to export CSV", filepath=str(path), error=str(e))
-            raise
+        _atomic_write(filepath, write)
