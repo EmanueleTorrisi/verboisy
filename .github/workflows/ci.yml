@@ -1,9 +1,13 @@
+
 name: CI
+
 on:
   push:
     branches: [main]
+
   pull_request:
     branches: [main]
+
   workflow_call:
 
 permissions:
@@ -25,44 +29,80 @@ jobs:
           - {os: ubuntu-latest, python: "3.14"}
           - {os: windows-latest, python: "3.11"}
           - {os: macos-latest, python: "3.11"}
+
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v6
+
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
+
       - run: python -m pip install poetry==2.5.1
+
       - run: poetry install
+
       - run: poetry check --lock
+
       - run: poetry run ruff check .
+
       - run: poetry run ruff format --check .
+
       - run: poetry run mypy src
-      - run: poetry run pytest -m "not browser" --cov=src --cov-report=term-missing --cov-report=xml
+
+      - name: Run tests with coverage
+        run: poetry run pytest -m "not browser" --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          disable_search: true
+          fail_ci_if_error: true
+
   browser:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
+
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
+
       - run: python -m pip install poetry==2.5.1
+
       - run: poetry install
+
       - run: poetry run playwright install --with-deps chromium
+
       - run: poetry run pytest -m browser -v
         env:
           VERBOISY_REQUIRE_BROWSER: "1"
+
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
+
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
+
       - run: python -m pip install poetry==2.5.1
+
       - run: poetry install
+
       - run: poetry run pip-audit --local
+
       - run: poetry run mkdocs build --strict
+
       - run: poetry build
+
       - name: Check installed wheel
         shell: bash
         run: |
