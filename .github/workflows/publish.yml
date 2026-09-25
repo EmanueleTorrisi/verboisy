@@ -1,29 +1,32 @@
 name: Publish to PyPI
-
 on:
   release:
     types: [published]
-
+permissions:
+  contents: read
 jobs:
-  build-n-publish:
-    name: Build and publish Python distribution
+  verify:
+    uses: ./.github/workflows/ci.yml
+  publish:
+    needs: verify
     runs-on: ubuntu-latest
-
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
-
-      - name: Install Poetry
-        run: pip install poetry
-
-      - name: Build project
-        run: poetry build
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+      - run: python -m pip install poetry==2.5.1
+      - name: Verify release tag
+        run: |
+          python - <<'PY'
+          import os, tomllib
+          with open("pyproject.toml", "rb") as stream:
+              version = tomllib.load(stream)["tool"]["poetry"]["version"]
+          assert os.environ["GITHUB_REF_NAME"] == f"v{version}", "Tag must match package version"
+          PY
+      - run: poetry build
+      - uses: pypa/gh-action-pypi-publish@release/v1
