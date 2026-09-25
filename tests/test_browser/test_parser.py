@@ -60,3 +60,21 @@ def test_clean_html_strips_nav_scripts_and_styles() -> None:
     assert "analytics.js" not in cleaned
     assert "cookie-banner" not in cleaned
     assert "Aurora Labs" in cleaned
+
+
+def test_golden_listing_tree():
+    import re
+
+    from bs4 import BeautifulSoup
+
+    from tests.conftest import FIXTURES_DIR
+
+    cleaned = BeautifulSoup(clean_html(load_html_fixture("startup_directory.html")), "html.parser")
+    expected = BeautifulSoup(
+        (FIXTURES_DIR / "expected/startup_directory.cleaned.html").read_text(), "html.parser"
+    )
+
+    def normalize(tree):
+        return re.sub(r">\s+<", "><", str(tree)).strip()
+
+    assert normalize(cleaned.main) == normalize(expected.main)
