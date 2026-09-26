@@ -42,3 +42,11 @@ class BudgetExceededError(VerboisyError):
 
 class ResumeError(VerboisyError):
     """No unique saved run could be restored."""
+
+
+class BrowserActionError(VerboisyError):
+    """An interaction failed; observe the page again before deciding what to do."""
+
+
+class SearchUnavailableError(VerboisyError):
+    """Search could not produce a usable response; pause without claiming completion."""
