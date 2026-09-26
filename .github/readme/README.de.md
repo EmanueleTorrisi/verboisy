@@ -14,7 +14,7 @@
   <a href="https://emanueletorrisi.github.io/verboisy/"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/docs.yml/badge.svg" alt="Dokumentation"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/PyPI-coming%20soon-lightgrey?style=flat" alt="PyPI: demnächst"></a>
   <!--<a href="https://pypi.org/project/verboisy/"><img src="https://img.shields.io/pypi/v/verboisy?style=flat" alt="PyPI version"></a>-->
-  <img src="https://img.shields.io/badge/python-3.11%2B-blue?style=flat" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue?style=flat" alt="Python 3.11–3.14">
   <a href="../../LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="Lizenz"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-261230?style=flat" alt="Ruff"></a>
 </p>
@@ -209,7 +209,7 @@ Eine vollständige Modulübersicht steht in [`ARCHITECTURE.md`](../../ARCHITECTU
 
 ## Installation
 
-Benötigt Python 3.11 oder neuer.
+Benötigt Python >=3.11,<3.15.
 
 Noch nicht auf PyPI verfügbar. Installation aus dem Quellcode:
 
