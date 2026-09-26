@@ -215,14 +215,19 @@ Noch nicht auf PyPI verfügbar. Installation aus dem Quellcode:
 
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy && pip install -e .
+cd verboisy
+python -m pip install -e .
+python -m playwright install chromium
 ```
 
 Nach der ersten Veröffentlichung gilt stattdessen:
 
 ```bash
-pip install verboisy
+python -m pip install verboisy
+python -m playwright install chromium
 ```
+
+Chromium wird bei der Einrichtung installiert. Verboisy lädt während eines Laufs keine Browser herunter und startet keinen Systempaketmanager. Verwende für Installation und Ausführung dasselbe Benutzerkonto und dieselbe Python-Umgebung. Unter Linux installierst du Browser und Systemabhängigkeiten mit `python -m playwright install --with-deps chromium` (Systempakete erfordern Administratorrechte). Mit Poetry lautet der Befehl `poetry run playwright install --with-deps chromium`.
 
 <a id="configuration"></a>
 
@@ -488,3 +493,5 @@ BSD-2-Clause: Den vollständigen Text findest du in [`LICENSE`](../../LICENSE).
 <p align="center">
   Erstellt von <a href="https://github.com/EmanueleTorrisi">Emanuele Torrisi</a> · <a href="#readme-top">Zurück nach oben ↑</a>
 </p>
+
+Search API and bounded browser recovery: [configuration and limits (English)](../../docs/search-and-recovery.md).
