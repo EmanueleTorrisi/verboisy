@@ -17,6 +17,9 @@ from verboisy.core.state import ActionRequest
         ("TYPE", {"selector": "#q", "text": "x", "submit": "yes"}),
         ("EXTRACT", {"file": "/tmp/x"}),
         ("FINISH", {"command": "anything"}),
+        ("CHECK", {"selector": "#filter"}),
+        ("CHECK", {"selector": "#filter", "checked": "true"}),
+        ("SELECT", {"selector": "#industry"}),
     ],
 )
 def test_invalid_actions(action, parameters):
@@ -58,3 +61,18 @@ def test_required_parameter_at_maximum_length():
     )
 
     assert len(request.parameters["url"]) == 8000
+
+
+def test_select_empty_option_and_uncheck_are_valid():
+    assert (
+        ActionRequest(
+            thought="Reset", action="SELECT", parameters={"selector": "select", "value": ""}
+        ).parameters["value"]
+        == ""
+    )
+    assert (
+        ActionRequest(
+            thought="Uncheck", action="CHECK", parameters={"selector": "#batch", "checked": False}
+        ).parameters["checked"]
+        is False
+    )
