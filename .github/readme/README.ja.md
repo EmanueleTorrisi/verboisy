@@ -215,14 +215,19 @@ Python 3.11 以降が必要です。
 
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy && pip install -e .
+cd verboisy
+python -m pip install -e .
+python -m playwright install chromium
 ```
 
 初回リリース後は次のコマンドを使用できます。
 
 ```bash
-pip install verboisy
+python -m pip install verboisy
+python -m playwright install chromium
 ```
+
+Chromium はセットアップ時にインストールします。Verboisy は実行中にブラウザーをダウンロードしたり、システムのパッケージマネージャーを起動したりしません。インストールと実行には、同じ OS ユーザーと Python 環境を使用してください。Linux では `python -m playwright install --with-deps chromium` でブラウザーとシステム依存関係をインストールします（システムパッケージには管理者権限が必要です）。Poetry を使用する場合は `poetry run playwright install --with-deps chromium` を実行してください。
 
 <a id="configuration"></a>
 
@@ -488,3 +493,5 @@ BSD 2-Clause。全文は [`LICENSE`](../../LICENSE) を参照してください�
 <p align="center">
   作成者：<a href="https://github.com/EmanueleTorrisi">Emanuele Torrisi</a> · <a href="#readme-top">ページの先頭へ ↑</a>
 </p>
+
+Search API and bounded browser recovery: [configuration and limits (English)](../../docs/search-and-recovery.md).
