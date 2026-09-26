@@ -111,6 +111,10 @@ Verboisy builds a Pydantic model from that at runtime and rejects rows that don'
 
 CLI:
 
+For general discovery, configure `SEARCH_PROVIDER=brave` and `BRAVE_SEARCH_API_KEY`;
+see [search and recovery](docs/search-and-recovery.md). The compatibility default,
+`google`, uses browser search and can be blocked by Google.
+
 ```bash
 verboisy run \
   --goal "Find AI startups from the Y Combinator Fall 2026 (F26) batch" \
@@ -206,14 +210,19 @@ Not on PyPI yet. Install from source:
 
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy && pip install -e .
+cd verboisy
+python -m pip install -e .
+python -m playwright install chromium
 ```
 
 Once the first release ships, this will be:
 
 ```bash
-pip install verboisy
+python -m pip install verboisy
+python -m playwright install chromium
 ```
+
+Chromium is installed during setup; Verboisy does not download browsers or run a system package manager during a run. Use the same OS user and Python environment for installation and execution. On Linux, install the browser and its system dependencies with `python -m playwright install --with-deps chromium` (system packages require administrator privileges). With Poetry, use `poetry run playwright install --with-deps chromium`.
 
 ## Configuration
 
@@ -241,6 +250,11 @@ VERBOISY_HEADLESS=true
 | `TEMPERATURE` | `0.0` | Sampling temperature for the planner. |
 | `VERBOISY_HEADLESS` | `true` | Run Chromium headless. Set `false` to watch the browser. |
 | `BROWSER_TIMEOUT_MS` | `30000` | Navigation timeout per page, in ms. |
+| `BROWSER_ACTION_TIMEOUT_MS` | `10000` | Timeout per click, fill, submit, checkbox or select operation. |
+| `MAX_ACTION_FAILURES` | `3` | Failed interactions allowed per invocation before pausing; each also consumes a step. |
+| `SEARCH_PROVIDER` | `google` | `google` browser search, `brave` Search API, or `disabled` to reject SEARCH. |
+| `BRAVE_SEARCH_API_KEY` | unset | Separate credential for the optional Brave Search API. |
+| `SEARCH_TIMEOUT_SECONDS` | `30` | Total deadline for one Brave search request. |
 | `USER_AGENT_ROTATION` | `true` | Choose a user agent when creating a browser context; no per-request rotation. |
 | `SQLITE_DB_PATH` | `verboisy.db` | Where runs and extracted records are persisted. |
 | `VERBOISY_LOG_LEVEL` | `INFO` | Standard Python logging level. `DEBUG` prints every planner step. |
@@ -258,7 +272,7 @@ verboisy run \
   --export result.json
 ```
 
-The command logs a `run_id` (also stored in SQLite). Budget exhaustion returns an incomplete result and exits 2; errors exit 1 and Ctrl-C exits 130. Only FINISH plus successful collection validation completes a run. Use it to resume later.
+The command logs a `run_id` (also stored in SQLite). Budget exhaustion, unavailable search and the interaction-failure limit pause the run and exit 2; fatal errors exit 1 and Ctrl-C exits 130. Only FINISH plus successful collection validation completes a run. Use it to resume later.
 
 | Flag | Alias | Required | Description |
 | --- | --- | --- | --- |
@@ -440,6 +454,10 @@ not certify autonomous research accuracy.
 - Schema authors are trusted; adversarial regex/recursive schemas are not resource-isolated.
 - DOM context is bounded. Long pages may need scrolling/pagination and can omit data.
 - Model FINISH means the model elected to stop; independently check factual completeness.
+- Google browser search can return automated-traffic warnings. Brave Search needs its
+  own API key and available quota; there is no automatic provider fallback or CAPTCHA bypass.
+- Failed interactions retain the selector and sanitized error type, then replan from
+  fresh HTML within a bounded allowance. This does not guarantee every site works.
 - One cooperating invocation per local database is supported. Existing legacy duplicates
   are preserved during migration; old incorrect COMPLETED statuses cannot be inferred away.
 
