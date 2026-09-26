@@ -2,7 +2,11 @@
 DOM cleaning and parsing utility for optimizing LLM context windows.
 """
 
-from bs4 import BeautifulSoup, Comment
+import json
+import re
+from typing import Any
+
+from bs4 import BeautifulSoup, Comment, Tag
 
 from verboisy.utils.logger import get_logger
 
@@ -26,8 +30,11 @@ class DOMParser:
         """
         soup = BeautifulSoup(html_content, "html.parser")
 
-        # Remove unwanted tags
-        for tag in soup(["script", "style", "svg", "noscript", "iframe", "footer", "header"]):
+        # Resource links and metadata can consume the entire bounded model input.
+        # Keep the title and actual <a href> evidence, but remove non-content tags.
+        for tag in soup(
+            ["script", "style", "svg", "noscript", "iframe", "footer", "header", "link", "meta"]
+        ):
             tag.decompose()
 
         # Remove comments
@@ -49,6 +56,14 @@ class DOMParser:
                 "role",
                 "aria-label",
                 "placeholder",
+                "for",
+                "value",
+                "checked",
+                "selected",
+                "disabled",
+                "aria-checked",
+                "aria-expanded",
+                "aria-disabled",
             ]:
                 if tag.has_attr(attr):
                     allowed_attrs[attr] = tag[attr]
@@ -61,31 +76,73 @@ class DOMParser:
 
     @staticmethod
     def extract_interactive_elements(html_content: str) -> str:
-        """
-        Extract interactive elements (inputs, buttons, links) to help the LLM planner.
-
-        Args:
-            html_content: Raw HTML string.
-
-        Returns:
-            str: Summarized list of interactive selectors.
-        """
+        """Bounded control descriptions, associated labels and selectors from the observed DOM."""
         soup = BeautifulSoup(html_content, "html.parser")
         elements = []
-
-        for el in soup.find_all(["a", "button", "input", "select"]):
-            tag = el.name
-            text = el.get_text(strip=True)[:50]
-            href = el.get("href", "")
-            el_id = el.get("id", "")
-            class_attr = el.get("class")
-            el_class = (
-                " ".join(str(value) for value in class_attr) if isinstance(class_attr, list) else ""
+        controls = soup.select(
+            "a[href], button, input, select, textarea, label, summary, "
+            '[role="button"], [role="checkbox"], [role="radio"], [role="combobox"]'
+        )
+        # Controls precede long company-link lists, so filters survive truncation.
+        controls.sort(key=lambda el: el.name == "a")
+        for el in controls[:100]:
+            if el.get("type") in ("hidden", "password") or el.has_attr("hidden"):
+                continue
+            label = soup.find("label", attrs={"for": str(el.get("id"))}) if el.get("id") else None
+            if label is None:
+                label = el.find_parent("label")
+            text = el.get("aria-label") or (
+                label.get_text(" ", strip=True) if label else el.get_text(" ", strip=True)
             )
+            attributes = {
+                name: el.attrs[name]
+                for name in (
+                    "href",
+                    "type",
+                    "name",
+                    "placeholder",
+                    "role",
+                    "aria-expanded",
+                    "aria-checked",
+                    "aria-disabled",
+                    "checked",
+                    "disabled",
+                    "value",
+                )
+                if name in el.attrs
+            }
+            element: dict[str, Any] = {
+                "tag": el.name,
+                "selector": DOMParser._selector(el, soup),
+                "label": str(text)[:160],
+                "html_attributes": attributes,
+            }
+            if el.name == "select":
+                element["options"] = [
+                    {
+                        "value": option.get("value", option.get_text()),
+                        "label": option.get_text(strip=True),
+                    }
+                    for option in el.find_all("option")[:50]
+                ]
+            elements.append(element)
+        return json.dumps(elements, ensure_ascii=False)
 
-            elements.append(f"<{tag} id='{el_id}' class='{el_class}' href='{href}'>{text}</{tag}>")
-
-        return "\n".join(elements[:100])  # Cap to 100 elements for token safety
+    @staticmethod
+    def _selector(el: Tag, soup: BeautifulSoup) -> str:
+        identifier = str(el.get("id", ""))
+        if (
+            re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", identifier)
+            and len(soup.find_all(id=identifier)) == 1
+        ):
+            return "#" + identifier
+        parts = []
+        for node in [el, *el.parents]:
+            if node.name == "[document]":
+                continue
+            index = 1 + len(node.find_previous_siblings(node.name))
+            parts.append(f"{node.name}:nth-of-type({index})")
+        return " > ".join(reversed(parts))
 
 
 def clean_html(html_content: str) -> str:
