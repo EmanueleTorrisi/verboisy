@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Autonomous web research and structured scrape-to-JSON agent."
 readme = "README.md"
 license = "BSD-2-Clause"
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.11,<3.15"
 authors = [
     { name = "Emanuele Torrisi", email = "emanueletorrisi98@gmail.com" },
 ]
