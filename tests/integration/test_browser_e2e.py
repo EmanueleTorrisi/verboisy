@@ -163,3 +163,82 @@ async def test_actual_litellm_http_transport(service, config, monkeypatch):
     response = await client.complete_json("Return JSON", json.dumps({"current_url": "about:blank"}))
     assert response["action"] == "NAVIGATE"
     assert len(requests) == 1 and client.total_tokens == 20
+
+
+@pytest.fixture
+async def real_browser(config):
+    from verboisy.browser.context import BrowserManager
+    from verboisy.utils.exceptions import NavigationError
+
+    manager = BrowserManager(config)
+    try:
+        try:
+            await manager.start()
+        except NavigationError as exc:
+            if os.getenv("VERBOISY_REQUIRE_BROWSER") == "1":
+                pytest.fail(f"Required Chromium unavailable: {exc}")
+            pytest.skip("Chromium unavailable; VERBOISY_REQUIRE_BROWSER=1 makes this a failure")
+        yield manager
+    finally:
+        await manager.close()
+
+
+@pytest.mark.browser
+async def test_real_dynamic_filters_after_failed_click(
+    real_browser, config, model_script, monkeypatch, tmp_path
+):
+    from verboisy import arun
+
+    from tests.conftest import action
+    from tests.test_core.test_agent import saved
+
+    page = await real_browser.get_page()
+    await page.set_content("""
+        <label for="batch">Fall 2026</label>
+        <input id="batch" type="checkbox" onchange="update()">
+        <select id="industry" onchange="update()">
+          <option value="">All</option><option value="ai">AI</option>
+        </select>
+        <article id="result">No matching company</article>
+        <script>function update() {
+            document.querySelector('#result').textContent =
+              document.querySelector('#batch').checked &&
+              document.querySelector('#industry').value === 'ai'
+              ? 'Aurora Labs' : 'No matching company';
+        }</script>
+    """)
+    monkeypatch.setattr("verboisy.core.agent.BrowserManager", lambda **_kwargs: real_browser)
+    config.browser_action_timeout_ms = 100
+    model = model_script(
+        action("CLICK", selector="#missing"),
+        action("CHECK", selector="#batch", checked=True),
+        action("SELECT", selector="#industry", value="ai"),
+        action("EXTRACT"),
+        {"results": [{"name": "Aurora Labs"}]},
+        action("FINISH"),
+    )
+    output = tmp_path / "result.json"
+    result = await arun(goal="Read matching company", schema=SCHEMA, export=output, config=config)
+    assert result.completed and json.loads(output.read_text()) == [{"name": "Aurora Labs"}]
+    state = await saved(config, result.run_id)
+    assert len(state.action_failures) == 1 and state.action_failures[0].selector == "#missing"
+    extraction_prompt = json.loads(model.await_args_list[4].kwargs["messages"][1]["content"])
+    assert "Aurora Labs" in extraction_prompt["html"]
+    assert "No matching company" not in extraction_prompt["html"]
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize("selector", ["button", "#hidden", "#missing"])
+async def test_real_ambiguous_hidden_and_missing_controls_fail_safely(real_browser, selector):
+    from verboisy.browser.actions import interact
+    from verboisy.core.state import ActionRequest
+    from verboisy.utils.exceptions import BrowserActionError
+
+    from tests.conftest import action
+
+    page = await real_browser.get_page()
+    await page.set_content(
+        '<button>One</button><button>Two</button><button id="hidden" hidden>Hidden</button>'
+    )
+    with pytest.raises(BrowserActionError):
+        await interact(page, ActionRequest(**action("CLICK", selector=selector)), 100)
