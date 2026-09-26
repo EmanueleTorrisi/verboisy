@@ -68,8 +68,7 @@ jobs:
         if: |
           matrix.os == 'ubuntu-latest' &&
           matrix.python == '3.11' &&
-          (github.event_name != 'pull_request' ||
-          github.event.pull_request.head.repo.full_name == github.repository)
+          github.event_name == 'push'
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -172,11 +171,30 @@ jobs:
             verboisy:ci \
             --help
 
-      - name: Test Chromium inside Docker
+      - name: Test sandboxed Verboisy browser inside Docker
         run: |
-          docker run --rm \
+          docker run --rm -i \
             --init \
             --shm-size=1g \
+            --security-opt seccomp=docker/seccomp_profile.json \
             --entrypoint python \
-            verboisy:ci \
-            -c "from playwright.sync_api import sync_playwright; p = sync_playwright().start(); b = p.chromium.launch(headless=True); print('Chromium OK'); b.close(); p.stop()"
+            verboisy:ci - <<'PY'
+          import asyncio
+          import os
+          from verboisy.browser.context import BrowserManager
+          from verboisy.utils.config import Settings
+
+          async def main():
+              assert os.geteuid() != 0, "Browser must run as a non-root user"
+              manager = BrowserManager(Settings(_env_file=None))
+              assert manager.config.browser_sandbox, "Default sandbox must be enabled"
+              try:
+                  page = await manager.start()
+                  await page.set_content("<title>Verboisy sandbox check</title>")
+                  assert await page.title() == "Verboisy sandbox check"
+                  print("Sandboxed Verboisy browser OK")
+              finally:
+                  await manager.close()
+
+          asyncio.run(main())
+          PY
