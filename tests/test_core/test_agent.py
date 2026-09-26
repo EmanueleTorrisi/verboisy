@@ -25,10 +25,10 @@ SCHEMA = {
 }
 
 
-async def saved(config):
+async def saved(config, run_id=None):
     db = DatabaseManager(config.sqlite_db_path)
     try:
-        return await db.load_run()
+        return await db.load_run(run_id)
     finally:
         await db.close()
 
@@ -125,9 +125,9 @@ async def test_real_dispatch_controls(config, fake_browser, model_script):
     )
     result = await arun(goal="Find names", schema=SCHEMA, config=config)
     assert result.completed
-    fake_browser.page.click.assert_awaited_once_with("#next")
-    fake_browser.page.fill.assert_awaited_once_with("#q", "")
-    fake_browser.page.press.assert_not_awaited()
+    fake_browser.locator.click.assert_awaited_once_with(timeout=config.browser_action_timeout_ms)
+    fake_browser.locator.fill.assert_awaited_once_with("", timeout=config.browser_action_timeout_ms)
+    fake_browser.locator.press.assert_not_awaited()
     fake_browser.page.mouse.wheel.assert_awaited_once_with(0, 321)
     fake_browser.navigate_to.assert_awaited_once_with("https://www.google.com/search?q=a+%26+b")
 
@@ -183,17 +183,13 @@ async def test_type_action_with_submit(config, fake_browser, model_script):
 
     assert result.completed
 
-    fake_browser.page.fill.assert_awaited_once_with(
-        "#q",
-        "Alice",
+    fake_browser.locator.fill.assert_awaited_once_with(
+        "Alice", timeout=config.browser_action_timeout_ms
     )
-
-    fake_browser.page.press.assert_awaited_once_with(
-        "#q",
-        "Enter",
+    fake_browser.locator.press.assert_awaited_once_with(
+        "Enter", timeout=config.browser_action_timeout_ms
     )
-
-    fake_browser.page.wait_for_load_state.assert_awaited_once_with("domcontentloaded")
+    fake_browser.page.wait_for_load_state.assert_not_awaited()
 
 
 async def test_agent_lock_failure_still_cleans_up(config, fake_browser, monkeypatch):
@@ -244,7 +240,7 @@ async def test_final_checkpoint_failure_propagates(config, fake_browser, model_s
 
         calls += 1
 
-        if calls == 3:
+        if calls == 4:
             raise sqlite3.OperationalError("final checkpoint failed")
 
         return await original_checkpoint(*args, **kwargs)
@@ -261,7 +257,7 @@ async def test_final_checkpoint_failure_propagates(config, fake_browser, model_s
     ):
         await agent.run()
 
-    assert calls == 3
+    assert calls == 4
 
     fake_browser.close.assert_awaited()
 
