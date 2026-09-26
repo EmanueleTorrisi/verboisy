@@ -49,9 +49,13 @@ def test_extract_interactive_elements() -> None:
 
     interactive = DOMParser.extract_interactive_elements(raw_html)
 
-    assert "<a id='link1' class='btn' href='https://example.com'>Click Me</a>" in interactive
-    assert "<button id='submit-btn' class='primary' href=''>Submit</button>" in interactive
-    assert "<input id='username' class='' href=''></input>" in interactive
+    import json
+
+    controls = {entry["selector"]: entry for entry in json.loads(interactive)}
+    assert controls["#link1"]["html_attributes"]["href"] == "https://example.com"
+    assert controls["#link1"]["label"] == "Click Me"
+    assert controls["#submit-btn"]["label"] == "Submit"
+    assert controls["#username"]["html_attributes"] == {"type": "text", "name": "user"}
     assert "Not interactive" not in interactive
 
 
@@ -78,3 +82,38 @@ def test_golden_listing_tree():
         return re.sub(r">\s+<", "><", str(tree)).strip()
 
     assert normalize(cleaned.main) == normalize(expected.main)
+
+
+def test_directory_filters_keep_labels_options_and_unique_selectors():
+    import json
+
+    from bs4 import BeautifulSoup
+
+    html = """<main>
+        <input id="batch" type="checkbox"><label for="batch">Fall 2026</label>
+        <label>AI only<input type="checkbox"></label>
+        <button id="duplicate">First</button><button id="duplicate">Second</button>
+        <button id="space id" aria-label="More filters"></button>
+        <input type="hidden" value="SECRET"><input type="password" value="SECRET">
+        <button hidden>SECRET</button>
+        <select id="industry"><option value="">All</option><option value="ai">AI</option></select>
+        <div role="checkbox" aria-checked="false">AI research</div>
+    </main>"""
+    soup = BeautifulSoup(html, "html.parser")
+    controls = json.loads(DOMParser.extract_interactive_elements(html))
+    assert "SECRET" not in json.dumps(controls)
+    assert next(c for c in controls if c["selector"] == "#batch")["label"] == "Fall 2026"
+    assert any(c["tag"] == "input" and c["label"] == "AI only" for c in controls)
+    assert any(c["label"] == "More filters" for c in controls)
+    select = next(c for c in controls if c["tag"] == "select")
+    assert select["options"] == [{"value": "", "label": "All"}, {"value": "ai", "label": "AI"}]
+    for control in controls:
+        assert len(soup.select(control["selector"])) == 1, control
+
+
+def test_filter_controls_precede_large_result_lists():
+    import json
+
+    html = '<a href="/company">Company</a>' * 150 + '<button id="filter">Batch</button>'
+    controls = json.loads(DOMParser.extract_interactive_elements(html))
+    assert len(controls) == 100 and controls[0]["selector"] == "#filter"
