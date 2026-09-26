@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from datetime import UTC
 from typing import Any
 
 from verboisy.utils.config import Settings, settings
@@ -76,7 +77,39 @@ class LLMClient:
                     raise ValueError("Expected a JSON object")
                 return parsed
             except Exception as exc:
+                import math
+                import random
+                import sys
+                from datetime import datetime
+                from email.utils import parsedate_to_datetime
+
+                response = getattr(exc, "response", None)
                 status = getattr(exc, "status_code", None)
+
+                if status is None and response is not None:
+                    status = getattr(response, "status_code", None)
+
+                detail = str(exc).lower()
+                code = str(getattr(exc, "code", "") or "").lower()
+
+                quota_markers = (
+                    "insufficient_quota",
+                    "credit_balance_exhausted",
+                    "exceeded your current quota",
+                    "billing hard limit",
+                    "tokens per day",
+                    "daily limit",
+                    "project_spend_limit_exceeded",
+                )
+
+                if status == 429 and any(
+                    marker in detail or marker in code for marker in quota_markers
+                ):
+                    raise LLMError(
+                        "OpenAI quota or daily limit reached "
+                        "(HTTP 429). Check API usage and billing."
+                    ) from None
+
                 transient = isinstance(exc, TimeoutError) or status in (
                     408,
                     429,
@@ -85,11 +118,78 @@ class LLMClient:
                     503,
                     504,
                 )
+
                 if transient and attempt < self.config.llm_retries:
-                    await asyncio.sleep(min(2**attempt, 8))
+                    if status == 429:
+                        headers = (
+                            getattr(response, "headers", None)
+                            or getattr(exc, "headers", None)
+                            or {}
+                        )
+
+                        retry_after = next(
+                            (
+                                value
+                                for name, value in headers.items()
+                                if str(name).lower() == "retry-after"
+                            ),
+                            None,
+                        )
+
+                        delay = None
+
+                        if retry_after is not None:
+                            try:
+                                delay = float(retry_after)
+
+                            except (TypeError, ValueError):
+                                try:
+                                    retry_at = parsedate_to_datetime(str(retry_after))
+
+                                    if retry_at.tzinfo is None:
+                                        retry_at = retry_at.replace(tzinfo=UTC)
+
+                                    delay = (retry_at - datetime.now(UTC)).total_seconds()
+
+                                except (
+                                    TypeError,
+                                    ValueError,
+                                    OverflowError,
+                                ):
+                                    delay = None
+
+                        if delay is None or not math.isfinite(delay):
+                            delay = min(
+                                60.0,
+                                15.0 * (2**attempt) + random.uniform(0, 3),
+                            )
+
+                        delay = max(1.0, delay)
+
+                        if delay > 120:
+                            raise LLMError(
+                                "OpenAI requested a retry delay "
+                                "longer than two minutes. "
+                                "Resume after the limit resets."
+                            ) from None
+
+                        print(
+                            "OpenAI HTTP 429: retry "
+                            f"{attempt + 1}/"
+                            f"{self.config.llm_retries} "
+                            f"after {delay:.1f} seconds",
+                            file=sys.stderr,
+                        )
+
+                    else:
+                        delay = min(2**attempt, 8) + random.uniform(0, 1)
+
+                    await asyncio.sleep(delay)
                     continue
+
                 raise LLMError(
-                    f"LLM request failed ({type(exc).__name__}); "
-                    "check provider settings and credentials"
+                    f"LLM request failed "
+                    f"({type(exc).__name__}, HTTP {status}); "
+                    "check provider limits and configuration"
                 ) from None
         raise LLMError("LLM request failed")  # pragma: no cover
