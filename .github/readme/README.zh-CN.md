@@ -14,7 +14,7 @@
   <a href="https://emanueletorrisi.github.io/verboisy/"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/docs.yml/badge.svg" alt="文档"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/PyPI-coming%20soon-lightgrey?style=flat" alt="PyPI：即将发布"></a>
   <!--<a href="https://pypi.org/project/verboisy/"><img src="https://img.shields.io/pypi/v/verboisy?style=flat" alt="PyPI version"></a>-->
-  <img src="https://img.shields.io/badge/python-3.11%2B-blue?style=flat" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue?style=flat" alt="Python 3.11–3.14">
   <a href="../../LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="许可证"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-261230?style=flat" alt="Ruff"></a>
 </p>
@@ -209,20 +209,25 @@ flowchart LR
 
 ## 安装
 
-需要 Python 3.11 或更高版本。
+需要 Python >=3.11,<3.15。
 
 目前尚未发布到 PyPI。请从源码安装：
 
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy && pip install -e .
+cd verboisy
+python -m pip install -e .
+python -m playwright install chromium
 ```
 
 首个版本发布后，可以使用：
 
 ```bash
-pip install verboisy
+python -m pip install verboisy
+python -m playwright install chromium
 ```
+
+Chromium 应在配置阶段安装。Verboisy 不会在运行任务时下载浏览器或启动系统包管理器。安装和运行时请使用同一个操作系统用户及 Python 环境。在 Linux 上，运行 `python -m playwright install --with-deps chromium` 安装浏览器及系统依赖（安装系统包需要管理员权限）。使用 Poetry 时，请运行 `poetry run playwright install --with-deps chromium`。
 
 <a id="configuration"></a>
 
@@ -488,3 +493,5 @@ BSD 2-Clause：完整内容请参阅 [`LICENSE`](../../LICENSE)。
 <p align="center">
   作者：<a href="https://github.com/EmanueleTorrisi">Emanuele Torrisi</a> · <a href="#readme-top">返回顶部 ↑</a>
 </p>
+
+Search API and bounded browser recovery: [configuration and limits (English)](../../docs/search-and-recovery.md).

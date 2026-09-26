@@ -14,7 +14,7 @@
   <a href="https://emanueletorrisi.github.io/verboisy/"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/docs.yml/badge.svg" alt="Documentation"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/PyPI-coming%20soon-lightgrey?style=flat" alt="PyPI : bientôt disponible"></a>
   <!--<a href="https://pypi.org/project/verboisy/"><img src="https://img.shields.io/pypi/v/verboisy?style=flat" alt="PyPI version"></a>-->
-  <img src="https://img.shields.io/badge/python-3.11%2B-blue?style=flat" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue?style=flat" alt="Python 3.11–3.14">
   <a href="../../LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="Licence"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-261230?style=flat" alt="Ruff"></a>
 </p>
@@ -209,20 +209,25 @@ La description complète des modules se trouve dans [`ARCHITECTURE.md`](../../AR
 
 ## Installation
 
-Nécessite Python 3.11 ou une version ultérieure.
+Nécessite Python >=3.11,<3.15.
 
 Pas encore disponible sur PyPI. Installez depuis les sources :
 
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy && pip install -e .
+cd verboisy
+python -m pip install -e .
+python -m playwright install chromium
 ```
 
 Après la première publication, les commandes seront :
 
 ```bash
-pip install verboisy
+python -m pip install verboisy
+python -m playwright install chromium
 ```
+
+Chromium s'installe pendant la configuration. Verboisy ne télécharge pas de navigateur et ne lance pas le gestionnaire de paquets système pendant une exécution. Utilisez le même compte utilisateur et le même environnement Python pour l'installation et l'exécution. Sous Linux, installez le navigateur et ses dépendances système avec `python -m playwright install --with-deps chromium` (les paquets système nécessitent des droits d'administration). Avec Poetry, utilisez `poetry run playwright install --with-deps chromium`.
 
 <a id="configuration"></a>
 
@@ -488,3 +493,5 @@ BSD à 2 clauses : consultez [`LICENSE`](../../LICENSE) pour le texte intégral.
 <p align="center">
   Créé par <a href="https://github.com/EmanueleTorrisi">Emanuele Torrisi</a> · <a href="#readme-top">Retour en haut ↑</a>
 </p>
+
+Search API and bounded browser recovery: [configuration and limits (English)](../../docs/search-and-recovery.md).

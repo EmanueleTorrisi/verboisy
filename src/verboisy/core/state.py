@@ -10,7 +10,18 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 class ActionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     thought: str
-    action: Literal["NAVIGATE", "SEARCH", "CLICK", "TYPE", "SCROLL", "WAIT", "EXTRACT", "FINISH"]
+    action: Literal[
+        "NAVIGATE",
+        "SEARCH",
+        "CLICK",
+        "TYPE",
+        "CHECK",
+        "SELECT",
+        "SCROLL",
+        "WAIT",
+        "EXTRACT",
+        "FINISH",
+    ]
     parameters: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -20,10 +31,13 @@ class ActionRequest(BaseModel):
             "SEARCH": ("query",),
             "CLICK": ("selector",),
             "TYPE": ("selector", "text"),
+            "CHECK": ("selector",),
+            "SELECT": ("selector", "value"),
         }
         allowed = {
             **required,
             "TYPE": ("selector", "text", "submit"),
+            "CHECK": ("selector", "checked"),
             "SCROLL": ("pixels",),
             "WAIT": ("milliseconds",),
             "EXTRACT": (),
@@ -31,7 +45,7 @@ class ActionRequest(BaseModel):
         }
         for key in required.get(self.action, ()):
             value = self.parameters.get(key)
-            if not isinstance(value, str) or (key != "text" and not value.strip()):
+            if not isinstance(value, str) or (key not in ("text", "value") and not value.strip()):
                 raise ValueError(f"{self.action} requires a string '{key}' parameter")
             if len(value) > 8000:
                 raise ValueError(f"{key} exceeds 8000 characters")
@@ -48,6 +62,8 @@ class ActionRequest(BaseModel):
                     raise ValueError(f"{key} must be an integer between {low} and {high}")
         if "submit" in self.parameters and not isinstance(self.parameters["submit"], bool):
             raise ValueError("submit must be a boolean")
+        if self.action == "CHECK" and not isinstance(self.parameters.get("checked"), bool):
+            raise ValueError("CHECK requires a boolean 'checked' parameter")
         return self
 
 
@@ -56,6 +72,32 @@ class ActionHistory(BaseModel):
     parameters: dict[str, Any]
     url: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class ActionAttempt(BaseModel):
+    """Checkpoint intent before dispatch, without model thoughts or typed text."""
+
+    step: int
+    action: str
+    selector: str | None = None
+    url: str
+
+
+class ActionFailure(ActionAttempt):
+    error_type: str
+    message: str
+
+
+class SearchResult(BaseModel):
+    title: str
+    url: str = Field(min_length=1, max_length=8000)
+    description: str = ""
+
+
+class SearchObservation(BaseModel):
+    provider: Literal["brave"] = "brave"
+    query: str
+    results: list[SearchResult]
 
 
 class AgentState(BaseModel):
@@ -73,3 +115,6 @@ class AgentState(BaseModel):
     token_count: int = Field(default=0, ge=0)
     export_path: str | None = None
     stop_reason: str | None = None
+    pending_action: ActionAttempt | None = None
+    action_failures: list[ActionFailure] = Field(default_factory=list)
+    search_observation: SearchObservation | None = None

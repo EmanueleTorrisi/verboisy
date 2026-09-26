@@ -1,8 +1,5 @@
 """Playwright lifecycle with request restrictions and reliable cleanup."""
 
-import asyncio
-import sys
-
 from playwright.async_api import (
     Browser,
     BrowserContext,
@@ -55,42 +52,15 @@ class BrowserManager:
                         headless=self.config.headless_browser,
                         chromium_sandbox=self.config.browser_sandbox,
                     )
-
                 except PlaywrightError as exc:
-                    # Only install Chromium if the browser executable is missing.
-                    # Other errors should not trigger a reinstall.
-                    if "Executable doesn't exist at" not in str(exc):
-                        raise
-
-                    logger.info("Chromium not found. Installing automatically...")
-
-                    command = [
-                        sys.executable,
-                        "-m",
-                        "playwright",
-                        "install",
-                    ]
-
-                    # Install Linux system dependencies when necessary.
-                    if sys.platform.startswith("linux"):
-                        command.append("--with-deps")
-
-                    command.append("chromium")
-
-                    process = await asyncio.create_subprocess_exec(*command)
-
-                    return_code = await process.wait()
-
-                    if return_code != 0:
-                        raise RuntimeError("Automatic Chromium installation failed.") from exc
-
-                    logger.info("Chromium installed successfully.")
-
-                    # Retry browser launch after installation.
-                    self._browser = await self._playwright.chromium.launch(
-                        headless=self.config.headless_browser,
-                        chromium_sandbox=self.config.browser_sandbox,
-                    )
+                    if "Executable doesn't exist at" in str(exc):
+                        raise NavigationError(
+                            "Chromium is not installed. "
+                            "Install it during setup with: "
+                            "poetry run python -m playwright install "
+                            "--with-deps chromium"
+                        ) from exc
+                    raise
             if self._context is None:
                 user_agent = (
                     StealthManager.get_random_user_agent()
@@ -111,6 +81,9 @@ class BrowserManager:
                 self._page = await self._context.new_page()
                 await StealthManager.apply_stealth(self._page)
             return self._page
+        except NavigationError:
+            await self.close()
+            raise
         except Exception as exc:
             await self.close()
             raise NavigationError(

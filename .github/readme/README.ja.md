@@ -14,7 +14,7 @@
   <a href="https://emanueletorrisi.github.io/verboisy/"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/docs.yml/badge.svg" alt="ドキュメント"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/PyPI-coming%20soon-lightgrey?style=flat" alt="PyPI：近日公開"></a>
   <!--<a href="https://pypi.org/project/verboisy/"><img src="https://img.shields.io/pypi/v/verboisy?style=flat" alt="PyPI version"></a>-->
-  <img src="https://img.shields.io/badge/python-3.11%2B-blue?style=flat" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue?style=flat" alt="Python 3.11–3.14">
   <a href="../../LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="ライセンス"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-261230?style=flat" alt="Ruff"></a>
 </p>
@@ -209,20 +209,25 @@ flowchart LR
 
 ## インストール
 
-Python 3.11 以降が必要です。
+Python >=3.11,<3.15 が必要です。
 
 まだ PyPI には公開されていません。ソースからインストールしてください。
 
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy && pip install -e .
+cd verboisy
+python -m pip install -e .
+python -m playwright install chromium
 ```
 
 初回リリース後は次のコマンドを使用できます。
 
 ```bash
-pip install verboisy
+python -m pip install verboisy
+python -m playwright install chromium
 ```
+
+Chromium はセットアップ時にインストールします。Verboisy は実行中にブラウザーをダウンロードしたり、システムのパッケージマネージャーを起動したりしません。インストールと実行には、同じ OS ユーザーと Python 環境を使用してください。Linux では `python -m playwright install --with-deps chromium` でブラウザーとシステム依存関係をインストールします（システムパッケージには管理者権限が必要です）。Poetry を使用する場合は `poetry run playwright install --with-deps chromium` を実行してください。
 
 <a id="configuration"></a>
 
@@ -488,3 +493,5 @@ BSD 2-Clause。全文は [`LICENSE`](../../LICENSE) を参照してください�
 <p align="center">
   作成者：<a href="https://github.com/EmanueleTorrisi">Emanuele Torrisi</a> · <a href="#readme-top">ページの先頭へ ↑</a>
 </p>
+
+Search API and bounded browser recovery: [configuration and limits (English)](../../docs/search-and-recovery.md).

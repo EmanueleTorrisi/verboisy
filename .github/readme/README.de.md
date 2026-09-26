@@ -14,7 +14,7 @@
   <a href="https://emanueletorrisi.github.io/verboisy/"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/docs.yml/badge.svg" alt="Dokumentation"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/PyPI-coming%20soon-lightgrey?style=flat" alt="PyPI: demnächst"></a>
   <!--<a href="https://pypi.org/project/verboisy/"><img src="https://img.shields.io/pypi/v/verboisy?style=flat" alt="PyPI version"></a>-->
-  <img src="https://img.shields.io/badge/python-3.11%2B-blue?style=flat" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue?style=flat" alt="Python 3.11–3.14">
   <a href="../../LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="Lizenz"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-261230?style=flat" alt="Ruff"></a>
 </p>
@@ -209,20 +209,25 @@ Eine vollständige Modulübersicht steht in [`ARCHITECTURE.md`](../../ARCHITECTU
 
 ## Installation
 
-Benötigt Python 3.11 oder neuer.
+Benötigt Python >=3.11,<3.15.
 
 Noch nicht auf PyPI verfügbar. Installation aus dem Quellcode:
 
 ```bash
 git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy && pip install -e .
+cd verboisy
+python -m pip install -e .
+python -m playwright install chromium
 ```
 
 Nach der ersten Veröffentlichung gilt stattdessen:
 
 ```bash
-pip install verboisy
+python -m pip install verboisy
+python -m playwright install chromium
 ```
+
+Chromium wird bei der Einrichtung installiert. Verboisy lädt während eines Laufs keine Browser herunter und startet keinen Systempaketmanager. Verwende für Installation und Ausführung dasselbe Benutzerkonto und dieselbe Python-Umgebung. Unter Linux installierst du Browser und Systemabhängigkeiten mit `python -m playwright install --with-deps chromium` (Systempakete erfordern Administratorrechte). Mit Poetry lautet der Befehl `poetry run playwright install --with-deps chromium`.
 
 <a id="configuration"></a>
 
@@ -488,3 +493,5 @@ BSD-2-Clause: Den vollständigen Text findest du in [`LICENSE`](../../LICENSE).
 <p align="center">
   Erstellt von <a href="https://github.com/EmanueleTorrisi">Emanuele Torrisi</a> · <a href="#readme-top">Zurück nach oben ↑</a>
 </p>
+
+Search API and bounded browser recovery: [configuration and limits (English)](../../docs/search-and-recovery.md).

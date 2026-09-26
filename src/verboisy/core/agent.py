@@ -2,17 +2,30 @@
 
 import asyncio
 from typing import Any
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlsplit
 
+from verboisy.browser.actions import interact
 from verboisy.browser.context import BrowserManager
 from verboisy.browser.policy import validate_url
 from verboisy.core.planner import Planner
-from verboisy.core.state import ActionHistory, ActionRequest, AgentState
+from verboisy.core.search import brave_search
+from verboisy.core.state import (
+    ActionAttempt,
+    ActionFailure,
+    ActionHistory,
+    ActionRequest,
+    AgentState,
+)
 from verboisy.extractor.engine import ExtractionEngine
 from verboisy.llm.client import LLMClient
 from verboisy.storage.sqlite import DatabaseManager
 from verboisy.utils.config import Settings, settings
-from verboisy.utils.exceptions import BudgetExceededError, VerboisyError
+from verboisy.utils.exceptions import (
+    BrowserActionError,
+    BudgetExceededError,
+    SearchUnavailableError,
+    VerboisyError,
+)
 from verboisy.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -48,21 +61,34 @@ class Agent:
             self.extractor.validate_collection(self.state.extracted_data)
             self.state.status = "COMPLETED"
             self.state.stop_reason = "planner_finished"
-        elif action in ("NAVIGATE", "SEARCH"):
-            url = (
-                parameters["url"]
-                if action == "NAVIGATE"
-                else ("https://www.google.com/search?q=" + quote_plus(parameters["query"]))
-            )
-            await self.browser.navigate_to(url)
-        elif action == "CLICK":
-            await page.click(parameters["selector"])
-            await page.wait_for_load_state("domcontentloaded")
-        elif action == "TYPE":
-            await page.fill(parameters["selector"], parameters["text"])
-            if parameters.get("submit", True):
-                await page.press(parameters["selector"], "Enter")
-                await page.wait_for_load_state("domcontentloaded")
+
+        elif action == "NAVIGATE":
+            await self.browser.navigate_to(parameters["url"])
+        elif action == "SEARCH":
+            self.state.search_observation = None
+            if self.config.search_provider == "disabled":
+                raise SearchUnavailableError("SEARCH is disabled. Use a known source URL.")
+            if self.config.search_provider == "brave":
+                self.state.search_observation = await brave_search(parameters["query"], self.config)
+            else:
+                await self.browser.navigate_to(
+                    "https://www.google.com/search?q=" + quote_plus(parameters["query"])
+                )
+                final_url = urlsplit(page.url)
+                if final_url.hostname in {"google.com", "www.google.com"}:
+                    content = (await page.content()).lower()
+                    if (
+                        final_url.path.startswith("/sorry")
+                        or "unusual traffic from your computer" in content
+                    ):
+                        raise SearchUnavailableError(
+                            "Search provider unavailable: Google returned "
+                            "an automated-traffic warning. No search results were obtained. "
+                            "Configure SEARCH_PROVIDER=brave with BRAVE_SEARCH_API_KEY, "
+                            "or start a direct-source run with SEARCH_PROVIDER=disabled."
+                        )
+        elif action in ("CLICK", "TYPE", "CHECK", "SELECT"):
+            await interact(page, request, self.config.browser_action_timeout_ms)
         elif action == "SCROLL":
             await page.mouse.wheel(0, parameters.get("pixels", 700))
         elif action == "WAIT":
@@ -82,6 +108,7 @@ class Agent:
 
     async def run(self) -> AgentState:
         token_start = self.state.token_count
+        action_failures = 0
         error_active = False
         try:
             self.db.acquire_run_lock()
@@ -109,11 +136,59 @@ class Agent:
                         self.state.history,
                         records=self.state.extracted_data,
                         schema=self.state.target_schema,
+                        failures=self.state.action_failures,
+                        pending_action=self.state.pending_action,
+                        search_observation=self.state.search_observation,
                     )
-                    logger.info("ACT", action=request.action, step=self.state.step_count)
-                    await self._execute(request, html)
+                    attempt = ActionAttempt(
+                        step=self.state.step_count,
+                        action=request.action,
+                        selector=request.parameters.get("selector"),
+                        url=page.url,
+                    )
+                    self.state.pending_action = attempt
+                    self.state.token_count = token_start + self.llm.total_tokens
+                    await self.db.checkpoint(self.state)
+                    logger.info("ACT", **attempt.model_dump())
+                    saved_before = len(self.state.extracted_data)
+                    try:
+                        await self._execute(request, html)
+                    except (BrowserActionError, SearchUnavailableError) as exc:
+                        self.state.current_url = page.url
+                        failure = ActionFailure(
+                            **attempt.model_dump(),
+                            error_type=exc.details.get("error_type", type(exc).__name__),
+                            message=str(exc),
+                        )
+                        self.state.action_failures = [*self.state.action_failures, failure][-10:]
+                        self.state.pending_action = None
+                        logger.warning("ACTION_FAILED", **failure.model_dump())
+                        action_failures += 1
+                        if isinstance(exc, SearchUnavailableError):
+                            self.state.status = "PAUSED"
+                            self.state.stop_reason = "search_unavailable"
+                        elif action_failures >= self.config.max_action_failures:
+                            self.state.status = "PAUSED"
+                            self.state.stop_reason = "action_failures"
+                        await self.db.checkpoint(self.state)
+                        if self.state.status == "PAUSED":
+                            break
+                        # A failed interaction may have partly executed; observe before replanning.
+                        await asyncio.sleep(self.config.action_delay_seconds)
+                        continue
+                    self.state.pending_action = None
+                    history_parameters = dict(request.parameters)
+                    if request.action == "EXTRACT":
+                        saved_now = len(self.state.extracted_data) - saved_before
+                        history_parameters["saved_records"] = saved_now
+                        logger.info(
+                            "EXTRACT_RESULT",
+                            run_id=self.state.run_id,
+                            saved_records=saved_now,
+                            total_records=len(self.state.extracted_data),
+                        )
                     history = ActionHistory(
-                        action=request.action, parameters=request.parameters, url=page.url
+                        action=request.action, parameters=history_parameters, url=page.url
                     )
                     self.state.history.append(history)
                     self.state.token_count = token_start + self.llm.total_tokens

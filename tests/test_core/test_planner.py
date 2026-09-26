@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from verboisy.core.planner import Planner
@@ -80,3 +80,66 @@ async def test_planner_wraps_llm_errors() -> None:
             html_content="<html></html>",
             history=[],
         )
+
+
+@pytest.mark.asyncio
+async def test_planner_reports_action_validation_details() -> None:
+    planner = Planner()
+
+    # Simulate an invalid action returned by the model.
+    planner.llm.complete_json = AsyncMock(
+        return_value={
+            "thought": "Navigate to the directory",
+            "action": ["NAVIGATE"],
+            "parameters": [],
+        }
+    )
+
+    with pytest.raises(
+        PlanningError,
+        match="action validation",
+    ) as exc_info:
+        await planner.decide_next_action(
+            goal="Find companies",
+            current_url="https://example.com",
+            html_content="<html></html>",
+            history=[],
+        )
+
+    message = str(exc_info.value)
+
+    assert "action" in message
+
+    # The rejected model value should not be included.
+    assert "NAVIGATE" not in message
+
+
+@pytest.mark.asyncio
+async def test_planner_wraps_unexpected_action_validation_error() -> None:
+    planner = Planner()
+
+    planner.llm.complete_json = AsyncMock(
+        return_value={
+            "thought": "Finish",
+            "action": "FINISH",
+            "parameters": {},
+        }
+    )
+
+    with (
+        patch(
+            "verboisy.core.planner.ActionRequest.model_validate",
+            side_effect=RuntimeError("Internal validation failure"),
+        ),
+        pytest.raises(
+            PlanningError,
+            match="action validation: RuntimeError",
+        ) as exc_info,
+    ):
+        await planner.decide_next_action(
+            goal="Finish task",
+            current_url="https://example.com",
+            html_content="<html></html>",
+            history=[],
+        )
+    assert "Internal validation failure" not in str(exc_info.value)

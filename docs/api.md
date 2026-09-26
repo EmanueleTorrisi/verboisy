@@ -29,11 +29,11 @@ configuration. Step, timeout and request budgets renew per invocation.
 | db_path | Absolute database path |
 | completed | True only after FINISH and successful collection validation |
 | status | COMPLETED or PAUSED for normal returns |
-| stop_reason | planner_finished, max_steps, model_budget or run_timeout |
+| stop_reason | planner_finished, max_steps, model_budget, run_timeout, action_failures or search_unavailable |
 
 Errors raise `VerboisyError` (or configuration validation errors); async cancellation
 propagates after cleanup. Durable saved rows remain available. The command line
-uses exit 0 for completion, 1 for errors, 2 for incomplete budgets or argument syntax,
+uses exit 0 for completion, 1 for errors, 2 for paused runs or argument syntax,
 and 130 for Ctrl-C.
 
 ```bash
@@ -45,3 +45,6 @@ verboisy run --help
 
 Resume restores the last saved URL, not a complete browser session. JSON Schema validates
 data shape, not factual truth. See the README for configuration and limitations.
+
+Failed attempts and pending intent are saved in `state_json`, separately from successful
+action history. Resume provides them to the planner. See [search and recovery](search-and-recovery.md).

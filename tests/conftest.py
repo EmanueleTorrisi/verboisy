@@ -4,7 +4,7 @@ import json
 from collections.abc import AsyncGenerator
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from verboisy.storage.sqlite import DatabaseManager
@@ -32,6 +32,9 @@ def config(tmp_path):
         llm_retries=0,
         litellm_model="openai/test",
         user_agent_rotation=False,
+        search_provider="google",
+        browser_action_timeout_ms=10000,
+        max_action_failures=3,
     )
 
 
@@ -47,6 +50,13 @@ async def test_db(config) -> AsyncGenerator[DatabaseManager, None]:
 
 @pytest.fixture
 def fake_browser(monkeypatch):
+    locator = SimpleNamespace(
+        click=AsyncMock(),
+        fill=AsyncMock(),
+        press=AsyncMock(),
+        set_checked=AsyncMock(),
+        select_option=AsyncMock(),
+    )
     page = SimpleNamespace(
         url="about:blank",
         content=AsyncMock(return_value=load_html_fixture("startup_directory.html")),
@@ -55,6 +65,7 @@ def fake_browser(monkeypatch):
         press=AsyncMock(),
         wait_for_load_state=AsyncMock(),
         mouse=SimpleNamespace(wheel=AsyncMock()),
+        locator=Mock(return_value=locator),
     )
 
     async def navigate(url):
@@ -66,6 +77,7 @@ def fake_browser(monkeypatch):
         navigate_to=AsyncMock(side_effect=navigate),
         close=AsyncMock(),
         page=page,
+        locator=locator,
     )
     monkeypatch.setattr("verboisy.core.agent.BrowserManager", lambda **_kwargs: browser)
     return browser

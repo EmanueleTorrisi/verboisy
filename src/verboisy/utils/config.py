@@ -1,6 +1,6 @@
 """Validated configuration loaded at run time, without import side effects."""
 
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     max_total_tokens: int = Field(default=1_000_000, gt=0)
     headless_browser: bool = Field(default=True, validation_alias="VERBOISY_HEADLESS")
     browser_timeout_ms: int = Field(default=30000, gt=0)
+    browser_action_timeout_ms: int = Field(default=10000, gt=0)
+    max_action_failures: int = Field(default=3, ge=1, le=20)
+    search_provider: Literal["google", "brave", "disabled"] = "google"
+    brave_search_api_key: SecretStr | None = None
+    search_timeout_seconds: float = Field(default=30, gt=0)
     browser_sandbox: bool = True
     user_agent_rotation: bool = True
     allow_private_network: bool = False
