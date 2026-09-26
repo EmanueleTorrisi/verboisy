@@ -24,11 +24,14 @@ jobs:
       - run: poetry check --lock
       - run: poetry install
       - uses: actions/configure-pages@v5
+        if: github.ref == 'refs/heads/main' && vars.PAGES_ENABLED == 'true' && github.event.repository.private == false
       - run: poetry run mkdocs build --strict
       - uses: actions/upload-pages-artifact@v4
+        if: github.ref == 'refs/heads/main' && vars.PAGES_ENABLED == 'true' && github.event.repository.private == false
         with:
           path: site
   deploy:
+    if: github.ref == 'refs/heads/main' && vars.PAGES_ENABLED == 'true' && github.event.repository.private == false
     needs: build
     runs-on: ubuntu-latest
     permissions:
