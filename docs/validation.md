@@ -1,7 +1,7 @@
 # Validation and release workflow
 
 Execute these commands from the repository root after installing Poetry 2.5.1 and
-Python 3.11 or later. The supplied .python-version selects 3.11.9; the audit used
+Python >=3.11,<3.15. The supplied .python-version selects 3.11.9; the audit used
 that version. CI also covers newer Python minors, whose results must be checked in CI.
 
 ```bash
