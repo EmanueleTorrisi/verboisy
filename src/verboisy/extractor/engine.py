@@ -9,7 +9,7 @@ from verboisy.extractor.schema_builder import SchemaBuilder
 from verboisy.llm.client import LLMClient
 from verboisy.llm.prompts import EXTRACTION_PROMPT
 from verboisy.utils.config import Settings, settings
-from verboisy.utils.exceptions import BudgetExceededError, ExtractionError
+from verboisy.utils.exceptions import BudgetExceededError, ExtractionError, LLMError
 
 
 class ExtractionEngine:
@@ -55,6 +55,10 @@ class ExtractionEngine:
                 yield record.model_dump(by_alias=True, exclude_unset=True)
         except (ExtractionError, BudgetExceededError):
             raise
+        except LLMError as exc:
+            raise ExtractionError(
+                f"Extraction model call failed: {exc}", details=exc.details
+            ) from None
         except Exception as exc:
             raise ExtractionError(
                 f"Failed to extract structured data ({type(exc).__name__})"
