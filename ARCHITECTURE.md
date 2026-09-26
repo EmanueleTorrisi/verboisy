@@ -46,14 +46,20 @@ flowchart TD
     Finish --> Export["Atomic export"]
 ```
 
-Action names are `NAVIGATE`, `SEARCH`, `CLICK`, `TYPE`, `SCROLL`, `WAIT`,
-`EXTRACT`, and `FINISH`. SEARCH navigates to a public Google results URL; it is
-not a separate search API or a guarantee that Google will accept automation.
+Action names are `NAVIGATE`, `SEARCH`, `CLICK`, `TYPE`, `CHECK`, `SELECT`, `SCROLL`,
+`WAIT`, `EXTRACT`, and `FINISH`. SEARCH uses `SEARCH_PROVIDER`: legacy Google
+browser search, the Brave Search API, or disabled. Brave results are checkpointed
+as discovery links; extraction still reads the actual browser page. API credentials
+are sent only to the fixed Brave endpoint, without redirects or browser fallback.
+The API obeys the network/domain policy and has total time and response-size limits.
+Browser interactions use strict locators with bounded operation timeouts.
+CHECK sets native checkbox/radio state; SELECT uses an observed native option value.
 TYPE submits with Enter by default; `submit:false` only fills, including empty text.
 No action accepts arbitrary JavaScript, operating-system commands, or file paths.
 
 Only a successfully validated FINISH produces COMPLETED. Exhausted steps, request
-budget, or invocation time produce PAUSED. Errors produce FAILED. Async cancellation
+budget, invocation time, or the interaction recovery budget produce PAUSED.
+Unavailable search also pauses. Fatal errors produce FAILED. Async cancellation
 produces INTERRUPTED. All except COMPLETED are candidates for bare resume.
 
 Every invocation gets a fresh step/time/request allowance. `step_count` and
@@ -61,6 +67,10 @@ provider-reported `token_count` remain cumulative. The local request budget rese
 UTF-8 prompt bytes plus the maximum response tokens for each attempt. It bounds
 request volume conservatively; it is not an exact provider billing or hidden-token cap.
 
+Intent (step, action, selector and URL) is checkpointed before dispatch. Interaction
+failures are retained in `state_json` (last ten) and passed to the next planner with
+fresh HTML. They consume both step and failure allowances, and do not enter
+successful action history. Search errors pause immediately without a provider fallback.
 A successful action's resulting URL and history entry are checkpointed together.
 Validated rows are committed separately before adding them to in-memory results.
 Thus a malformed later candidate cannot discard previously committed candidates.
@@ -153,7 +163,7 @@ and the actual CLI against a local page and an explicitly simulated model endpoi
 It is a transport/orchestration test, not evidence of autonomous model intelligence.
 
 `VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser` fails if Chromium cannot run.
-The ordinary suite skips that one test when Chromium is unavailable. Live provider
+The ordinary suite skips browser tests when Chromium is unavailable. Live provider
 acceptance and the authentic recording workflow are in `docs/demo.md`.
 CI runs locked dependencies, lint, type checks, unit/integration tests, a required browser
 job, docs build and package build. Release publication builds the tag's source only after
