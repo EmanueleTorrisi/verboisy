@@ -1,22 +1,21 @@
-"""Live pricing example using the shared async public API."""
+"""Run this example with a user-owned task policy and real source goal."""
 
-import asyncio
+import argparse
 from pathlib import Path
 
-from verboisy import arun
-
-
-async def main() -> None:
-    result = await arun(
-        goal="Open https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops "
-        "and extract the first three laptops shown, with only values supported by the page.",
-        schema=Path(__file__).with_name("schema.json"),
-        export=Path(__file__).with_name("laptops_pricing.csv"),
-    )
-    print(result.run_id, result.status, len(result.records))
-    if not result.completed:
-        raise SystemExit(2)
-
+from verboisy import run
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--goal", required=True)
+    parser.add_argument("--task", required=True)
+    parser.add_argument("--export", required=True)
+    args = parser.parse_args()
+    result = run(
+        goal=args.goal,
+        schema=Path(__file__).with_name("schema.json"),
+        task=args.task,
+        export=args.export,
+    )
+    print(result.status, result.stop_reason, result.manifest_path)
+    raise SystemExit(0 if result.completed else 1 if result.status == "FAILED" else 2)
