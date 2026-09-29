@@ -8,7 +8,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PLAYWRIGHT_BROWSERS_PATH=/opt/playwright-browsers
 
 # Install Poetry and create application virtual environment
-RUN python -m pip install --no-cache-dir poetry==2.5.1 \
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools \
+    && python -m pip install --no-cache-dir poetry==2.5.1 \
     && python -m venv /opt/venv
 
 ENV VIRTUAL_ENV=/opt/venv
@@ -24,7 +25,8 @@ COPY src ./src
 
 # Install production dependencies and Chromium
 # Including OS dependencies while still running as root
-RUN poetry install --only main \
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools \
+    && poetry install --only main \
     && python -m playwright install --with-deps chromium
 
 # Copy examples and entrypoint
