@@ -10,6 +10,9 @@ on:
 
   workflow_call:
 
+env:
+  LITELLM_LOCAL_MODEL_COST_MAP: "True"
+
 permissions:
   contents: read
 
@@ -62,7 +65,7 @@ jobs:
         run: poetry run mypy src
 
       - name: Run tests with 100% coverage
-        run: poetry run pytest -m "not browser" --cov=src --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=100
+        run: poetry run pytest -m "not browser and not live" --cov=src --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=100
 
       - name: Upload coverage to Codecov
         if: |
@@ -141,9 +144,11 @@ jobs:
         run: |
           python -m venv "$RUNNER_TEMP/verboisy-wheel"
 
+          "$RUNNER_TEMP/verboisy-wheel/bin/python" -m pip install --upgrade pip setuptools
           "$RUNNER_TEMP/verboisy-wheel/bin/python" \
             -m pip install dist/*.whl
 
+          "$RUNNER_TEMP/verboisy-wheel/bin/python" -m pip check
           cd "$RUNNER_TEMP"
 
           "$RUNNER_TEMP/verboisy-wheel/bin/python" \
@@ -151,6 +156,13 @@ jobs:
 
           "$RUNNER_TEMP/verboisy-wheel/bin/python" \
             -m verboisy --help
+
+      - name: Upload tested distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: distribution
+          path: dist/
+          if-no-files-found: error
 
   docker:
     name: Docker build and Chromium smoke test
