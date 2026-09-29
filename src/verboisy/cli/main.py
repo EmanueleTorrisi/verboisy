@@ -56,6 +56,10 @@ def run_agent(
     max_steps: Annotated[
         int | None, typer.Option("--max-steps", "-m", min=1, help="Steps for this invocation.")
     ] = None,
+    task_path: Annotated[
+        Path | None,
+        typer.Option("--task", help="Crawl scope, target, identity and field policies JSON."),
+    ] = None,
     headless: Annotated[
         bool | None, typer.Option("--headless/--headed", help="Override browser visibility.")
     ] = None,
@@ -73,6 +77,7 @@ def run_agent(
             headless=headless,
             max_steps=max_steps,
             config=config,
+            task=task_path,
         )
     except KeyboardInterrupt:
         CLIUserInterface.print_error(
@@ -91,7 +96,9 @@ def run_agent(
             f"Execution failed ({type(exc).__name__}). Committed records remain in SQLite."
         )
         raise typer.Exit(1) from None
-    CLIUserInterface.print_success(f"run_id: {result.run_id}; {len(result.records)} records saved")
+    typer.echo(f"Run {result.run_id}: {result.status}; {len(result.records)} accepted records")
+    if result.export_path:
+        typer.echo(f"Dataset: {result.export_path}\nManifest: {result.manifest_path}")
     CLIUserInterface.display_results_table(result.records)
     if result.completed:
         if result.export_path is not None:
@@ -101,7 +108,41 @@ def run_agent(
         CLIUserInterface.print_error(
             f"Incomplete: {result.stop_reason}. Resume with --resume {result.run_id}"
         )
-        raise typer.Exit(2)
+        raise typer.Exit(1 if result.status == "FAILED" else 2)
+
+
+@app.command()
+def setup() -> None:
+    """Provision Chromium and check startup; no model calls."""
+    import asyncio
+
+    from verboisy.browser.context import BrowserManager
+
+    async def check() -> None:
+        manager = BrowserManager(Settings(browser_auto_install=True))
+        try:
+            await manager.start()
+        finally:
+            await manager.close()
+
+    try:
+        asyncio.run(check())
+    except VerboisyError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    typer.echo("Chromium is ready.")
+
+
+@app.command()
+def doctor() -> None:
+    """Check configuration without printing credentials or making model requests."""
+    import importlib.metadata
+
+    config = Settings()
+    typer.echo(f"Verboisy {__version__}; Playwright {importlib.metadata.version('playwright')}")
+    typer.echo(f"Model: {config.litellm_model}; sandbox: {config.browser_sandbox}")
+    typer.echo(f"Automatic browser setup: {config.browser_auto_install}")
+    typer.echo("Run verboisy setup to check browser startup.")
 
 
 if __name__ == "__main__":
