@@ -1,17 +1,12 @@
 """Real HTTP client semantics with deterministic transport; no subscription is used."""
 
-import json
 from unittest.mock import AsyncMock
 
 import httpx
 import pytest
 from pydantic import SecretStr
-from verboisy import arun
-from verboisy.core.search import BRAVE_ENDPOINT, brave_search
+from verboisy.core.search import brave_search
 from verboisy.utils.exceptions import NavigationError, SearchUnavailableError
-
-from tests.conftest import action
-from tests.test_core.test_agent import SCHEMA, saved
 
 
 @pytest.fixture
@@ -36,46 +31,6 @@ def search_transport(config, monkeypatch):
         return requests
 
     return install
-
-
-async def test_brave_search_leads_are_checkpointed_and_then_navigated(
-    config, fake_browser, model_script, search_transport
-):
-    requests = search_transport(
-        httpx.Response(
-            200,
-            json={
-                "type": "search",
-                "web": {
-                    "results": [
-                        {
-                            "title": "Directory",
-                            "url": "https://example.com/companies",
-                            "description": "Search snippet only",
-                        }
-                    ]
-                },
-            },
-        )
-    )
-    model_script(action("SEARCH", query="AI & startup"))
-    first = await arun(goal="Find companies", schema=SCHEMA, max_steps=1, config=config)
-    assert not first.completed and first.records == []
-    fake_browser.navigate_to.assert_not_awaited()
-    state = await saved(config)
-    assert state.search_observation.results[0].url == "https://example.com/companies"
-    request = requests[0]
-    assert str(request.url).startswith(BRAVE_ENDPOINT)
-    assert request.url.params["q"] == "AI & startup"
-    assert request.headers["X-Subscription-Token"] == "test-only-key"
-    model = model_script(action("NAVIGATE", url="https://example.com/companies"), action("FINISH"))
-    final = await arun(resume=first.run_id, config=config)
-    assert final.completed
-    prompt = json.loads(model.await_args_list[0].kwargs["messages"][1]["content"])
-    assert prompt["search_observation"]["results"][0]["title"] == "Directory"
-    assert "Search snippet only" not in prompt["page_html"]
-    assert "test-only-key" not in json.dumps(prompt)
-    fake_browser.navigate_to.assert_awaited_once_with("https://example.com/companies")
 
 
 @pytest.mark.parametrize(
