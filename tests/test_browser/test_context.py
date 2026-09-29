@@ -12,6 +12,7 @@ from verboisy.utils.exceptions import NavigationError
 
 @pytest.fixture
 def runtime(monkeypatch, config):
+    monkeypatch.setattr("verboisy.browser.context.ensure_browser", AsyncMock())
     page = SimpleNamespace(
         add_init_script=AsyncMock(),
         close=AsyncMock(),
@@ -28,7 +29,10 @@ def runtime(monkeypatch, config):
     )
     browser = SimpleNamespace(new_context=AsyncMock(return_value=context), close=AsyncMock())
     playwright = SimpleNamespace(
-        chromium=SimpleNamespace(launch=AsyncMock(return_value=browser)), stop=AsyncMock()
+        chromium=SimpleNamespace(
+            executable_path="/test/chromium", launch=AsyncMock(return_value=browser)
+        ),
+        stop=AsyncMock(),
     )
     monkeypatch.setattr(
         "verboisy.browser.context.async_playwright",
@@ -48,7 +52,7 @@ async def test_start_idempotent_and_sandboxed(runtime, config):
     page = await runtime.manager.start()
     assert await runtime.manager.start() is page
     runtime.playwright.chromium.launch.assert_awaited_once_with(
-        headless=True, chromium_sandbox=True
+        headless=True, channel="chromium", chromium_sandbox=True
     )
     assert runtime.browser.new_context.await_args.kwargs["accept_downloads"] is False
     assert runtime.browser.new_context.await_args.kwargs["service_workers"] == "block"
@@ -207,3 +211,33 @@ async def test_start_cancellation_cleans_up(runtime):
     assert runtime.manager._context is None
     assert runtime.manager._browser is None
     assert runtime.manager._playwright is None
+
+
+@pytest.mark.parametrize(
+    "message", ["Executable doesn't exist at /private/path", "PRIVATE PROVIDER DETAIL"]
+)
+async def test_launch_failures_are_safe(runtime, message):
+    from playwright.async_api import Error
+
+    runtime.playwright.chromium.launch.side_effect = Error(message)
+    with pytest.raises(NavigationError) as exc:
+        await runtime.manager.start()
+    assert "/private/path" not in str(exc.value) and "PRIVATE PROVIDER DETAIL" not in str(exc.value)
+    runtime.playwright.stop.assert_awaited_once()
+
+
+async def test_optional_user_agent_mode(runtime, config):
+    config.user_agent_rotation = True
+    await runtime.manager.start()
+    assert runtime.browser.new_context.await_args.kwargs["user_agent"]
+    runtime.page.add_init_script.assert_awaited()
+
+
+async def test_provision_failure_cleans_playwright(runtime, monkeypatch):
+    monkeypatch.setattr(
+        "verboisy.browser.context.ensure_browser",
+        AsyncMock(side_effect=NavigationError("setup failed")),
+    )
+    with pytest.raises(NavigationError, match="setup failed"):
+        await runtime.manager.start()
+    runtime.playwright.stop.assert_awaited_once()

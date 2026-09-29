@@ -1,81 +1,52 @@
-# Validation and release workflow
+# Validation gates
 
-Execute these commands from the repository root after installing Poetry 2.5.1 and
-Python >=3.11,<3.15. The supplied .python-version selects 3.11.9; the audit used
-that version. CI also covers newer Python minors, whose results must be checked in CI.
+Use Python >=3.11,<3.15. Run from the repository root in its Poetry environment.
 
 ```bash
-poetry install
 poetry check --lock
+poetry install
 poetry run ruff check .
 poetry run ruff format --check .
 poetry run mypy src
-poetry run pytest -m "not browser" --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=100
-poetry run pip-audit --local
+poetry run pytest -m 'not browser and not live' --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=100
 poetry run mkdocs build --strict
+poetry run pip-audit --local
 poetry build
 ```
 
-Success means zero exit status. The release gate requires 100% statement and branch
-coverage, matching CI and `make test`.
-The audit's offline tests replace browser/model decisions where stated; they do
-not establish real model accuracy. The local HTTP test uses the actual LiteLLM
-transport with a stub model response.
+Coverage remains a code-execution gate, not evidence of live extraction accuracy.
+The new tests replace obsolete model-FINISH/raw-record tests with provenance, scope,
+resume, conflict, partial-export and failure contracts. Retained schema, network,
+export, provider-error and browser-lifecycle regressions still run.
 
-Required Chromium gate on Linux/macOS:
+Real Chromium checks require the actual browser and Linux native libraries:
 
 ```bash
-poetry run playwright install --with-deps chromium
-VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser -v
+poetry run verboisy setup
+poetry run pytest -m browser -q
 ```
 
-PowerShell equivalent for the second command:
+On a fresh Linux CI machine, provision native libraries with
+`poetry run python -m playwright install --with-deps chromium` first. Keep the sandbox
+enabled in production and in non-root CI. `TEST_BROWSER_SANDBOX=false` is only for an
+explicitly isolated root-owned test environment and is not release evidence of sandboxing.
 
-```powershell
-$env:VERBOISY_REQUIRE_BROWSER = "1"
-poetry run pytest -m browser -v
-Remove-Item Env:VERBOISY_REQUIRE_BROWSER
+Opt-in paid model evaluation (credentials are read from your own environment):
+
+```bash
+poetry run python scripts/evaluate.py --live --repetitions 3 \
+  --mode evidence baseline --output ../verboisy-live-evaluation.json
 ```
 
-The browser fixture uses a local HTTP server and explicitly disables Chromium's OS
-sandbox inside the test process only. Product defaults remain sandboxed. Test the
-default sandbox separately on the intended deployment OS/container.
+Do not publish until all positive fixture datasets match the gold records, all critical
+negative controls reject unsupported values, and there are no false completion claims.
+Then run a held-out, manually annotated sample from each site class you intend to
+support, across at least two schemas per class and repeated runs. Measure field precision,
+record recall, false completion, rejected/conflicting records, latency and cost. Set the
+release thresholds before evaluating: recommended initial goals are >=99% supported-field
+precision, >=95% recall on finite annotated sources, and zero known critical negative
+control failures. Those thresholds are proposed gates, not results claimed by this bundle.
 
-Docker Compose applies the checked-in `docker/seccomp_profile.json` and allocates
-1 GiB of shared memory. The profile permits the user namespaces Chromium's sandbox
-requires while retaining a default-deny syscall policy. See
-`docker/SECCOMP-NOTICE.md` in the repository for provenance and licensing.
-For a direct `docker run`, include `--init --shm-size=1g
---security-opt seccomp=docker/seccomp_profile.json` from the repository root.
-The Docker CI gate starts `BrowserManager` as a non-root user with the default
-sandbox enabled and renders a local page. The target host must still support
-unprivileged user namespaces and allow them through its host security policy.
-
-If installation fails, resolve the interpreter/package error before proceeding.
-If Chromium cannot download or launch, the browser gate is blocked, not passed.
-Install Chromium during setup, under the same OS user and Python environment that
-will run Verboisy. Browser startup reports missing binaries without downloading
-software or running a system package manager.
-If pip-audit cannot reach the advisory service, no clean-security claim follows.
-If a test fails, retain the traceback and database; do not relax assertions or
-mark the run completed merely to produce an export.
-
-Run [live acceptance](demo.md) with the intended model/provider after these checks.
-Build/install the wheel in a fresh virtual environment and test
-`python -m verboisy --help` and the documented source examples.
-
-The publication workflow repeats tests/build on the release tag and checks that
-`v<version>` matches pyproject.toml. Configure trusted publishing with PyPI and the
-protected `pypi` GitHub environment before publishing. No release was published
-as part of the audit. A green local suite is not a substitute for a green release
-workflow, live acceptance, and deployment-specific checks.
-
-CI uploads coverage to Codecov only on a normal push to `main`, using the repository
-Actions secret `CODECOV_TOKEN`. Tests and the 100% coverage gate still run on pull
-requests and during release verification; those events do not upload to Codecov.
-Enable the repository in Codecov and verify an upload for the merged commit.
-
-For the `docs` workflow, select **Settings → Pages → Build and deployment →
-Source: GitHub Actions**. It builds and uploads the MkDocs site, then deploys through
-the `github-pages` environment. Allow deployments from `main` in that environment.
-The workflow runs on pushes to `main` and supports a manual run on `main`.
+For an ML use case, additionally review source permissions, leakage, label quality,
+duplicates, missingness, sampling bias and temporal drift. A schema-valid dataset alone
+is not suitable evidence for training or scientific conclusions.

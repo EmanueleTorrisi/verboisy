@@ -1,6 +1,6 @@
 # Contributing to Verboisy
 
-Use Python 3.11 or later and Poetry 2.5.1. The supplied .python-version is 3.11.9.
+Use Python 3.11–3.14 and Poetry 2.5.1. The supplied .python-version is 3.11.9.
 From the repository root:
 
 ```bash
@@ -9,7 +9,7 @@ poetry install
 poetry run ruff check .
 poetry run ruff format --check .
 poetry run mypy src
-poetry run pytest -m "not browser" --cov=src
+poetry run pytest -m "not browser and not live" --cov=src --cov-branch --cov-fail-under=100
 poetry run mkdocs build --strict
 poetry build
 ```
@@ -21,8 +21,7 @@ poetry run playwright install --with-deps chromium
 VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser -v
 ```
 
-Windows contributors can set the environment variable in PowerShell as documented
-in [validation.md](../docs/validation.md). Unit tests require no provider key. The HTTP
+See [validation.md](../docs/validation.md) for release gates. Unit tests require no provider key. The HTTP
 integration server is a deterministic model stub and must not be presented as a live
 model demonstration. [Live acceptance](../docs/demo.md) exercises a real provider.
 

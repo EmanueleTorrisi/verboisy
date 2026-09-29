@@ -1,24 +1,12 @@
 # Verboisy
 
-Verboisy combines model-directed browser navigation, schema validation and durable
-SQLite records. The CLI and Python API share one implementation.
+Evidence-backed web datasets using your JSON Schema, a persisted source queue and
+JSON/CSV exports. This revision is a release candidate, not a production certification.
 
-Install the checked-out source (a published package is not assumed):
+Install a reviewed release with `pip install verboisy`. For the unpublished candidate,
+install its wheel or use `pip install -e .`. Chromium is provisioned on first browser
+use. Native Linux libraries may require system setup or the provided Docker image.
 
-```bash
-python -m pip install -e .
-python -m playwright install chromium
-verboisy run --help
-```
-
-Configure a LiteLLM model and its credentials before a live run. System dependencies
-may be required for Chromium. Linux installations can use
-`python -m playwright install --with-deps chromium` with appropriate system privileges.
-
-The release audit, exact reproduction steps, requirement matrix, and verification
-limits are in the delivered engineering report. Browser and live-model acceptance
-must be checked separately from offline test coverage.
-
-- [API](api.md)
-- [Authentic demo and live acceptance](demo.md)
-- [Validation and release](validation.md)
+Start with the [dataset contract](contracts.md), then the [API](api.md).
+Review [validation](validation.md) and [release operations](release.md) before publishing.
+The [migration guide](migration.md) explains how to preserve 0.1 data and local changes.

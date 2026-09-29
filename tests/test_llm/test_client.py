@@ -135,3 +135,69 @@ async def test_non_integer_token_usage(config, monkeypatch):
     assert result == {"answer": "hello"}
     assert client.total_tokens == 0
     mock.assert_awaited_once()
+
+
+async def test_shared_pacing_usage_checkpoint_and_generic_provider(config, monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock, Mock
+
+    from verboisy.llm.client import LLMClient, _complete
+
+    response = SimpleNamespace(
+        usage=SimpleNamespace(total_tokens=7),
+        choices=[SimpleNamespace(message=SimpleNamespace(content="{}"), finish_reason="stop")],
+    )
+    provider = AsyncMock(return_value=response)
+    monkeypatch.setitem(sys.modules, "litellm", SimpleNamespace(acompletion=provider))
+    assert await _complete(model="custom/test") is response
+    config.litellm_model = "custom/test"
+    config.llm_min_interval_seconds = 10
+    client = LLMClient(config=config)
+    checkpoint = Mock()
+    client.on_usage = checkpoint
+    sleeper = AsyncMock()
+    monkeypatch.setattr("verboisy.llm.client.asyncio.sleep", sleeper)
+    await client.complete_json("system", "one")
+    reserved = client.reserved_tokens
+    await client.complete_json("system", "two")
+    assert client.total_tokens == 14 and client.reserved_tokens == 2 * reserved
+    assert checkpoint.call_count == 4 and sleeper.await_count == 1
+
+
+async def test_explicit_gateway_key_has_priority(config, monkeypatch):
+    config.litellm_api_key = SecretStr("gateway-test")
+    config.openai_api_key = SecretStr("unused-test")
+    mock = AsyncMock(return_value=response("{}"))
+    monkeypatch.setattr("verboisy.llm.client._complete", mock)
+    await LLMClient(config=config).complete_json("system", "user")
+    assert mock.await_args.kwargs["api_key"] == "gateway-test"
+
+
+async def test_invalid_json_response_retries_then_succeeds(config, monkeypatch):
+    from verboisy.utils.exceptions import LLMResponseError
+
+    config.llm_retries = 1
+    mock = AsyncMock(
+        side_effect=[
+            response("not json"),
+            response('{"ok":true}'),
+        ]
+    )
+    monkeypatch.setattr("verboisy.llm.client._complete", mock)
+
+    assert await LLMClient(config=config).complete_json("system", "user") == {"ok": True}
+    assert mock.await_count == 2
+
+    mock = AsyncMock(
+        side_effect=[
+            response("not json"),
+            response("still not json"),
+        ]
+    )
+    monkeypatch.setattr("verboisy.llm.client._complete", mock)
+
+    with pytest.raises(LLMResponseError):
+        await LLMClient(config=config).complete_json("system", "user")
+
+    assert mock.await_count == 2

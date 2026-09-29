@@ -13,8 +13,8 @@ from pathlib import Path
 
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
-    if "--help" in sys.argv:
-        print("Run from an installed checkout: python scripts/live_demo.py")
+    if "--help" in sys.argv or "--live" not in sys.argv:
+        print("Paid opt-in: python scripts/live_demo.py --live")
         print("Uses your configured model, a local fixture server, and a new demo-runs directory.")
         return 0
     runs = root / "demo-runs"
@@ -32,6 +32,18 @@ def main() -> int:
         "SQLITE_DB_PATH": str(output / "verboisy.db"),
         "ALLOW_PRIVATE_NETWORK": "true",
     }
+    task_path = output / "task.json"
+    task_path.write_text(
+        json.dumps(
+            {
+                "seed_urls": [url],
+                "allowed_hosts": ["127.0.0.1"],
+                "target_records": 2,
+                "max_depth": 0,
+                "max_pages": 1,
+            }
+        )
+    )
     command = [
         sys.executable,
         "-m",
@@ -41,6 +53,8 @@ def main() -> int:
         f"Open {url}. Extract both company cards. Copy company name, website href, "
         "tagline as description, and batch verbatim from the page. "
         "Do not visit the company websites.",
+        "--task",
+        str(task_path),
         "--schema",
         str(root / "examples/yc_startups/schema.json"),
         "--export",

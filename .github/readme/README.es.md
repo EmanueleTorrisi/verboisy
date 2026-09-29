@@ -3,24 +3,23 @@
   <img src="../../logo.png" alt="Verboisy" width="300" />
 </p>
 <p align="center">
-  <strong>Un agente autónomo de investigación web y extracción estructurada a JSON.</strong>
+  <strong>Investigación web respaldada por evidencia que convierte fuentes acotadas en datasets tipados.</strong>
   <br />
-  Dale un objetivo en lenguaje natural y un esquema JSON. Planifica su propia navegación, lee la página y devuelve datos estructurados y validados.
+  Dale a Verboisy un objetivo, un JSON Schema y una política de fuentes. Navega, extrae, verifica procedencia, revisa significado y devuelve datos estructurados auditables.
 </p>
 
 <p align="center">
   <a href="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://codecov.io/gh/EmanueleTorrisi/verboisy"><img src="https://codecov.io/gh/EmanueleTorrisi/verboisy/graph/badge.svg?token=CINC6IHYF2" alt="Cobertura de pruebas"></a>
+  <a href="https://codecov.io/gh/EmanueleTorrisi/verboisy"><img src="https://codecov.io/gh/EmanueleTorrisi/verboisy/graph/badge.svg?token=CINC6IHYF2" alt="Cobertura"></a>
   <a href="https://emanueletorrisi.github.io/verboisy/"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/docs.yml/badge.svg" alt="Documentación"></a>
-  <a href="#installation"><img src="https://img.shields.io/badge/PyPI-coming%20soon-lightgrey?style=flat" alt="PyPI: próximamente"></a>
-  <!--<a href="https://pypi.org/project/verboisy/"><img src="https://img.shields.io/pypi/v/verboisy?style=flat" alt="PyPI version"></a>-->
+  <a href="#installation"><img src="https://img.shields.io/badge/PyPI-pr%C3%B3ximamente-lightgrey?style=flat" alt="PyPI: próximamente"></a>
   <img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue?style=flat" alt="Python 3.11–3.14">
   <a href="../../LICENSE"><img src="https://img.shields.io/github/license/EmanueleTorrisi/verboisy?style=flat" alt="Licencia"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/badge/style-ruff-261230?style=flat" alt="Ruff"></a>
 </p>
 
 <p align="center">
-  <em>v0.1.0 | Versión anterior a la 1.0 y en desarrollo activo. Hasta la 1.0 pueden producirse cambios incompatibles entre versiones menores.</em>
+  <em>v0.2.0rc1 | candidato de lanzamiento. Basado en evidencia, reanudable y explícito sobre cobertura incompleta.</em>
 </p>
 
 <p align="center">
@@ -34,9 +33,9 @@
   <a href="README.ja.md" title="日本語" aria-label="日本語">🇯🇵</a>
 </p>
 
-## Índice
+## Contenido
 
-- [Demostración](#demo)
+- [Demo](#demo)
 - [Por qué Verboisy](#why-verboisy)
 - [Comparación](#compared-to)
 - [Ejemplo rápido](#quick-example)
@@ -45,453 +44,361 @@
 - [Instalación](#installation)
 - [Configuración](#configuration)
 - [Uso](#usage)
+- [Salidas y CSV](#outputs-and-csv)
 - [Docker](#docker)
 - [Limitaciones conocidas](#known-limitations)
 - [Uso responsable](#responsible-use)
 - [Documentación](#documentation)
-- [Contribuciones](#contributing)
+- [Contribuir](#contributing)
 - [Seguridad](#security)
 - [Licencia](#license)
 
 <a id="demo"></a>
+## Demo
 
-## Demostración
+La [animación histórica](../../docs/demo.gif) es ilustrativa y anterior al motor de evidencia 0.2. Para el comportamiento actual usa el [flujo de demo en vivo](../../docs/demo.md) y la [guía de validación](../../docs/validation.md).
 
-La [animación histórica](../../docs/demo.gif) es ilustrativa y no verifica el producto. La grabación proporcionada es anterior a la implementación de la reanudación. Utiliza el [procedimiento para una demostración real en directo](../../docs/demo.md) para grabar el comportamiento real del navegador, el modelo, SQLite, las interrupciones y la exportación. Una nueva grabación en directo sigue siendo un requisito de aceptación.
-
-Esta revisión incluye pruebas de regresión sin conexión ejecutables y una comprobación obligatoria de integración con Chromium. Consulta las [comprobaciones de validación y publicación](../../docs/validation.md) antes del despliegue; no constituyen una afirmación de que el producto esté listo para producción.
+0.2.0rc1 se ha probado con cobertura offline de statements/branches, Chromium real, instalación limpia de wheel, arranque Docker sandbox, fixtures live repetidas, paginación held-out, interrupción/reanudación, fuentes no disponibles, conflictos de identidad y un caso held-out no e-commerce. Son evidencias de release, no una garantía universal.
 
 <a id="why-verboisy"></a>
-
 ## Por qué Verboisy
 
-- **Guiado por objetivos, no por selectores.** Describe el objetivo en lenguaje natural. El planificador decide el siguiente clic, desplazamiento o lectura según la página que realmente tiene delante. El modelo intenta adaptarse al DOM observado; un rediseño todavía puede interrumpir la ejecución.
-- **Primero el esquema, no una extracción aproximada.** Cada registro se comprueba con tu esquema JSON y se encapsula en un modelo Pydantic antes de guardarse. La validación comprueba la estructura y las restricciones; no demuestra la exactitud de los hechos.
-- **Tu modelo, tu infraestructura.** OpenAI, Anthropic o un modelo local de Ollama mediante [LiteLLM](https://github.com/BerriAI/litellm): cambia con una sola variable de entorno. Se ejecuta en tu equipo o tus servidores, no en un servicio alojado opaco.
-- **Reanudación integrada.** Cada registro validado se confirma en SQLite antes de procesar el siguiente candidato. `verboisy run --resume` (o `run(resume=True)` en Python) retoma la última ejecución incompleta. Los registros guardados anteriormente sobreviven a una interrupción. La reanudación recupera el progreso y la última URL guardada, pero no el estado de la sesión del navegador.
+- **Con evidencia, no “lo dijo el modelo”.** Cada escalar no nulo debe apuntar a evidencia observada; el código valida fuente, scope de entidad, cita literal, tipo, link, transformación y schema.
+- **Schema-first sin debilitar el contrato.** JSON Schema Draft 2020-12 define filas y restricciones de colección. Si falta evidencia requerida se rechaza el candidato.
+- **Revisión semántica separada.** Tras los controles deterministas, otro paso del modelo revisa relevancia, significado y pertenencia a la misma entidad usando solo la evidencia dada. Es falible.
+- **Investigación acotada y scope explícito.** Seeds, hosts, paths, profundidad, páginas, links por página y paginación JS opcional limitan lo observable.
+- **Reanudable por diseño.** Estado de páginas, snapshots, candidatos, records aceptados, eventos, contabilidad y cola persisten en SQLite.
+- **Los conflictos quedan visibles.** Las identidades deduplican iguales; payloads contradictorios para la misma identidad se ponen en cuarentena.
 
-Este ciclo incluye Playwright asíncrono (Chromium con o sin interfaz), limpieza del DOM ajustada a las ventanas de contexto de los LLM en lugar de volcados HTML sin procesar y exportación JSON o CSV; también puedes consultar SQLite directamente.
+Playwright/Chromium + SQLite + LiteLLM + JSON/CSV + archivo lateral de evidencias + manifiesto con sumas de comprobación.
 
 <a id="compared-to"></a>
-
 ## Comparación
 
-Verboisy combina un agente de navegador autónomo y un extractor validado mediante esquema. Las herramientas cercanas cubren bien uno de esos aspectos; Verboisy se ha creado para ambos.
+Verboisy está entre un agente de investigación con navegador y un extractor estructurado; su contrato distintivo es la pista de evidencia de cada valor aceptado.
 
-| | Verboisy | [Browser Use](https://github.com/browser-use/browser-use) | [Firecrawl](https://github.com/firecrawl/firecrawl) | [Crawl4AI](https://github.com/unclecode/crawl4ai) |
+| | Verboisy | Agente general de navegador | Crawler / extractor | Extracción LLM ad hoc |
 | --- | --- | --- | --- | --- |
-| Qué describes | un objetivo **y** un esquema JSON | un objetivo | URL + instrucción o esquema | reglas de rastreo + instrucción |
-| Navegación | el planificador elige los clics | el planificador elige los clics | rastreo / mapa del sitio | rastreo |
-| Validación | esquema JSON + Pydantic, antes de escribir | tu código | esquema de extracción opcional | tu código |
-| Persistencia | SQLite por registro, `--resume` | memoria / tu código | API o tu base de datos | tu código |
-| Dónde se ejecuta | tu equipo | tu equipo | alojado o autogestionado | tu equipo |
-
-Si ya conoces la URL y solo necesitas Markdown, Firecrawl o Crawl4AI son más sencillos. Si necesitas un agente general para usar el ordenador y validarás los datos después, Browser Use encaja mejor. Si necesitas filas conformes a un esquema y el agente debe encontrarlas, ese es el propósito de Verboisy.
+| Describes | objetivo + JSON Schema + política | objetivo | URLs / reglas de crawl | prompt + texto |
+| Navegación | links observados acotados + paginación opcional | acciones del modelo | reglas del crawler | normalmente ninguna |
+| Procedencia de campos | obligatoria para cada escalar no nulo | tu código | varía | normalmente solo prompt |
+| Validación | JSON Schema + evidencia determinista + review semántica | tu código | varía | best effort |
+| Persistencia | cola SQLite, capturas, candidatos, registros, eventos | varía | varía | normalmente el llamador |
+| Reanudación | id de ejecución durable + frontera persistente | varía | varía | normalmente el llamador |
+| Conflictos | cuarentena determinista | caller | caller | caller |
 
 <a id="quick-example"></a>
-
 ## Ejemplo rápido
 
-El esquema utiliza JSON Schema. Para una lista de registros, el nivel superior es un `"array"` cuyos `"items"` describen la forma del objeto de cada fila:
+Define exactamente qué significa un registro:
 
 ```json
 {
   "type": "array",
+  "minItems": 2,
   "items": {
     "type": "object",
     "properties": {
-      "name": { "type": "string" },
-      "website": { "type": "string" },
-      "description": { "type": "string" },
-      "batch": { "type": "string" }
+      "sku": {"type": "string", "description": "SKU del producto exactamente como lo publica la fuente"},
+      "price_usd": {"type": "number", "minimum": 0, "description": "Precio unitario listado en USD; no convertir moneda"},
+      "source_url": {"type": "string", "format": "uri", "description": "URL final de la página donde se observó este registro"}
     },
-    "required": ["name", "website"]
+    "required": ["sku", "price_usd", "source_url"],
+    "additionalProperties": false
   }
 }
 ```
 
-Verboisy construye dinámicamente un modelo Pydantic a partir del esquema y rechaza las filas que no cumplen antes de que lleguen a SQLite.
+Después define la política acotada en `task.json`:
 
-Interfaz de línea de comandos (CLI):
+```json
+{
+  "seed_urls": ["https://catalog.example/products"],
+  "allowed_hosts": ["catalog.example"],
+  "include_paths": ["/products*"],
+  "target_records": 20,
+  "identity_fields": ["/sku"],
+  "max_depth": 3,
+  "max_pages": 100,
+  "field_rules": {
+    "/source_url": {"source": "page_url"}
+  }
+}
+```
+
+Ejecuta:
 
 ```bash
 verboisy run \
-  --goal "Encuentra startups de IA de la promoción de otoño de 2026 (F26) de Y Combinator" \
-  --schema examples/yc_startups/schema.json \
-  --export result.json
+  --goal "Recopila los SKU publicados y los precios listados en USD" \
+  --schema schema.json \
+  --task task.json \
+  --export dataset.json \
+  --max-steps 40
 ```
 
-La misma ejecución desde Python:
-
-```python
-from verboisy import run
-
-result = run(
-    goal="Encuentra startups de IA de la promoción de otoño de 2026 (F26) de Y Combinator",
-    schema="examples/yc_startups/schema.json",
-    export="result.json",
-)
-
-print(result.run_id, len(result.records))
-for row in result.records:
-    print(row["name"], row["website"])
-```
-
-Un posible resultado ilustrativo tendría esta estructura:
+Una forma de salida ilustrativa:
 
 ```json
 [
-  {
-    "name": "Marrow",
-    "website": "https://marrow.example.com",
-    "description": "Entornos de pruebas previos a producción para agentes de IA.",
-    "batch": "F26"
-  },
-  {
-    "name": "Kiln Trace",
-    "website": "https://kilntrace.example.com",
-    "description": "Depuración de latencia y costes en flujos de trabajo de agentes.",
-    "batch": "F26"
-  }
+  {"sku": "LAMP-001", "price_usd": 39.95, "source_url": "https://catalog.example/products/lamp-001"},
+  {"sku": "CHAIR-014", "price_usd": 129.0, "source_url": "https://catalog.example/products/chair-014"}
 ]
 ```
 
-*(Resultado ilustrativo: los resultados reales dependen del contenido disponible en la página durante la ejecución. Los nombres de ejemplo usan `.example.com` de forma intencionada.)*
-
-Si el proceso se detiene a mitad, retómalo sin repetir las filas guardadas:
-
-```bash
-verboisy run --resume
-```
-
-```python
-result = run(resume=True)
-```
+*Los dominios y registros de ejemplo son ilustrativos. Los resultados reales dependen de las páginas observadas.*
 
 <a id="use-cases"></a>
-
 ## Casos de uso
 
-Verboisy está pensado para patrones de investigación que merece la pena repetir:
+Verboisy sirve cuando “dame filas” no basta y también necesitas “¿de dónde salió este valor?”.
 
-- **Inteligencia competitiva y de mercado:** supervisa periódicamente precios, páginas de productos y anuncios de la competencia en lugar de revisarlos a mano.
-- **Investigación de clientes potenciales B2B:** convierte listas de empresas en registros estructurados de datos empresariales y tecnologías, listos para importar a un CRM.
-- **Supervisión de comercio electrónico y minorista:** observa cambios de catálogos y precios en tiendas que dependen mucho de JavaScript.
-- **Operaciones de investigación (ResOps):** repite el mismo patrón de consulta para cientos de entidades de forma programada.
-- **Ingesta para RAG / bases de conocimiento:** alimenta un sistema de recuperación con registros estructurados y documentados, en vez de contexto seleccionado a mano.
-
-Todos estos casos siguen el patrón objetivo + esquema del ejemplo rápido, aplicado a un sitio y una estructura de datos diferentes.
+- **Mercado y competencia:** catálogos, precios, funciones o anuncios con evidencia por campo.
+- **Investigación B2B:** organizaciones/directorios estructurados con identidad y URL fuente.
+- **Monitoreo e-commerce:** productos tipados sin ocultar observaciones contradictorias.
+- **Research operations:** repetir schema/política sobre páginas controladas y reanudar desde SQLite.
+- **Registros y referencias:** tablas técnicas como filas tipadas conservando evidencias exactas.
+- **RAG / pipelines:** JSON canónico + sidecar de evidencia + manifest en lugar de prosa sin fuente.
 
 <a id="how-it-works"></a>
-
 ## Cómo funciona
 
-Verboisy repite el ciclo principal **planificar → actuar → observar → extraer** hasta que el planificador decide que tiene datos suficientes o agota su presupuesto de pasos.
+0.2 sustituye el viejo bucle libre plan/action por un motor acotado de investigación basada en evidencia:
 
 ```mermaid
 flowchart LR
-    F[run --resume] --> A
-    A[Planificar siguiente acción] -->|navegar o hacer clic| B[El navegador ejecuta]
-    A -->|extraer| C[Convertir DOM en JSON]
-    B --> D[Limpiar DOM para el LLM]
-    D --> A
-    C --> E[Guardar en SQLite]
-    A -->|terminado| E
+    A[Goal + Schema + Task] --> B[Persistent page frontier]
+    B --> C[Chromium loads page]
+    C --> D[Visible evidence snapshot]
+    D --> E[Model proposes records + evidence IDs]
+    E --> F[Deterministic provenance + schema checks]
+    F --> G[Semantic same-entity review]
+    G --> H[SQLite accepted records / rejections]
+    H --> I[Discover observed in-scope links]
+    I --> B
+    H --> J{Target / scope state}
+    J -->|completo| K[Dataset + evidencias + manifiesto]
+    J -->|parcial / fallido| L[Persistir estado para revisión o reanudación]
 ```
 
-Cada registro extraído se confirma en SQLite en cuanto se valida, asociado a un `run_id`. Si interrumpes el ciclo por un límite de solicitudes, un fallo o la finalización del proceso, `verboisy run --resume` (o `run(resume=True)`) carga de nuevo objetivo, esquema, filas guardadas, historial y última URL registrada, y continúa. `--resume <id>` selecciona una ejecución específica; `--resume` sin identificador retoma la última incompleta.
+Un snapshot contiene hechos visibles compactos, links resueltos, scopes de entidad, URL final, timestamp y hash. El HTML observado completo queda en SQLite. El modelo propone candidatos pero no puede saltarse schema/procedencia. `COMPLETED` significa target explícito satisfecho y colección válida, no exhaustividad global.
 
-`--export` escribe el archivo al finalizar, incluso si la ejecución se ha reanudado. Hasta entonces, los resultados parciales se encuentran en `SQLITE_DB_PATH`.
-
-Puedes consultar la descripción completa de los módulos en [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
+[`ARCHITECTURE.md`](../../ARCHITECTURE.md)
 
 <a id="installation"></a>
-
 ## Instalación
 
-Requiere Python >=3.11,<3.15.
+Requiere Python 3.11–3.14.
 
-Todavía no está en PyPI. Instala desde el código fuente:
-
-```bash
-git clone https://github.com/EmanueleTorrisi/verboisy.git
-cd verboisy
-python -m pip install -e .
-python -m playwright install chromium
-```
-
-Cuando se publique la primera versión, los comandos serán:
+Tras publicar una versión estable, la instalación normal prevista será:
 
 ```bash
-python -m pip install verboisy
-python -m playwright install chromium
+pip install verboisy
 ```
 
-Chromium se instala durante la configuración. Verboisy no descarga navegadores ni ejecuta el gestor de paquetes del sistema durante una ejecución. Utiliza el mismo usuario del sistema y el mismo entorno de Python para instalar y ejecutar. En Linux, instala el navegador y sus dependencias del sistema con `python -m playwright install --with-deps chromium` (los paquetes del sistema requieren permisos de administrador). Con Poetry, utiliza `poetry run playwright install --with-deps chromium`.
+Para esta release candidate no publicada instala la wheel suministrada o el checkout:
+
+```bash
+pip install -e .
+verboisy --help
+```
+
+El primer uso del navegador descarga Chromium compatible antes de llamadas al modelo. Importar o ejecutar `--help` no descarga navegador. Preparación explícita:
+
+```bash
+verboisy setup
+```
+
+En Linux pueden hacer falta librerías nativas de Chromium, por ejemplo:
+
+```bash
+python -m playwright install-deps chromium
+```
+
+Verboisy no invoca `sudo` ni desactiva silenciosamente la sandbox.
 
 <a id="configuration"></a>
-
 ## Configuración
 
-Copia `.env.example` a `.env`. Pydantic carga todos los ajustes desde `utils/config.py`; lo que no configures utilizará los valores predeterminados siguientes.
+Copia `.env.example` a `.env` y no versionees secretos.
 
 ```bash
-# Obligatorio: al menos un proveedor de LLM
 OPENAI_API_KEY=sk-your-api-key-here
 # ANTHROPIC_API_KEY=sk-ant-your-api-key-here
-
-# Selección del modelo mediante LiteLLM (p. ej., gpt-4o, claude-sonnet-5, ollama/llama3)
 LITELLM_MODEL=gpt-4o
-
 SQLITE_DB_PATH=verboisy.db
-VERBOISY_LOG_LEVEL=INFO
-VERBOISY_HEADLESS=true
+SEARCH_PROVIDER=disabled
+BROWSER_SANDBOX=true
+ALLOW_PRIVATE_NETWORK=false
 ```
 
-| Variable | Predeterminado | Descripción |
-| --- | --- | --- |
-| `OPENAI_API_KEY` | - | Credenciales de OpenAI. Obligatorio salvo que uses Anthropic o un modelo local. |
-| `ANTHROPIC_API_KEY` | - | Credenciales de Anthropic, en lugar de OpenAI. |
-| `LITELLM_MODEL` | `gpt-4o` | Identificador de un modelo admitido por [LiteLLM](https://github.com/BerriAI/litellm). |
-| `MAX_TOKENS` | `4096` | Tokens máximos por llamada de planificación o extracción. |
-| `TEMPERATURE` | `0.0` | Temperatura de muestreo del planificador. |
-| `VERBOISY_HEADLESS` | `true` | Ejecutar Chromium sin interfaz. Pon `false` para ver el navegador. |
-| `BROWSER_TIMEOUT_MS` | `30000` | Tiempo límite de navegación por página, en ms. |
-| `USER_AGENT_ROTATION` | `true` | Elegir un agente de usuario al crear el contexto del navegador; no cambia en cada solicitud. |
-| `SQLITE_DB_PATH` | `verboisy.db` | Ruta donde se guardan las ejecuciones y los registros extraídos. |
-| `VERBOISY_LOG_LEVEL` | `INFO` | Nivel estándar de registro de Python. `DEBUG` muestra cada paso del planificador. |
+Ajustes comunes:
 
-Pagas directamente al proveedor de LLM. Las llamadas de planificación y extracción están limitadas por `MAX_TOKENS` (4096 por defecto) con `TEMPERATURE` 0.0. El número de llamadas depende de la navegación, la extracción y los reintentos. No existe un contador de uso alojado.
+| Variable | Propósito |
+| --- | --- |
+| `OPENAI_API_KEY / ANTHROPIC_API_KEY` | Credenciales del proveedor enrutadas mediante LiteLLM |
+| `LITELLM_MODEL` | Identificador del modelo para propuestas y revisiones |
+| `LITELLM_API_KEY / LITELLM_API_BASE` | Proveedor alternativo o proxy opcional |
+| `SQLITE_DB_PATH` | Base de datos durable de ejecuciones 0.2 |
+| `SEARCH_PROVIDER` | Desactivado con semillas conocidas; descubrimiento mediante Brave cuando se configura |
+| `BRAVE_SEARCH_API_KEY` | Credencial para la búsqueda de Brave |
+| `MAX_TOKENS` | Máximo de tokens de salida del modelo por solicitud |
+| `MODEL_REQUEST_BUDGET` | Presupuesto local conservador de unidades de solicitud |
+| `LLM_TIMEOUT_SECONDS` | Límite de tiempo por solicitud al modelo |
+| `LLM_RETRIES` | Reintentos limitados para respuestas transitorias o inutilizables |
+| `RUN_TIMEOUT_SECONDS` | Límite de tiempo por invocación |
+| `MAX_DOM_CHARS` | Presupuesto de evidencias por lote del modelo |
+| `ACTION_DELAY_SECONDS` | Pausa entre iteraciones de trabajo de página |
+| `BROWSER_SANDBOX` | Activa/desactiva el sandbox de Chromium; mantenlo activado |
+| `ALLOW_PRIVATE_NETWORK` | Acceso explícito a red privada/loopback; desactivado por defecto |
+| `ALLOWED_DOMAINS` | Restricción opcional a hosts de destino exactos |
+
+`verboisy doctor` muestra configuración no secreta y readiness. `verboisy setup` prepara/prueba Chromium sin modelo.
 
 <a id="usage"></a>
-
 ## Uso
 
 ### CLI
 
 ```bash
 verboisy run \
-  --goal "Encuentra startups de IA de la promoción de otoño de 2026 (F26) de Y Combinator" \
-  --schema examples/yc_startups/schema.json \
-  --export result.json
+  --goal "Recopila los SKU publicados y los precios listados en USD" \
+  --schema schema.json \
+  --task task.json \
+  --export dataset.json \
+  --max-steps 40
 ```
 
-El comando registra un `run_id` (también guardado en SQLite). Al agotar el presupuesto devuelve un resultado incompleto y termina con código 2; los errores terminan con 1 y Ctrl-C con 130. Solo FINISH junto con una validación correcta de la colección completan una ejecución. Utiliza su ID para reanudarla más adelante.
+Flags importantes:
 
-| Opción | Abreviatura | Obligatoria | Descripción |
-| --- | --- | --- | --- |
-| `--goal` | `-g` | Sí, salvo `--resume` | Descripción en lenguaje natural de qué buscar y dónde. Sé específico. |
-| `--schema` | `-s` | Sí, salvo `--resume` | Ruta al esquema JSON de los campos que se deben extraer. `array` de `object` en el nivel superior. |
-| `--export` | `-e` | No | Ruta de salida. Admite `.json` y `.csv`. Se escribe al finalizar la ejecución. |
-| `--resume` | `-r` | No | Reanuda una ejecución. Sin ID, `--resume` continúa la última ejecución incompleta de `SQLITE_DB_PATH`; `--resume <id>` continúa la indicada. Objetivo y esquema se recuperan de la ejecución guardada; aún puedes modificar `--export` y el modo con/sin interfaz. |
+| Flag | Requerido | Significado |
+| --- | --- | --- |
+| `--goal`, `-g` | run nuevo | Natural-language research objective |
+| `--schema`, `-s` | run nuevo | JSON Schema path |
+| `--task`, `-t` | run nuevo | Bounded source/discovery policy |
+| `--export`, `-e` | no | Salida `.json` o `.csv` |
+| `--resume`, `-r` | reanudar | Última ejecución incompleta o id de ejecución específico |
+| `--max-steps`, `-m` | no | Límite de trabajo para esta invocación |
+| `--headless` / `--headed` | no | Sobrescribir la visibilidad del navegador |
 
-Ejecuta `verboisy run --help` para consultar todas las opciones.
+Códigos: `0` target completado, `2` parcial/agotado normal, `1` fallo, `130` interrupción.
 
-Otras opciones son `--max-steps/-m` y `--headless/--headed`. El presupuesto de pasos se renueva al reanudar, aunque los contadores guardados siguen siendo acumulativos. Se acepta un prefijo único del identificador. Una ejecución completada puede volver a exportarse sin llamar al navegador ni al modelo. Los fallos de exportación devuelven un código distinto de cero y permiten reintentar de esta manera. Los resultados vacíos también generan un archivo.
-
-<a id="resume"></a>
-
-### Reanudación
+### Reanudar
 
 ```bash
-# Última ejecución incompleta de verboisy.db
+# Reanuda el último run incompleto
 verboisy run --resume
 
-# Una ejecución concreta
-verboisy run --resume 7f3a2c1b --export result.json
+# Reanuda un run específico y exporta al parar
+verboisy run --resume 7f3a2c1b --export dataset.json
 ```
 
-Una página puede volver a leerse o extraerse tras una interrupción. Las filas canónicamente idénticas no se insertan de nuevo en la misma ejecución. No se restauran cookies, pestañas abiertas, posición de desplazamiento ni estado temporal de JavaScript. Si no hay ninguna ejecución incompleta, el comando termina con un error y un código distinto de cero que indica la base de datos consultada.
+La reanudación conserva objetivo, schema, task, records aceptados, cola y contabilidad acumulada. El trabajo interrumpido/activo puede reprocesarse; la identidad determinista evita duplicados iguales.
 
 ### Python
 
-`run()` es la API pública síncrona; usa `await arun(...)` en notebooks o aplicaciones asíncronas. La CLI es una capa ligera sobre ella.
-
-```python
-from pathlib import Path
-from verboisy import RunResult, run
-
-result: RunResult = run(
-    goal="Encuentra startups de IA de la promoción de otoño de 2026 (F26) de Y Combinator",
-    schema="examples/yc_startups/schema.json",  # ruta, Path o dict
-    export="result.json",
-)
-
-print(result.run_id)
-print(result.records[0]["name"])
-```
-
-Esquema como diccionario, sin archivo:
-
-```python
-result = run(
-    goal="Encuentra startups de IA de la promoción de otoño de 2026 (F26) de Y Combinator",
-    schema={
-        "type": "array",
-        "items": {
-            "type": "object",
-            "properties": {
-                "name": {"type": "string"},
-                "website": {"type": "string"},
-                "description": {"type": "string"},
-                "batch": {"type": "string"},
-            },
-            "required": ["name", "website"],
-        },
-    },
-)
-```
-
-Reanudación:
+`run()` es la API síncrona; usa `await arun(...)` en async.
 
 ```python
 from verboisy import run
 
-# Última ejecución incompleta
-result = run(resume=True)
+result = run(
+    goal="Recopila los SKU publicados y los precios USD",
+    schema="schema.json",
+    task="task.json",
+    export="dataset.json",
+    max_steps=40,
+)
 
-# Ejecución concreta; exportar al finalizar
-result = run(resume=result.run_id, export="result.json")
+print(result.run_id)
+print(result.status, result.stop_reason)
+for record in result.records:
+    print(record)
 ```
 
-Firma:
+<a id="outputs-and-csv"></a>
+## Salidas y CSV
 
-```python
-def run(
-    *,
-    goal: str | None = None,
-    schema: str | Path | dict | None = None,
-    export: str | Path | None = None,
-    resume: bool | str = False,
-    headless: bool | None = None,
-    max_steps: int | None = None,
-    config: Settings | None = None,
-) -> RunResult: ...
-```
+Un export JSON genera tres artefactos:
 
-Campos de `RunResult`:
+- `dataset.json` — solo los campos pedidos.
+- `dataset.json.evidence.json` — registros aceptados con procedencia snapshot/evidencia.
+- `dataset.json.manifest.json` — estado, schema/task, metadatos del modelo, validación y hashes SHA-256.
 
-| Campo | Tipo | Significado |
-| --- | --- | --- |
-| `run_id` | `str` | ID estable guardado en SQLite. Pásalo a `run(resume=...)`. |
-| `records` | `list[dict]` | Todas las filas validadas de esta ejecución hasta el momento. |
-| `export_path` | `Path \| None` | Ruta del archivo exportado si se indicó `--export` / `export=` y terminó la ejecución. |
-| `db_path` | `Path` | Archivo SQLite utilizado. |
-| `completed` | `bool` | `True` después de FINISH y la validación correcta de la colección. |
-| `status` | `str` | COMPLETED o PAUSED en un retorno normal. |
-| `stop_reason` | `str \| None` | Motivo por el que terminó la llamada. |
+SQLite también conserva frontier, snapshots/HTML, candidatos, rechazos, records, coverage gaps, conflictos y contabilidad.
 
-Reglas:
+`csv_mode: "json"` codifica cada celda presente como JSON y conserva tipos exactos. Vacío = ausente; `null` sigue distinto.
 
-- Nueva ejecución: `goal` y `schema` son obligatorios; se omite `resume` o se establece `False`.
-- Reanudación: `resume=True` o `resume="<id>"`; `goal` / `schema` son opcionales y se ignoran si la ejecución guardada ya los tiene.
-- `headless=None` usa `VERBOISY_HEADLESS`. Pasa `True` / `False` para cambiarlo solo en esta llamada.
+`csv_mode: "spreadsheet"` crea celdas convencionales y escapa cadenas tipo fórmula. Es cómodo manualmente pero no canónico.
 
-<a id="watching-a-run"></a>
+Verifica los hashes del manifest antes de tratar una copia como la misma generación.
 
-### Observar una ejecución
-
-```bash
-VERBOISY_HEADLESS=false VERBOISY_LOG_LEVEL=DEBUG \
-  verboisy run \
-    --goal "Encuentra startups de IA de la promoción de otoño de 2026 (F26) de Y Combinator" \
-    --schema examples/yc_startups/schema.json \
-    --export result.json
-```
-
-Detalles del esquema: la raíz puede ser un array de objetos o el esquema de un único objeto-registro. Siguen admitiéndose los mapas de propiedades antiguos. La validación Draft 2020-12 contempla tipos anidados, diferencias entre campos obligatorios/opcionales/null, enum, patrones, límites numéricos, additionalProperties y formatos estándar. Solo se permiten referencias a fragmentos locales de esquema. Las restricciones de colección, como minItems, se comprueban sobre todas las filas guardadas antes de completar la ejecución. Las exportaciones JSON conservan los valores; el CSV antepone un apóstrofo al texto que parece una fórmula y codifica los valores anidados como JSON.
-
+<a id="docker"></a>
 ## Docker
 
+El contenedor ejecuta Verboisy como usuario no privilegiado y ofrece un límite de despliegue más fuerte que una sesión personal.
+
 ```bash
-# Crea y configura .env antes de empezar.
-docker compose -f docker/docker-compose.yml up -d --build
-docker compose -f docker/docker-compose.yml exec verboisy verboisy run \
-  --goal "Encuentra startups de IA de la promoción de otoño de 2026 (F26) de Y Combinator" \
-  --schema examples/yc_startups/schema.json \
-  --export /data/result.json
-docker compose -f docker/docker-compose.yml cp verboisy:/data/result.json ./result.json
+docker build -f docker/Dockerfile -t verboisy:0.2.0rc1 .
+
+docker run --rm --init --shm-size=1g \
+  --security-opt seccomp=docker/seccomp_profile.json \
+  --entrypoint verboisy \
+  verboisy:0.2.0rc1 setup
 ```
 
-El contenedor se ejecuta como usuario sin privilegios y lee `../.env` mediante Compose. Un volumen con nombre conserva `/data/verboisy.db` y las exportaciones entre reinicios. La imagen incluye los ejemplos. El soporte de aislamiento de Chromium debe probarse en el host de contenedores de destino; permanece activado por defecto. La compilación y el despliegue de Docker no se ejecutaron en el entorno de auditoría.
-
-<a id="additional-configuration"></a>
-
-## Configuración adicional
-
-| Variable | Predeterminado | Finalidad |
-| --- | --- | --- |
-| LITELLM_API_KEY | sin establecer | Credencial explícita para otro proveedor/proxy |
-| LITELLM_API_BASE | sin establecer | Endpoint explícito de LiteLLM, incluidos modelos locales |
-| MAX_STEPS | 20 | Presupuesto de acciones por llamada; modificable mediante CLI/API |
-| MAX_TOTAL_TOKENS | 1000000 | Presupuesto local de solicitudes: bytes del prompt más tokens de respuesta reservados por intento; no es un límite exacto de facturación |
-| LLM_TIMEOUT_SECONDS | 60 | Tiempo límite para una solicitud al modelo |
-| LLM_RETRIES | 2 | Reintentos ante fallos transitorios; JSON mal formado no se reintenta |
-| RUN_TIMEOUT_SECONDS | 900 | Tiempo límite de una llamada |
-| MAX_DOM_CHARS | 20000 | Límite de caracteres del contexto de página depurado |
-| ACTION_DELAY_SECONDS | 0.5 | Pausa entre acciones |
-| BROWSER_SANDBOX | true | Activar el aislamiento de Chromium |
-| ALLOW_PRIVATE_NETWORK | false | Permitir explícitamente destinos internos/loopback |
-| ALLOWED_DOMAINS | [] | Array JSON de nombres de host de destino exactos permitidos; vacío significa hosts públicos |
-
-Los ajustes se cargan de nuevo en cada llamada pública. Las claves de OpenAI y Anthropic en `.env` se dirigen explícitamente al proveedor seleccionado. Los modelos locales pueden usar `LITELLM_API_BASE`. No cambies el proveedor ni los presupuestos durante una llamada mediante variables globales.
+Para workloads reales, persiste SQLite/exports, mantén sandbox y aplica control egress.
 
 <a id="known-limitations"></a>
-
 ## Limitaciones conocidas
 
-Esta revisión corrige las rutas principales documentadas, pero aún requiere pruebas de aceptación con un modelo activo y un navegador real en la plataforma de despliegue prevista. Las pruebas sin conexión por sí solas no certifican la exactitud de la investigación autónoma.
-
-- La reanudación recupera la última URL guardada, no una sesión completa del navegador. La paginación de SPA, las sesiones autenticadas y las acciones en curso pueden requerir nueva navegación.
-- El bloqueo de redes privadas y las comprobaciones de dominios son medidas de defensa adicionales. El DNS rebinding, el código del navegador y la inyección de prompts exigen aislamiento de despliegue y controles de salida de red.
-- Se confía en los autores de esquemas; las expresiones regulares hostiles y los esquemas recursivos no tienen aislamiento de recursos.
-- El contexto DOM tiene límites. Las páginas largas pueden necesitar desplazamiento o paginación y omitir datos.
-- FINISH significa que el modelo decidió detenerse; comprueba por separado la completitud factual.
-- Se admite una sola llamada cooperante por base de datos local. Los duplicados heredados se conservan durante la migración; no es posible corregir por inferencia estados COMPLETED antiguos incorrectos.
-
-Otras limitaciones:
-
-- **Sin cuentas ni historial de trabajos alojado:** usuario único. Los ID se guardan en SQLite local, no en un panel.
-- **Sin programación:** inicia las ejecuciones manualmente o con tu propio cron u orquestador. `--resume` sirve para fallos y límites de solicitudes, no es un programador.
-- **Sin API HTTP alojada:** las interfaces actuales son CLI, `verboisy.run()` y la imagen Docker.
-- **Resultados irregulares en sitios con defensas antibot agresivas:** algunos destinos precisan reintentos o intervención manual.
-
-¿Alguna de estas limitaciones bloquea tu caso de uso? [Abre una incidencia](https://github.com/EmanueleTorrisi/verboisy/issues): es la forma más directa de señalar qué corregir primero.
+- El crawl sigue breadth-first links HTTP(S) observados e in-scope; el modelo puede priorizarlos pero no inventar destinos.
+- `pagination_selector` soporta paginación JS acotada. Formularios generales, filtros arbitrarios, infinite scroll implícito, descargas, iframe/shadow-root y JS arbitrario no están implementados.
+- Autenticación, CAPTCHA, bypass anti-bot, OCR, PDF y joins cross-page están fuera del contrato.
+- El contexto DOM/evidencia es acotado; lotes enormes o respuestas inutilizables generan gaps explícitos.
+- La procedencia literal prueba observación en el scope admitido, no verdad externa.
+- La review semántica es falible.
+- `COMPLETED` significa target completado, no completitud global.
+- Una fuente no disponible puede dejar el run fallido/incompleto; subir presupuesto repetidamente no reemplaza evidencia.
+- Sin `identity_fields`, solo igualdad exacta; con identidad, payloads contradictorios quedan en cuarentena.
 
 <a id="responsible-use"></a>
-
 ## Uso responsable
 
-Verboisy controla un navegador real en tu nombre. Eres responsable de cumplir las condiciones de cada sitio, `robots.txt`, los límites de frecuencia y las leyes de tu jurisdicción. No lo uses para eludir autenticación ni controles de acceso para los que no tengas autorización.
+Verboisy maneja un navegador real y guarda material fuente localmente. Eres responsable de términos, robots, rate limits, licencias, privacidad y ley. No eludas autenticación ni controles sin permiso.
+
+Controles URL y sandbox son defense in depth, no aislamiento total. Para browsing no confiable usa cuenta/contenedor/VM dedicado, evita mounts sensibles y restringe egress.
+
+Fuentes y registros pueden contener datos personales o licenciados. Verboisy no cifra SQLite por ti y accesibilidad no implica permiso de redistribución o entrenamiento.
 
 <a id="documentation"></a>
-
 ## Documentación
 
-La documentación completa, incluida la referencia de configuración y los detalles de la API, está publicada en **[emanueletorrisi.github.io/verboisy](https://emanueletorrisi.github.io/verboisy/)**.
+- [Contrato y política de tareas](../../docs/contracts.md)
+- [Validación y comprobaciones de lanzamiento](../../docs/validation.md)
+- [Búsqueda y recuperación](../../docs/search-and-recovery.md)
+- [Migración desde 0.1](../../docs/migration.md)
+- [Flujo de demostración en vivo](../../docs/demo.md)
+- [Operaciones de lanzamiento](../../docs/release.md)
+- [Arquitectura](../../ARCHITECTURE.md)
 
 <a id="contributing"></a>
+## Contribuir
 
-## Contribuciones
-
-Se agradecen las contribuciones. Consulta [`CONTRIBUTING.md`](../CONTRIBUTING.md) para preparar el entorno local y conocer las convenciones del código, y respeta el [Código de conducta](../CODE_OF_CONDUCT.md). ¿Quieres empezar? Consulta las incidencias etiquetadas [`good first issue`](https://github.com/EmanueleTorrisi/verboisy/labels/good%20first%20issue).
+Las contribuciones son bienvenidas. Mira [`CONTRIBUTING.md`](../CONTRIBUTING.md). Cubre comportamiento nuevo con pruebas deterministas y no debilites evidencia/sandbox por una fixture.
 
 <a id="security"></a>
-
 ## Seguridad
 
-¿Has encontrado una vulnerabilidad? No abras una incidencia pública: utiliza el [reporte privado de vulnerabilidades](https://github.com/EmanueleTorrisi/verboisy/security/advisories/new) o consulta [`SECURITY.md`](../SECURITY.md).
+¿Vulnerabilidad? No abras issue público. Usa [reporte privado](https://github.com/EmanueleTorrisi/verboisy/security/advisories/new) o [`SECURITY.md`](../SECURITY.md).
 
 <a id="license"></a>
-
 ## Licencia
 
-BSD de 2 cláusulas: consulta [`LICENSE`](../../LICENSE) para leer el texto completo.
+BSD 2-Clause. Consulta [`LICENSE`](../../LICENSE).
 
 ---
 
 <p align="center">
   Creado por <a href="https://github.com/EmanueleTorrisi">Emanuele Torrisi</a> · <a href="#readme-top">Volver arriba ↑</a>
 </p>
-
-Search API and bounded browser recovery: [configuration and limits (English)](../../docs/search-and-recovery.md).

@@ -1,50 +1,32 @@
-# Python and command-line API
+# Python API
 
 ```python
-from verboisy import RunResult, run
+from verboisy import run
+from verboisy.utils.config import Settings
 
-result: RunResult = run(
-    goal="Open https://ycombinator.com/companies and find AI companies in the F26 batch",
-    schema="examples/yc_startups/schema.json",
-    export="result.json",
+result = run(
+    goal="Extract the listed product SKUs and USD unit prices",
+    schema="my-schema.json",
+    task="my-task.json",
+    export="dataset.json",
+    max_steps=40,
+    config=Settings(sqlite_db_path="research.db"),
 )
-print(result.run_id, result.completed, result.records)
+print(result.status, result.stop_reason, result.manifest_path)
 ```
 
-The schema may be a string path, a Path, or a dictionary. New runs require a nonblank
-goal and schema. Resume with `run(resume=True)` or `run(resume="saved-id")`. A saved
-goal/schema takes precedence over supplied replacements. An export destination can
-be overridden. A completed id can be re-exported without opening a browser.
+Async applications use `await verboisy.arun(...)`; do not call `run` inside a running
+event loop. Schema and task may be dictionaries or file paths. Task may also be a
+`verboisy.evidence.models.TaskSpec` instance. Records preserve requested property names.
 
-`run` and `arun` accept keyword-only `goal`, `schema`, `export`, `resume`,
-`headless`, `max_steps`, and optional `config: Settings`.
-Use `await arun(...)` inside an existing event loop. `headless=None` uses environment
-configuration. Step, timeout and request budgets renew per invocation.
+`RunResult` contains `run_id`, `records`, `export_path`, `db_path`, `completed`, `status`,
+`stop_reason`, and `manifest_path`. A false `completed` does not discard accepted data.
+Failure outcomes after run creation are persisted and returned; invalid input, database
+setup errors and export failures raise `VerboisyError` or an OS error. CLI maps failed
+runs to exit 1, partial/exhausted to 2, interruption to 130.
 
-| RunResult field | Meaning |
-| --- | --- |
-| run_id | Stable full id; a unique prefix is accepted for resume |
-| records | Every saved record, including any preserved legacy duplicates |
-| export_path | Absolute path actually written, or None |
-| db_path | Absolute database path |
-| completed | True only after FINISH and successful collection validation |
-| status | COMPLETED or PAUSED for normal returns |
-| stop_reason | planner_finished, max_steps, model_budget, run_timeout, action_failures or search_unavailable |
-
-Errors raise `VerboisyError` (or configuration validation errors); async cancellation
-propagates after cleanup. Durable saved rows remain available. The command line
-uses exit 0 for completion, 1 for errors, 2 for paused runs or argument syntax,
-and 130 for Ctrl-C.
-
-```bash
-verboisy run --goal "Read a public directory" --schema examples/yc_startups/schema.json
-verboisy run --resume
-verboisy run --resume saved-id --export result.csv
-verboisy run --help
-```
-
-Resume restores the last saved URL, not a complete browser session. JSON Schema validates
-data shape, not factual truth. See the README for configuration and limitations.
-
-Failed attempts and pending intent are saved in `state_json`, separately from successful
-action history. Resume provides them to the planner. See [search and recovery](search-and-recovery.md).
+`run(resume="FULL-RUN-ID", export="dataset.csv", config=...)` uses the saved contract.
+Bare CLI `--resume` or Python `resume=True` selects the latest incomplete research run.
+Completed records can be re-exported without starting a browser or calling a model.
+Internal 0.1 `Agent`, `Planner`, raw `ExtractionEngine` and `DatabaseManager` APIs are
+retired; importing them is intentionally unsupported in this breaking revision.

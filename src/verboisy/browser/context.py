@@ -14,6 +14,7 @@ from playwright.async_api import (
 )
 
 from verboisy.browser.policy import validate_url
+from verboisy.browser.provision import ensure_browser
 from verboisy.browser.stealth import StealthManager
 from verboisy.utils.config import Settings, settings
 from verboisy.utils.exceptions import NavigationError
@@ -47,9 +48,13 @@ class BrowserManager:
             if self._playwright is None:
                 self._playwright = await async_playwright().start()
             if self._browser is None:
+                await ensure_browser(
+                    self._playwright.chromium.executable_path, self.config.browser_auto_install
+                )
                 try:
                     self._browser = await self._playwright.chromium.launch(
                         headless=self.config.headless_browser,
+                        channel="chromium",
                         chromium_sandbox=self.config.browser_sandbox,
                     )
                 except PlaywrightError as exc:
@@ -79,7 +84,8 @@ class BrowserManager:
                 await self._context.route_web_socket("**/*", self._websocket)
             if self._page is None:
                 self._page = await self._context.new_page()
-                await StealthManager.apply_stealth(self._page)
+                if self.config.user_agent_rotation:
+                    await StealthManager.apply_stealth(self._page)
             return self._page
         except NavigationError:
             await self.close()

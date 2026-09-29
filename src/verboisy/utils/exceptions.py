@@ -36,6 +36,12 @@ class LLMError(VerboisyError):
     pass
 
 
+class LLMResponseError(LLMError):
+    """Raised when an LLM response cannot be safely consumed."""
+
+    pass
+
+
 class BudgetExceededError(VerboisyError):
     """The invocation's model budget has been exhausted."""
 
