@@ -1,13 +1,13 @@
 site_name: Verboisy
-site_description: Autonomous web research and scrape-to-JSON agent.
+site_description: Evidence-backed web datasets.
 theme:
   name: material
-  features:
-    - navigation.sections
-    - content.code.copy
 nav:
   - Home: index.md
+  - Dataset contract: contracts.md
   - API: api.md
   - Search and recovery: search-and-recovery.md
-  - Demo: demo.md
+  - Demonstrations: demo.md
   - Validation: validation.md
+  - Migration: migration.md
+  - Release operations: release.md
