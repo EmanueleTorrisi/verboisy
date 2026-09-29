@@ -21,11 +21,16 @@ class Settings(BaseSettings):
     browser_timeout_ms: int = Field(default=30000, gt=0)
     browser_action_timeout_ms: int = Field(default=10000, gt=0)
     max_action_failures: int = Field(default=3, ge=1, le=20)
-    search_provider: Literal["google", "brave", "disabled"] = "google"
+    search_provider: Literal["google", "brave", "disabled"] = "brave"
     brave_search_api_key: SecretStr | None = None
     search_timeout_seconds: float = Field(default=30, gt=0)
+    browser_auto_install: bool = True
+    max_page_bytes: int = Field(default=5_000_000, ge=1000, le=50_000_000)
+    max_snapshot_chars: int = Field(default=120000, ge=1000, le=2000000)
+    llm_min_interval_seconds: float = Field(default=1, ge=0, le=120)
+    model_request_budget: int | None = Field(default=None, gt=0)
     browser_sandbox: bool = True
-    user_agent_rotation: bool = True
+    user_agent_rotation: bool = False
     allow_private_network: bool = False
     allowed_domains: list[str] = Field(default_factory=list)
     sqlite_db_path: str = "verboisy.db"
