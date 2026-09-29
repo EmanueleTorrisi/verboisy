@@ -63,6 +63,7 @@ async def invoke(*responses):
     config = settings.model_copy(
         update={
             "llm_retries": 2,
+            "llm_min_interval_seconds": 0,
             "max_total_tokens": 1_000_000,
         }
     )
