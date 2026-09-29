@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 
 class DOMParser:
-    """Cleans raw HTML into a streamlined, LLM-friendly textual/structural representation."""
+    ("Cleans raw HTML into a streamlined, LLM-friendly textual/structur" "al representation.")
 
     @staticmethod
     def clean_html(html_content: str) -> str:
@@ -76,7 +76,7 @@ class DOMParser:
 
     @staticmethod
     def extract_interactive_elements(html_content: str) -> str:
-        """Bounded control descriptions, associated labels and selectors from the observed DOM."""
+        ("Bounded control descriptions, associated labels and selectors fro" "m the observed DOM.")
         soup = BeautifulSoup(html_content, "html.parser")
         elements = []
         controls = soup.select(
