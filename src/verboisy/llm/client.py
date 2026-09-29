@@ -2,11 +2,17 @@
 
 import asyncio
 import json
+import time
+from collections.abc import Callable
 from datetime import UTC
 from typing import Any
 
 from verboisy.utils.config import Settings, settings
-from verboisy.utils.exceptions import BudgetExceededError, LLMError
+from verboisy.utils.exceptions import BudgetExceededError, LLMError, LLMResponseError
+
+
+class _InvalidResponseError(ValueError):
+    """Provider returned content that cannot satisfy the JSON contract."""
 
 
 async def _complete(**kwargs: Any) -> Any:
@@ -21,6 +27,8 @@ class LLMClient:
         self.model = model or self.config.litellm_model
         self.total_tokens = 0
         self.reserved_tokens = 0
+        self.last_request = 0.0
+        self.on_usage: Callable[[], None] | None = None
 
     async def complete_json(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
         messages = [
@@ -51,11 +59,20 @@ class LLMClient:
         if self.config.litellm_api_base:
             kwargs["api_base"] = self.config.litellm_api_base
         for attempt in range(self.config.llm_retries + 1):
-            if self.reserved_tokens + reservation > self.config.max_total_tokens:
+            ceiling = self.config.model_request_budget or self.config.max_total_tokens
+            if self.reserved_tokens + reservation > ceiling:
                 raise BudgetExceededError(
                     "Model request budget exhausted; resume with a larger budget"
                 )
+            remaining = self.config.llm_min_interval_seconds - (
+                time.monotonic() - self.last_request
+            )
+            if remaining > 0:
+                await asyncio.sleep(remaining)
+            self.last_request = time.monotonic()
             self.reserved_tokens += reservation
+            if self.on_usage:
+                self.on_usage()
             try:
                 async with asyncio.timeout(self.config.llm_timeout_seconds):
                     response = await _complete(**kwargs)
@@ -63,18 +80,24 @@ class LLMClient:
                 tokens = getattr(usage, "total_tokens", 0)
                 if isinstance(tokens, int):
                     self.total_tokens += tokens
+                    if self.on_usage:
+                        self.on_usage()
                 content = response.choices[0].message.content
                 if getattr(response.choices[0], "finish_reason", None) == "length":
-                    raise ValueError("Truncated completion")
+                    raise _InvalidResponseError("truncated")
                 if not isinstance(content, str) or not content.strip():
-                    raise ValueError("Empty completion")
+                    raise _InvalidResponseError("empty")
 
-                def reject_constant(value: str) -> None:
-                    raise ValueError(f"Non-JSON constant {value}")
+                def reject_constant(_value: str) -> None:
+                    raise _InvalidResponseError("non_json_constant")
 
-                parsed = json.loads(content, parse_constant=reject_constant)
+                try:
+                    parsed = json.loads(content, parse_constant=reject_constant)
+                except json.JSONDecodeError as exc:
+                    raise _InvalidResponseError("invalid_json") from exc
+
                 if not isinstance(parsed, dict):
-                    raise ValueError("Expected a JSON object")
+                    raise _InvalidResponseError("not_object")
                 return parsed
             except Exception as exc:
                 import math
@@ -88,6 +111,11 @@ class LLMClient:
 
                 if status is None and response is not None:
                     status = getattr(response, "status_code", None)
+
+                if isinstance(exc, _InvalidResponseError):
+                    if attempt < self.config.llm_retries:
+                        continue
+                    raise LLMResponseError("LLM returned invalid or incomplete JSON") from None
 
                 detail = str(exc).lower()
                 code = str(getattr(exc, "code", "") or "").lower()
