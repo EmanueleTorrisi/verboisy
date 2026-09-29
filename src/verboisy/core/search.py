@@ -1,18 +1,29 @@
-"""Optional supported search transport. Results are discovery leads, not extracted records."""
+("Optional supported search transport. Results are discovery leads," " not extracted records.")
 
 import asyncio
 from typing import Literal
 
 import httpx
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from verboisy.browser.policy import validate_url
-from verboisy.core.state import SearchObservation, SearchResult
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import SearchUnavailableError
 
 BRAVE_ENDPOINT = "https://api.search.brave.com/res/v1/web/search"
 MAX_RESPONSE_BYTES = 1_048_576
+
+
+class SearchResult(BaseModel):
+    title: str
+    url: str = Field(min_length=1, max_length=8000)
+    description: str = ""
+
+
+class SearchObservation(BaseModel):
+    provider: Literal["brave"] = "brave"
+    query: str
+    results: list[SearchResult]
 
 
 class _Web(BaseModel):
