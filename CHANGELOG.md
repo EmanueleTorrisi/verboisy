@@ -1,3 +1,12 @@
+# 0.2.0rc1 — evidence engine candidate
+
+- Replace model-directed FINISH and unverified extraction with persisted crawling and evidence checks.
+- Preserve user schemas and add provenance/manifest sidecars and partial exports.
+- Quarantine identity conflicts; keep legacy databases unchanged.
+- Provision Chromium on first use; retain explicit setup and offline control.
+- Add independent semantic review, shared request accounting and cross-schema evaluations.
+- Breaking internal API and database change; release validation remains mandatory.
+
 # Changelog
 
 All notable changes to this project are documented in this file.
