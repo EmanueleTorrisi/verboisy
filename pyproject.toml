@@ -1,6 +1,6 @@
 [project]
 name = "verboisy"
-version = "0.1.0"
+version = "0.2.0rc1"
 description = "Autonomous web research and structured scrape-to-JSON agent."
 readme = "README.md"
 license = "BSD-2-Clause"
@@ -12,19 +12,20 @@ dynamic = ["classifiers"]
 dependencies = [
     "pydantic>=2.7.1,<3.0.0",
     "pydantic-settings>=2.2.1,<3.0.0",
-    "playwright>=1.48.0,<2.0.0",
-    "litellm>=1.37.16,<2.0.0",
+    "playwright>=1.61.0,<1.62.0",
+    "litellm>=1.101.0,<2.0.0",
     "beautifulsoup4>=4.12.3,<5.0.0",
     "typer>=0.27.2,<0.28.0",
     "rich>=13.7.1,<14.0.0",
     "aiosqlite>=0.20.0,<0.21.0",
     "structlog>=24.1.0,<25.0.0",
     "colorama>=0.4.6,<0.5.0",
-    "python-dotenv>=1.0.1,<2.0.0",
+    "python-dotenv>=1.2.3,<2.0.0",
     "jsonschema[format-nongpl]>=4.23,<5.0.0",
     "filelock>=3.20,<4.0",
     "rfc3986-validator>=0.1.1,<0.2.0",
     "httpx>=0.28.1,<0.29.0",
+    "aiohttp>=3.14.3,<4.0",
 ]
 
 [project.scripts]
@@ -94,7 +95,7 @@ branch = true
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 80
+fail_under = 100
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
