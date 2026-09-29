@@ -106,6 +106,9 @@ jobs:
         run: poetry run pytest -m browser -v
         env:
           VERBOISY_REQUIRE_BROWSER: "1"
+          # GitHub-hosted Ubuntu runners do not expose a usable Chromium
+          # Linux sandbox. Production keeps BROWSER_SANDBOX=true.
+          TEST_BROWSER_SANDBOX: "false"
 
   build:
     name: Build and validate package
