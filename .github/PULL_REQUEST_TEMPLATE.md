@@ -1,11 +1,23 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-## What does this PR do?
+## Problem and resulting behavior
 
-## Related issue
-Closes #
+Describe the user-visible problem and what this change does.
 
-## Checklist
-- [ ] Tests added/updated
-- [ ] `make lint` and `make test` pass locally
-- [ ] Docs updated if behavior changed
+## Relevant issue or agreed scope
+
+Link the issue and confirm that implementation work was invited or agreed.
+
+## Verification
+
+State the checks actually run, their results and any material limitations.
+
+## Review checklist
+
+- [ ] Public contracts and compatibility implications are documented.
+- [ ] Relevant regressions and engineering checks pass.
+- [ ] Documentation matches the resulting behavior.
+- [ ] Credentials, private datasets and diagnostic logs are excluded.
+- [ ] Copyright, license and third-party notices are preserved.
+
+Unsolicited code contributions are not currently accepted. See CONTRIBUTING.md.
