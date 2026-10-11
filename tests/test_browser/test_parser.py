@@ -63,10 +63,10 @@ def test_extract_interactive_elements() -> None:
 
 
 def test_clean_html_strips_nav_scripts_and_styles() -> None:
-    cleaned = clean_html(load_html_fixture("startup_directory.html"))
+    cleaned = clean_html(load_html_fixture("research_catalog.html"))
     assert "analytics.js" not in cleaned
     assert "cookie-banner" not in cleaned
-    assert "Aurora Labs" in cleaned
+    assert "Helios Materials Facility" in cleaned
 
 
 def test_golden_listing_tree():
@@ -76,9 +76,10 @@ def test_golden_listing_tree():
 
     from tests.conftest import FIXTURES_DIR
 
-    cleaned = BeautifulSoup(clean_html(load_html_fixture("startup_directory.html")), "html.parser")
+    cleaned = BeautifulSoup(clean_html(load_html_fixture("research_catalog.html")), "html.parser")
     expected = BeautifulSoup(
-        (FIXTURES_DIR / "expected/startup_directory.cleaned.html").read_text(), "html.parser"
+        (FIXTURES_DIR / "expected/research_catalog.cleaned.html").read_text(encoding="utf-8"),
+        "html.parser",
     )
 
     def normalize(tree):
