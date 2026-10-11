@@ -195,3 +195,7 @@ RSS was 93,478,912 bytes (89.15 MiB). All output/evidence rows and bundle checks
 were independently verified after the original source was deleted. No provider
 requests were made. This qualifies that workload; other platforms and workload
 distributions still need their own measurements.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
