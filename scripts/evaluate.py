@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Paid, opt-in model evaluation on fixed cross-domain evidence; not a browser test."""
 
 import argparse
