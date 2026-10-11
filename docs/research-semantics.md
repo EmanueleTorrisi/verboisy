@@ -107,4 +107,9 @@ large-gap handling, null coverage, immutable evidence on re-export, fixed task
 policy and historical declined proposals. Existing range, unit/date presentation
 and proposal-decision suites are run alongside them. This is engineering evidence;
 cross-domain human-reviewed held-out research and live provider qualification
-remain the release acceptance campaign. No paid campaign is authorized here.
+are assessed through [real-task acceptance](production-acceptance.md). Evaluation
+requires authorized sources and an explicit provider spending limit.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
