@@ -1,0 +1,43 @@
+{
+  "copyright": "Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms.",
+  "implementation_sha256": {
+    "src/verboisy/streaming/__init__.py": "498595fe851aa6962c65a3702d3c4171f9ce5390692dd354f58a2dc91791da3e",
+    "src/verboisy/streaming/api.py": "11f2a3a31ff4d0637e81a28819edb48c273c2002b46530714fac19ae156dceb8",
+    "src/verboisy/streaming/capture.py": "84b8c4f68ef8768eb497e08acdbea8e02b8254d0926eafe37f5fda8920d72ce6",
+    "src/verboisy/streaming/contract.py": "de7bce4ede325451932a0b53eb8bbb10748594088bf21a442235e3ff4d594088",
+    "src/verboisy/streaming/export.py": "6a5c6c9936aa2f040c7e08420950c00056cad7cdd38d4665daf4cad2e13b8ebf",
+    "src/verboisy/streaming/ledger.py": "c480ba1ae40945b34b6ad6de6d0d2281ac234de75e2fec6f2a2596619d98bba5",
+    "src/verboisy/streaming/parser.py": "0897fa25f0e07501cb8c716dd9510e1c22172117ac1882028fc17715dde3a221",
+    "src/verboisy/cli/streaming.py": "74dd8047eeb749b4e448d4cb64194ea69e76ed3764fe38e96ea5ff3675a189db",
+    "src/verboisy/cli/main.py": "8c2d0145b925c589fdce77368f85b713a82786c78d943f694ca6a2c3620ff4d1",
+    "src/verboisy/__init__.py": "b0d12477fd585fdc4a118706a8cd63adae6a48119a32dbb91586bd1db43cf3de",
+    "scripts/benchmark_streaming.py": "263b67c17217a89bb1337a0d1c6198da53580dce24bb7bba797e48686fee252b"
+  },
+  "measurement_version": "1",
+  "platform": "linux",
+  "python": "3.12.14",
+  "workload": "distinct_jsonl_records_with_padding",
+  "rows": 1000000,
+  "input_bytes": 1105888890,
+  "source_sha256": "d46e2d1fb98e905740a05f847f2374a3a5dc91d4cd4eca99defe8b5f4b67d08e",
+  "peak_rss_bytes": 93478912,
+  "rss_ceiling_bytes": 201326592,
+  "preparation_and_export_seconds": 130.8093117949993,
+  "end_to_end_rows_per_second": 7644.715703169298,
+  "generation_seconds": 7.562446869000269,
+  "initial_capture_and_half_admission_seconds": 31.096939661998476,
+  "resume_and_export_seconds": 99.71237213300083,
+  "independent_verification_seconds": 11.651672497999243,
+  "ledger_bytes": 2527981568,
+  "total_bundle_bytes": 3516222254,
+  "resume_after_source_deletion": true,
+  "all_output_rows_and_evidence_verified": true,
+  "provider_requests": 0,
+  "limits": {
+    "max_input_bytes": 8589934592,
+    "max_rows": 10000000,
+    "max_record_bytes": 1048576,
+    "max_storage_bytes": 17179869184
+  },
+  "qualification_passed": true
+}
