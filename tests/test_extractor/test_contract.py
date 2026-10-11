@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Regression tests for advertised JSON Schema behavior."""
 
 import pytest
@@ -167,3 +170,76 @@ def test_references_inside_allof_are_checked():
         match="Only local fragment schema references are supported",
     ):
         SchemaBuilder.normalize(schema)
+
+
+@pytest.mark.asyncio
+async def test_extractor_rejects_missing_required_temporal_evidence():
+    from unittest.mock import AsyncMock
+
+    from verboisy.core.planner import TemporalIntent
+    from verboisy.evidence.models import (
+        Candidate,
+        Proof,
+        Snapshot,
+        Source,
+        TaskSpec,
+    )
+    from verboisy.extractor.evidenced import EvidenceExtractor
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "population": {
+                "type": "integer",
+                "x-verboisy-temporal-class": "mutable",
+                "x-verboisy-reference-period": "required",
+            }
+        },
+        "required": ["population"],
+    }
+
+    client = AsyncMock()
+
+    extractor = EvidenceExtractor(
+        client,
+        schema,
+        TaskSpec(),
+        "Find the latest population",
+        temporal_intent=TemporalIntent(mode="latest"),
+        current_year=2026,
+    )
+
+    page = Snapshot(
+        id="snapshot",
+        url="https://example.test/",
+        fetched_at="2026-09-30T00:00:00Z",
+        content_hash="hash",
+        sources=[
+            Source(
+                id="e1",
+                kind="text",
+                text="41000000",
+                scope="s1",
+            )
+        ],
+        truncated=False,
+    )
+
+    candidate = Candidate(
+        scope="s1",
+        record={"population": 41_000_000},
+        evidence={
+            "/population": Proof(
+                source="e1",
+                quote="41000000",
+                transform="integer",
+            )
+        },
+    )
+
+    assert await extractor.check(
+        candidate,
+        page,
+    ) == ["/population:" "missing_temporal_evidence"]
+
+    client.complete_json.assert_not_awaited()
