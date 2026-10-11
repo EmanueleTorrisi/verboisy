@@ -1,44 +1,77 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Security reporting and trust boundaries
+# Security policy
 
-Do not report vulnerabilities through public issues, pull requests or discussions.
-Use GitHub private vulnerability reporting when enabled. If that channel is unavailable,
-contact the maintainer at the address published in the package metadata; send a concise
-initial description without credentials or sensitive source data. No response-time SLA
-or independently certified security posture is claimed for this development build.
+## Report a vulnerability privately
 
-Include the tested commit/version, platform, affected workflow, minimal reproduction,
-impact and relevant configuration. Redact secrets, personal data and internal hostnames.
-Agree a disclosure plan with the maintainer before publishing exploit details. A future
-advisory should identify affected versions and the actually verified correction.
+Email **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** with the
+subject **Verboisy security report**. If GitHub private vulnerability reporting is
+enabled, [submit a private advisory](https://github.com/EmanueleTorrisi/verboisy/security/advisories/new).
+Do not disclose vulnerabilities, exploit details or sensitive data in public issues,
+pull requests or discussions.
 
-## Version status
+For an initial report, include the affected version or commit, platform, component,
+expected security boundary, impact and minimal reproduction. Use synthetic inputs;
+remove tokens, personal data, internal hostnames and confidential source content.
+Contact the maintainer before sending large or sensitive attachments.
 
-The repository uses `1.0.0` development metadata while release acceptance is pending.
-That value is not evidence of a published stable release or a support commitment for
-historical versions. The maintainer will triage reports against the development branch
-and any explicitly published support policy. Final release support must be documented
-before public distribution.
+## Assessment and coordinated disclosure
 
-## Runtime boundaries
+The maintainer reviews reports, requests additional information where necessary,
+and coordinates remediation and disclosure with the reporter. Timing depends on
+impact and reproducibility; this policy does not create a response-time SLA.
+Affected versions, verified fixes and relevant mitigations should be included in
+published advisories. Do not publish exploit details before agreeing a disclosure
+plan. Credit is discussed with the reporter and requires their consent.
 
-| Boundary | Intended control | Operational responsibility |
+Security testing must be lawful, confined to systems and data you are authorized
+to test, and covered by the necessary software permission. Source inspection is
+permitted by [LICENSE](../LICENSE); software execution requires separate written
+permission. This policy does not authorize testing third-party sites or bypassing
+access controls, and does not create a paid bounty agreement.
+
+## Version coverage
+
+| Version | Report handling |
+| --- | --- |
+| Current development branch | Reports are investigated against the current implementation |
+| Published releases | Support scope and upgrade guidance are stated in their release notes or written support agreement |
+| Older or modified builds | Reports are useful; fixes may require an upgrade to a maintained version |
+
+A package version alone does not establish a maintenance period or an enterprise
+support commitment. Commercial support is agreed separately.
+
+## Trust boundaries
+
+| Component | Controls in the implementation | Deployment responsibility |
 | --- | --- | --- |
-| Public browser | Declared scope and URL/navigation checks | Isolated account/container, egress policy and no personal profiles |
-| Dataset HTTP | Bounded redirects/downloads, DNS-pinned transport, origin-scoped credentials | Authorize sources and protect secret settings |
-| Local files | Explicit directory grants and immutable capture | Limit mounts and filesystem permissions; no hostile same-user sandbox claim |
-| Models | Untrusted proposals, evidence checks and durable budgets | Approved providers/profiles and control of SDK telemetry/logging |
-| Schemas/projections | Explicit deterministic validation and replay | Trusted schema authors; no general process isolation for hostile regex/recursion |
-| Ledgers/exports | Hashes, checksums, stable evidence binding and transactional checkpoints | Protect plaintext records, source URLs, goals, metadata and retained assets |
+| Browser research | Source scope, navigation/redirect policy, observed snapshots | Isolated browser/container, restricted egress, no personal browser profiles |
+| HTTP datasets | Bounded requests/redirects, DNS-pinned transport, origin-scoped secrets | Authorized origins, trusted credentials and network rules |
+| Local data | Explicit directory grants, source capture and replay | Minimal mounts, filesystem permissions and authorized inputs |
+| Models | Untrusted candidates, evidence checks, explicit provider profiles and budgets | Approved providers, data-transfer policy and telemetry review |
+| Schemas and projections | Explicit validation and deterministic transformations | Trusted schema authors and OS resource limits |
+| Ledgers and exports | Ownership checks, strict decoding, hashes and transactional checkpoints | Access control, encryption, backups, retention and sufficient disk space |
 
-Files and archives are not executed by dataset adapters. Capturing a binary asset does
-not imply that it is safe to open with another application. Checksums detect inconsistency
-relative to a supplied manifest, not authenticity or truth. Resource limits do not replace
-OS/container quotas. SQLite journals and exports need disk space beyond database ceilings.
+Local grants are not a sandbox against a hostile process running as the same OS
+user. Adapter parsing does not execute macros or formulas, but captured binary
+assets may be unsafe to open elsewhere. Checksums establish byte consistency, not
+source authenticity or factual truth. Input limits do not replace process, CPU,
+memory, network or storage quotas.
 
-Keep provider keys out of ordinary CI, issues, fixtures and public artifacts. Run
-`make validate` and review dependency advisories, package/native/browser/container results
-for the tested release commit. A clean vulnerability audit covers known advisories at its
-measurement time; it is not a proof of absence of vulnerabilities. Publication remains
-behind private-repository and explicit enablement guards pending the release review.
+## Operational safeguards
+
+Keep credentials out of source control, issue logs, fixtures and exported artifacts.
+Treat ledgers and bundles as sensitive: they may contain source text, URLs, research
+goals, metadata and personal data. Encryption at rest and tenancy isolation are
+operator responsibilities; the project does not claim built-in enterprise identity
+management or a security certification.
+
+Use approved providers and source rules. A local model is independent of local
+filesystem grants. A remote model may receive observations; review the selected
+provider's data handling before processing confidential material. Respect source
+permissions, privacy obligations and access restrictions.
+
+Validate dependencies, browser/native builds and packages for the deployed version.
+A clean dependency audit covers known advisories at the audit time and does not
+prove the absence of vulnerabilities. See [validation](../docs/validation.md) and
+[commercial deployment guidance](../docs/commercial.md).
