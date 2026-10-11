@@ -2,26 +2,26 @@
 
 # Migrating from 0.1 to 0.2
 
-This is an architectural replacement and a release candidate, not a compatible internal
-patch. Keep the repository private until the release gates pass. Use the delivery's
-`apply.py` on a new Git branch: preview first, then apply. It backs up every overwritten
-or deleted managed file, preserves Git history and unrelated files, and does not touch
-`.env`. It does not fetch or merge your private repository. Review its diff against your
-actual checkout, which may contain changes absent from the supplied snapshots.
+This guide describes the architectural transition from the historical 0.1 API.
+Back up databases and retained evidence before upgrading, and review the release
+notes for the target version. Test custom integrations against a copy of the ledger
+before changing a production installation.
 
 The old `Agent`, `Planner`, raw-record extraction engine and model-generated action loop
 are removed. Public `verboisy run`, `run()` and `arun()` now use one evidence-backed engine.
 Custom integrations using the old internal classes require changes; see the API reference.
 
 Use a **new SQLite file**. Legacy data remains historical evidence and is not automatically
-promoted to verified data. This candidate uses research database version 2 and refuses
-other versions. Preserve both the original database and its relevant logs.
+promoted to verified data. The current ledger uses version 4. Writable opening migrates supported older
+ledgers; read-only inspection requires the current version. See the
+[CLI reference](cli.md) for inspection and recovery commands. Preserve both the original database and its relevant logs.
 
 `--max-steps` now limits page visits per invocation; task page/depth/interaction limits
 persist. Model accounting persists across resume. `MODEL_REQUEST_BUDGET` limits conservative
 request units (UTF-8 message bytes plus maximum output tokens per attempt), not billing.
 `MAX_TOTAL_TOKENS` remains a fallback setting, with this request-unit meaning. Actual
-provider-reported token usage is recorded separately. Resume cannot change schema or task.
+provider-reported token usage is recorded separately. Resume retains the saved requirements unless a supported explicit decision accepts
+a proposed change; see [research semantics](research-semantics.md).
 
 A requested count in prose is not an enforceable completion contract: put it in
 `task.json` as `target_records`. No explicit target means observed crawl exhaustion is
@@ -39,3 +39,7 @@ first, then set `BROWSER_AUTO_INSTALL=false`. A missing browser fails explicitly
 CSV defaults to JSON-encoded cells for exact nested/type/null preservation. Choose
 `csv_mode: "spreadsheet"` explicitly for conventional spreadsheet cells. All exported data
 now has evidence and manifest sidecars. Consumers must check status and file hashes.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
