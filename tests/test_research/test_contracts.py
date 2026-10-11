@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Cross-schema acceptance contracts using controlled model responses, not live-model claims."""
 
 import csv
@@ -51,13 +54,19 @@ async def test_bfs_pause_resume_exports_and_no_duplicate_visits(config, world, t
         max_steps=2,
         config=config,
     )
-    assert first.status == "PAUSED" and first.records == [{"customer": "Alice", "age": 31}]
+    assert first.status == "PAUSED"
+    assert [{k: v for k, v in row.items() if k != "id"} for row in first.records] == [
+        {"customer": "Alice", "age": 31}
+    ]
+    first_id = first.records[0]["id"]
     assert json.loads(first.export_path.read_text()) == first.records
     final = await arun(resume=first.run_id, config=config)
-    assert final.completed and final.records == [
+    assert final.completed
+    assert [{k: v for k, v in row.items() if k != "id"} for row in final.records] == [
         {"customer": "Alice", "age": 31},
         {"customer": "Bob", "age": 22},
     ]
+    assert final.records[0]["id"] == first_id
     assert [c.args[0] for c in world.navigate_to.await_args_list] == list(PAGES)
     calls = world.start.await_count
     exported = await arun(resume=first.run_id, export=tmp_path / "data.csv", config=config)
@@ -241,6 +250,39 @@ def test_literal_negative_controls(value, quote, transform, expected):
     )
     errors = verify(c, page, {"type": "object"}, TaskSpec())
     assert any(expected in e for e in errors) if expected else not errors
+
+
+@pytest.mark.parametrize(
+    "value,quote,transform,expected",
+    [
+        (2876591, "2,876,591", "integer", None),
+        (1234.5, "1,234.50", "number", None),
+        (1234567, "12,34,567", "integer", "unsupported_value"),
+        (47400000, "47.4", "integer", "unsupported_value"),
+    ],
+)
+def test_grouped_numeric_literals_are_strict(value, quote, transform, expected):
+    page = snapshot(f"<p>{quote}</p>", "https://data.test/")
+    candidate = Candidate(
+        scope="page",
+        record={"amount": value},
+        evidence={
+            "/amount": Proof(
+                source=page.sources[0].id,
+                quote=quote,
+                transform=transform,
+            )
+        },
+    )
+
+    errors = verify(
+        candidate,
+        page,
+        {"type": "object"},
+        TaskSpec(),
+    )
+
+    assert any(expected in error for error in errors) if expected else not errors
 
 
 def test_explicit_metadata_mapping_and_missing_identity():
@@ -487,4 +529,700 @@ def test_product_attribute_rows_inherit_containing_entity_scope():
         page,
         schema,
         TaskSpec(),
+    )
+
+
+def test_deferred_frontier_is_used_only_after_queued_work(
+    tmp_path,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(str(tmp_path / "deferred-frontier.db"))
+
+    try:
+        rid = store.create(
+            "goal",
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                        }
+                    },
+                },
+            },
+            TaskSpec(),
+            None,
+        )
+
+        store.defer(
+            rid,
+            "https://example.com/deferred",
+            1,
+            "https://example.com/",
+        )
+        store.queue(
+            rid,
+            "https://example.com/queued",
+            0,
+            None,
+        )
+
+        first = store.next_page(rid)
+        assert first is not None
+        assert first["url"] == ("https://example.com/queued")
+
+        store.mark_page(
+            first["id"],
+            "done",
+        )
+
+        second = store.next_page(rid)
+        assert second is not None
+        assert second["url"] == ("https://example.com/deferred")
+
+    finally:
+        store.close()
+
+
+def test_queue_promotes_previously_deferred_url(
+    tmp_path,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(str(tmp_path / "promoted-frontier.db"))
+
+    try:
+        rid = store.create(
+            "goal",
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                        }
+                    },
+                },
+            },
+            TaskSpec(),
+            None,
+        )
+
+        url = "https://example.com/later"
+
+        store.defer(
+            rid,
+            url,
+            1,
+            "https://example.com/",
+        )
+
+        assert store.summary(rid)["pages"]["deferred"] == 1
+
+        store.queue(
+            rid,
+            url,
+            1,
+            "https://example.com/",
+        )
+
+        assert store.summary(rid)["pages"]["queued"] == 1
+
+        work = store.next_page(rid)
+        assert work is not None
+        assert work["url"] == url
+
+    finally:
+        store.close()
+
+
+def test_negative_queued_source_yields_to_deferred_fallback(
+    tmp_path,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(str(tmp_path / "productive-frontier.db"))
+
+    try:
+        rid = store.create(
+            "goal",
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                    },
+                },
+            },
+            TaskSpec(),
+            None,
+        )
+
+        store.queue(
+            rid,
+            "https://bad.test/child",
+            1,
+            "https://bad.test/",
+        )
+        store.defer(
+            rid,
+            "https://fresh.test/",
+            0,
+            None,
+        )
+
+        work = store.next_page(
+            rid,
+            {
+                "bad.test": -0.25,
+            },
+        )
+
+        assert work is not None
+        assert work["url"] == "https://fresh.test/"
+
+    finally:
+        store.close()
+
+
+def test_productive_queued_source_stays_ahead_of_fallback(
+    tmp_path,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(str(tmp_path / "productive-source.db"))
+
+    try:
+        rid = store.create(
+            "goal",
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                    },
+                },
+            },
+            TaskSpec(),
+            None,
+        )
+
+        store.queue(
+            rid,
+            "https://good.test/child",
+            1,
+            "https://good.test/",
+        )
+        store.defer(
+            rid,
+            "https://fresh.test/",
+            0,
+            None,
+        )
+
+        work = store.next_page(
+            rid,
+            {
+                "good.test": 0.25,
+            },
+        )
+
+        assert work is not None
+        assert work["url"] == "https://good.test/child"
+
+    finally:
+        store.close()
+
+
+def test_rebalance_frontier_demotes_legacy_queue_overflow(
+    tmp_path,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(str(tmp_path / "rebalance.db"))
+
+    try:
+        rid = store.create(
+            "goal",
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                    },
+                },
+            },
+            TaskSpec(),
+            None,
+        )
+
+        # Insert a deeper page first to prove depth takes
+        # precedence over insertion order.
+        store.queue(
+            rid,
+            "https://example.test/deep",
+            1,
+            "https://example.test/",
+        )
+        store.queue(
+            rid,
+            "https://one.test/",
+            0,
+            None,
+        )
+        store.queue(
+            rid,
+            "https://two.test/",
+            0,
+            None,
+        )
+        store.queue(
+            rid,
+            "https://three.test/",
+            0,
+            None,
+        )
+
+        result = store.rebalance_frontier(
+            rid,
+            active_limit=2,
+        )
+
+        assert result == {
+            "queued": 2,
+            "demoted": 2,
+        }
+
+        pages = {page["url"]: page["status"] for page in store.pages(rid)}
+
+        assert pages == {
+            "https://example.test/deep": "deferred",
+            "https://one.test/": "queued",
+            "https://two.test/": "queued",
+            "https://three.test/": "deferred",
+        }
+
+    finally:
+        store.close()
+
+
+def test_recover_requeues_active_but_preserves_failed_page(
+    tmp_path,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(str(tmp_path / "recover-state.db"))
+
+    try:
+        rid = store.create(
+            "goal",
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                    },
+                },
+            },
+            TaskSpec(),
+            None,
+        )
+
+        store.queue(
+            rid,
+            "https://active.test/",
+            0,
+            None,
+        )
+        active = store.next_page(rid)
+        assert active is not None
+
+        store.queue(
+            rid,
+            "https://failed.test/",
+            0,
+            None,
+        )
+        failed = store.next_page(rid)
+        assert failed is not None
+
+        store.mark_page(
+            failed["id"],
+            "failed",
+            "browser_error",
+        )
+
+        store.recover(rid)
+
+        pages = {
+            page["url"]: (
+                page["status"],
+                page["reason"],
+            )
+            for page in store.pages(rid)
+        }
+
+        assert pages["https://active.test/"] == (
+            "queued",
+            None,
+        )
+        assert pages["https://failed.test/"] == (
+            "failed",
+            "browser_error",
+        )
+
+    finally:
+        store.close()
+
+
+def test_table_header_row_is_not_an_entity_scope():
+    page = snapshot(
+        """
+        <table>
+          <tr>
+            <th>Country</th>
+            <th>Population</th>
+          </tr>
+          <tr>
+            <td>Canada</td>
+            <td>41,651,653</td>
+          </tr>
+        </table>
+        """,
+        "https://data.test/",
+    )
+    sources = {source.text: source for source in page.sources}
+
+    assert sources["Country"].scope == "page"
+    assert sources["Population"].scope == "page"
+    assert sources["Canada"].scope != "page"
+    assert sources["41,651,653"].scope == sources["Canada"].scope
+
+
+def _supersession_candidate(
+    population,
+    year,
+):
+    from verboisy.evidence.models import (
+        Candidate,
+        TemporalProof,
+    )
+
+    return Candidate(
+        scope="s1",
+        record={
+            "customer": "same-id",
+            "population": population,
+        },
+        evidence={},
+        temporal_evidence={
+            "/population": TemporalProof(
+                source="e1",
+                quote=str(year),
+                reference_year=year,
+            )
+        },
+    )
+
+
+def _supersession_snapshot(
+    sid,
+    url,
+):
+    from verboisy.evidence.models import Snapshot
+
+    return Snapshot(
+        id=sid,
+        url=url,
+        fetched_at=("2026-09-30T12:00:00+00:00"),
+        content_hash=sid,
+        sources=[],
+        truncated=False,
+    )
+
+
+def test_store_supersedes_record_without_changing_stable_id(
+    config,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(config.sqlite_db_path)
+
+    task = TaskSpec(identity_fields=["/customer"])
+    schema = {
+        "type": "object",
+        "properties": {
+            "customer": {"type": "string"},
+            "population": {"type": "integer"},
+        },
+    }
+
+    try:
+        rid = store.create(
+            "Find latest population",
+            schema,
+            task,
+            None,
+        )
+
+        store.queue(
+            rid,
+            "https://example.test/",
+            0,
+            None,
+        )
+        work = store.next_page(rid)
+        assert work is not None
+
+        old = _supersession_candidate(
+            100,
+            2022,
+        )
+        new = _supersession_candidate(
+            110,
+            2025,
+        )
+
+        first_page = _supersession_snapshot(
+            "snapshot-old",
+            "https://example.test/old",
+        )
+        second_page = _supersession_snapshot(
+            "snapshot-new",
+            "https://example.test/new",
+        )
+
+        store.snapshot(
+            rid,
+            work["id"],
+            first_page,
+            "<html></html>",
+        )
+        store.snapshot(
+            rid,
+            work["id"],
+            second_page,
+            "<html></html>",
+        )
+
+        assert (
+            store.accept(
+                rid,
+                first_page,
+                old,
+                [],
+                task,
+            )
+            == "accepted"
+        )
+
+        original = store.records(rid)
+        assert len(original) == 1
+        stable_id = original[0]["id"]
+
+        assert (
+            store.accepted_candidate(
+                rid,
+                new,
+                task,
+            )
+            == old
+        )
+
+        assert (
+            store.accept(
+                rid,
+                second_page,
+                new,
+                [],
+                task,
+                preference="new",
+            )
+            == "accepted"
+        )
+
+        rows = store.records(rid)
+
+        assert rows == [
+            {
+                "id": stable_id,
+                "customer": "same-id",
+                "population": 110,
+            }
+        ]
+
+        assert store.summary(rid)["identity_conflicts"] == 0
+
+        events = store.events(
+            rid,
+            "candidate_superseded",
+        )
+
+        assert len(events) == 1
+        assert events[0]["payload"]["stable_id"] == stable_id
+
+        candidates = store.db.execute(
+            """
+            SELECT accepted,reasons
+            FROM candidates
+            WHERE run_id=?
+            ORDER BY id
+            """,
+            (rid,),
+        ).fetchall()
+
+        assert [row["accepted"] for row in candidates] == [0, 1]
+
+        assert "superseded_candidate" in candidates[0]["reasons"]
+
+    finally:
+        store.close()
+
+
+def test_store_rejects_older_candidate_without_creating_conflict(
+    config,
+):
+    from verboisy.evidence.models import TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore(config.sqlite_db_path)
+
+    task = TaskSpec(identity_fields=["/customer"])
+    schema = {
+        "type": "object",
+        "properties": {
+            "customer": {"type": "string"},
+            "population": {"type": "integer"},
+        },
+    }
+
+    try:
+        rid = store.create(
+            "Find latest population",
+            schema,
+            task,
+            None,
+        )
+
+        store.queue(
+            rid,
+            "https://example.test/",
+            0,
+            None,
+        )
+        work = store.next_page(rid)
+        assert work is not None
+
+        current = _supersession_candidate(
+            110,
+            2025,
+        )
+        stale = _supersession_candidate(
+            100,
+            2022,
+        )
+
+        current_page = _supersession_snapshot(
+            "snapshot-current",
+            "https://example.test/current",
+        )
+        stale_page = _supersession_snapshot(
+            "snapshot-stale",
+            "https://example.test/stale",
+        )
+
+        store.snapshot(
+            rid,
+            work["id"],
+            current_page,
+            "<html></html>",
+        )
+        store.snapshot(
+            rid,
+            work["id"],
+            stale_page,
+            "<html></html>",
+        )
+
+        assert (
+            store.accept(
+                rid,
+                current_page,
+                current,
+                [],
+                task,
+            )
+            == "accepted"
+        )
+
+        before = store.records(rid)
+
+        assert (
+            store.accept(
+                rid,
+                stale_page,
+                stale,
+                [],
+                task,
+                preference="old",
+            )
+            == "rejected"
+        )
+
+        assert store.records(rid) == before
+        assert store.summary(rid)["identity_conflicts"] == 0
+
+        latest = store.db.execute(
+            """
+            SELECT accepted,reasons
+            FROM candidates
+            WHERE run_id=?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (rid,),
+        ).fetchone()
+
+        assert latest["accepted"] == 0
+        assert "superseded_candidate" in latest["reasons"]
+
+    finally:
+        store.close()
+
+
+def test_accepted_candidate_without_identity_fields_returns_none():
+    from verboisy.evidence.models import Candidate, TaskSpec
+    from verboisy.storage.research import ResearchStore
+
+    store = ResearchStore.__new__(ResearchStore)
+
+    candidate = Candidate(
+        scope="page",
+        record={"name": "Example"},
+        evidence={},
+        temporal_evidence={},
+    )
+
+    assert (
+        store.accepted_candidate(
+            "run",
+            candidate,
+            TaskSpec(),
+        )
+        is None
     )
