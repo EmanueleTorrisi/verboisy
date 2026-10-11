@@ -16,7 +16,12 @@ def archive(parts, compression=zipfile.ZIP_STORED):
     out = io.BytesIO()
     with zipfile.ZipFile(out, "w", compression=compression) as package:
         for name, value in parts.items():
-            package.writestr(name, value)
+            # ZipInfo normalizes Windows separators during construction. Preserve
+            # the supplied member spelling so malformed-name tests reach the parser.
+            member = zipfile.ZipInfo()
+            member.filename = name
+            member.compress_type = compression
+            package.writestr(member, value)
     return out.getvalue()
 
 
