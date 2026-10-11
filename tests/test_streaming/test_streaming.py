@@ -678,7 +678,20 @@ def test_hard_process_termination_recovers_committed_rows(tmp_path):
         child.kill()
         child.wait(timeout=10)
         source.unlink()
-        resumed = stream_dataset(database=database, resume=checkpoint["id"])
+        # Process exit can precede completion of Windows handle cleanup. Retry
+        # only lock contention, with a fixed deadline; other failures stay visible.
+        deadline = time.monotonic() + 10
+        while True:
+            try:
+                resumed = stream_dataset(database=database, resume=checkpoint["id"])
+                break
+            except StreamError as error:
+                if (
+                    str(error) != "Streaming ledger is already in use"
+                    or time.monotonic() >= deadline
+                ):
+                    raise
+                time.sleep(0.05)
         assert resumed.status == "COMPLETED" and resumed.processed_rows == 100000
         with closing(StreamLedger(database, read_only=True)) as ledger:
             assert (
