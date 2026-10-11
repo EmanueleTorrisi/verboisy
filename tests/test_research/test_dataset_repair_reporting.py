@@ -84,18 +84,20 @@ async def test_current_report_and_manifest_clear_after_repair(site, tmp_path, ki
             metadata={"dataset_consistency": {"gaps": [], "repairs": []}},
             dataset_consistency=report,
         )
-        extension = json.loads((tmp_path / "extension.json.manifest.json").read_text())
+        extension = json.loads(
+            (tmp_path / "extension.json.manifest.json").read_text(encoding="utf-8")
+        )
         assert extension["dataset_consistency"] == report
     finally:
         store.close()
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     assert manifest["dataset_consistency"] == report
     assert not manifest["truth_verified"] and not manifest["global_completeness_claimed"]
     bodies.pop("/first")
     resumed = await arun(resume=result.run_id, config=config, export=output)
     assert resumed.completed and len(resumed.records) == 1
     assert resumed.dataset_consistency == {"scope": "accepted_records", "gaps": [], "repairs": []}
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     assert manifest["dataset_consistency"] == resumed.dataset_consistency
     store = ResearchStore(config.sqlite_db_path)
     try:
@@ -151,6 +153,6 @@ def test_direct_export_has_no_implied_evaluation(tmp_path):
             task,
             metadata={"dataset_consistency": {"gaps": [], "repairs": []}},
         )
-        assert json.loads(manifest.read_text())["dataset_consistency"] is None
+        assert json.loads(manifest.read_text(encoding="utf-8"))["dataset_consistency"] is None
     finally:
         store.close()
