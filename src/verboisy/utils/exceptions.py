@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """
 Custom exception hierarchy for Verboisy.
 """
@@ -42,8 +45,18 @@ class LLMResponseError(LLMError):
     pass
 
 
+class LLMRateLimitError(LLMError):
+    """Provider temporarily rate-limited the current research run."""
+
+    pass
+
+
 class BudgetExceededError(VerboisyError):
     """The invocation's model budget has been exhausted."""
+
+
+class SearchBudgetExceededError(BudgetExceededError):
+    """The run has exhausted its separate search-attempt budget."""
 
 
 class ResumeError(VerboisyError):
