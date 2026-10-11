@@ -1163,10 +1163,9 @@
         "ko",
         "zh-CN"
       ],
-      "localized_scope": "introductions linked to complete English technical contracts",
+      "localized_scope": "Complete product and commercial READMEs linked to English technical contracts",
       "translation_review": "independent editorial review pending",
-      "per_file_commit_plan": "evals/batch6-commits.json",
-      "licensing_decision": "pending; existing BSD-2-Clause unchanged",
+      "licensing_decision": "Source-inspection terms for 1.0.0; separate written execution permission; earlier grants retained",
       "qualification": "local consistency checks do not certify production readiness",
       "verification_record": "evals/results/repository-offline.json",
       "local_consistency_status": "passed"
