@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Chromium seccomp profile
 
 `seccomp_profile.json` adapts the Docker/Moby default syscall policy for Chromium:
