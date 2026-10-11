@@ -65,3 +65,7 @@ missing/null distinction. Never mix the two modes in a pipeline without recordin
 
 JSON-mode headers preserve field names exactly for programmatic readers. For spreadsheets
 use spreadsheet mode, which also escapes formula-like headers.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
