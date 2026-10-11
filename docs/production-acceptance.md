@@ -163,8 +163,8 @@ into the regression set. Select a new held-out replacement for the final confirm
 ## Execution and accounting protocol
 
 Start with deterministic engineering checks and manually reviewed source/gold readiness.
-Then approve the paid pilot budget. There is currently **no authorized paid campaign
-budget** in the matrix and no live execution is performed by this documentation patch.
+Establish an explicit evaluation budget before making paid provider requests.
+An evaluation plan is not evidence that its runs have been performed.
 Do not read credentials into reports or ask for keys in issue logs.
 
 For each product run retain the exact software commit, dependency lock hash, model
@@ -197,12 +197,14 @@ bypasses, damaged evidence and supported-install failures are release blockers. 
 without weakening the evidence contract. Optional polish stays in a post-release backlog
 unless it violates a declared user experience criterion.
 
-Repository/editorial and legal work can proceed alongside evaluation: review existing
-comments, align the README and seven translations, consolidate architecture, validate
-reporting/funding channels and choose legally reviewed distribution terms. Current
-BSD-2-Clause metadata is retained until that separate decision. Public publication remains
-blocked while those release criteria are unresolved.
+Documentation, translation, rights and dependency reviews accompany evaluation.
+Current distribution terms are described in [licensing](licensing.md); earlier grants
+remain applicable to their versions. Release claims must reflect recorded results.
 
-See the [finite release plan](development-roadmap.md), [validation guide](validation.md),
+See the [product roadmap](development-roadmap.md), [validation guide](validation.md),
 [display contract](presentation.md), [dataset contract](contracts.md) and
 [release operations](release.md).
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
