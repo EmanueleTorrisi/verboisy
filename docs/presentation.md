@@ -112,3 +112,7 @@ conversion of an integer field, or a changed unit-dependent bound can make
 `collection_schema_valid` false for the export view. This does not rewrite the source
 contract or invalidate otherwise accepted source records. Inspect the evidence and
 cell lineage alongside the output when the displayed schema check differs.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
