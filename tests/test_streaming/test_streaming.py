@@ -81,7 +81,7 @@ def test_parity_paging_export_and_resume_after_source_removal(prepare, tmp_path,
         result.input_bytes == len(raw) and result.source_sha256 == hashlib.sha256(raw).hexdigest()
     )
     expected = [row.values for row in baseline.rows]
-    assert json.loads((tmp_path / "rows.json").read_text()) == expected
+    assert json.loads((tmp_path / "rows.json").read_text(encoding="utf-8")) == expected
     with closing(StreamLedger(tmp_path / "stream.db", read_only=True)) as ledger:
         assert [row["record"] for row in ledger.page(result.job_id)] == expected
         assert ledger.page(result.job_id, after=1, limit=1) == (
@@ -89,14 +89,14 @@ def test_parity_paging_export_and_resume_after_source_removal(prepare, tmp_path,
         )
         job = ledger.job(result.job_id)
         assert job["processed"] == len(expected)
-    manifest = json.loads((tmp_path / "rows.json.manifest.json").read_text())
+    manifest = json.loads((tmp_path / "rows.json.manifest.json").read_text(encoding="utf-8"))
     assert not manifest["truth_verified"] and not manifest["global_completeness_claimed"]
     for name, digest in manifest["files"].items():
         assert hashlib.sha256((tmp_path / name).read_bytes()).hexdigest() == digest
     assert (tmp_path / "rows.json.source.bin").read_bytes() == raw
     proofs = [
         json.loads(line)
-        for line in (tmp_path / "rows.json.evidence.jsonl").read_text().splitlines()
+        for line in (tmp_path / "rows.json.evidence.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert [p["source_values"] for p in proofs] == expected
     assert [p["line_start"] for p in proofs] == [r.line_start for r in baseline.rows]
@@ -117,17 +117,19 @@ def test_projection_and_export_shapes(prepare, tmp_path, suffix):
     assert result.status == "COMPLETED"
     with closing(StreamLedger(tmp_path / "stream.db", read_only=True)) as ledger:
         assert ledger.page(result.job_id) == [{"ordinal": 1, "record": {"number": 12}}]
-    proofs = json.loads((tmp_path / f"rows.{suffix}.evidence.jsonl").read_text())
+    proofs = json.loads((tmp_path / f"rows.{suffix}.evidence.jsonl").read_text(encoding="utf-8"))
     assert proofs["output_values"] == {"number": 12} and not proofs["output_is_source"]
     if suffix == "csv":
-        assert list(csv.reader(io.StringIO((tmp_path / "rows.csv").read_text()))) == [
+        assert list(
+            csv.reader(io.StringIO((tmp_path / "rows.csv").read_text(encoding="utf-8")))
+        ) == [
             ["number"],
             ["12"],
         ]
     elif suffix == "jsonl":
-        assert json.loads((tmp_path / "rows.jsonl").read_text()) == {"number": 12}
+        assert json.loads((tmp_path / "rows.jsonl").read_text(encoding="utf-8")) == {"number": 12}
     else:
-        assert json.loads((tmp_path / "rows.json").read_text()) == [{"number": 12}]
+        assert json.loads((tmp_path / "rows.json").read_text(encoding="utf-8")) == [{"number": 12}]
 
 
 @pytest.mark.parametrize(
@@ -186,7 +188,7 @@ def test_empty_binary_capture_and_header_only_table(prepare, tmp_path):
     result = stream_dataset(
         database=tmp_path / "stream.db", resume=result.job_id, export=tmp_path / "empty.json"
     )
-    assert json.loads((tmp_path / "empty.json").read_text()) == []
+    assert json.loads((tmp_path / "empty.json").read_text(encoding="utf-8")) == []
 
 
 @pytest.mark.parametrize(
@@ -232,7 +234,7 @@ def test_resume_contract_is_fixed_and_unknown_job_is_rejected(prepare, tmp_path)
 
 def test_source_grants_and_ledger_aliases(tmp_path):
     source = tmp_path / "input"
-    source.write_text("a\n1")
+    source.write_text("a\n1", encoding="utf-8")
     result = stream_dataset(
         database=tmp_path / "stream.db",
         source=source,
@@ -450,7 +452,7 @@ def test_ledger_versions_locks_and_read_only(tmp_path, prepare):
 
 def test_cli_new_job_resume_and_invalid_configuration(tmp_path, monkeypatch):
     source = tmp_path / "input"
-    source.write_text('{"x":1}\n{"x":2}\n')
+    source.write_text('{"x":1}\n{"x":2}\n', encoding="utf-8")
     monkeypatch.setattr(
         "verboisy.cli.streaming.Settings",
         lambda: Settings(_env_file=None, dataset_local_roots=[str(tmp_path)]),
@@ -552,11 +554,13 @@ def test_saved_storage_limit_and_export_alias_guards(tmp_path, prepare):
 
 def test_cli_schema_projection_protection_and_failed_job(tmp_path, monkeypatch):
     source = tmp_path / "input"
-    source.write_text('{"n":"12"}\n')
+    source.write_text('{"n":"12"}\n', encoding="utf-8")
     schema = tmp_path / "schema.json"
-    schema.write_text('{"number":{"type":"integer"}}')
+    schema.write_text('{"number":{"type":"integer"}}', encoding="utf-8")
     plan = tmp_path / "plan.json"
-    plan.write_text('{"fields":[{"source":"/n","target":"/number","conversion":"integer"}]}')
+    plan.write_text(
+        '{"fields":[{"source":"/n","target":"/number","conversion":"integer"}]}', encoding="utf-8"
+    )
     monkeypatch.setattr(
         "verboisy.cli.streaming.Settings",
         lambda: Settings(_env_file=None, dataset_local_roots=[str(tmp_path)]),
@@ -574,7 +578,7 @@ def test_cli_schema_projection_protection_and_failed_job(tmp_path, monkeypatch):
     ]
     assert CliRunner().invoke(app, args).exit_code == 0
     assert CliRunner().invoke(app, [*args, "--export", str(schema)]).exit_code == 1
-    source.write_text('{"n":"wrong"}')
+    source.write_text('{"n":"wrong"}', encoding="utf-8")
     result = CliRunner().invoke(app, args)
     assert result.exit_code == 1 and json.loads(result.output)["status"] == "FAILED"
 
