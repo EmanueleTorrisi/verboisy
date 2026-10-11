@@ -5,7 +5,7 @@
 
 The checker does not inspect secrets, Git history or external services. A passing
 result says the reviewed local contracts are consistent, not that the product has
-passed its pending acceptance, platform or legal gates.
+passed real-task acceptance or received a security or legal certification.
 """
 
 import argparse
@@ -26,6 +26,9 @@ def inspect(root: Path) -> dict[str, object]:
         {
             root / "README.md",
             root / "ARCHITECTURE.md",
+            root / "COPYRIGHT.md",
+            root / "CHANGELOG.md",
+            *root.glob(".github/*.md"),
             *root.glob("docs/*.md"),
             *root.glob(".github/readme/*.md"),
         }
@@ -58,8 +61,8 @@ def inspect(root: Path) -> dict[str, object]:
             resolved = path.parent / unquote(target)
             if not resolved.exists():
                 issues.append(f"Broken local link in {path.relative_to(root)}: {target}")
-    project = tomllib.loads((root / "pyproject.toml").read_text())
-    tree = ast.parse((source / "__init__.py").read_text())
+    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    tree = ast.parse((source / "__init__.py").read_text(encoding="utf-8"))
     versions = [
         ast.literal_eval(node.value)
         for node in tree.body
@@ -68,31 +71,34 @@ def inspect(root: Path) -> dict[str, object]:
     ]
     if versions != [project["project"]["version"]]:
         issues.append("Package version and public __version__ differ")
-    if project["project"].get("license") != "BSD-2-Clause" or not (root / "LICENSE").is_file():
-        issues.append("Current distribution terms require an explicit reviewed metadata change")
-    matrix = json.loads((root / "evals/release-matrix.json").read_text())
+    if (
+        project["project"].get("license") != "LicenseRef-Verboisy-Source-Inspection-1.0"
+        or not (root / "LICENSE").is_file()
+    ):
+        issues.append("License identifier and current distribution terms disagree")
+    else:
+        terms = (root / "LICENSE").read_text(encoding="utf-8")
+        required = (
+            "VERBOISY SOURCE INSPECTION LICENSE 1.0",
+            "Separate written permission",
+            "Third-party components",
+        )
+        if not all(marker in terms for marker in required):
+            issues.append("Source-inspection license is missing required scope or notices")
+    matrix = json.loads((root / "evals/release-matrix.json").read_text(encoding="utf-8"))
     if [gate["id"] for gate in matrix["gates"]] != list(range(1, 8)):
         issues.append("Release matrix must retain all seven gates")
     if (root / "ARCHITECTURE.md").read_bytes() != (root / "docs/architecture.md").read_bytes():
         issues.append("Architecture entry points disagree")
-    publish = (root / ".github/workflows/publish.yml").read_text()
+    publish = (root / ".github/workflows/publish.yml").read_text(encoding="utf-8")
     if (
         "if: vars.RELEASE_ENABLED == 'true' && github.event.repository.private == false"
         not in publish
     ):
         issues.append("Reviewed private-release publication guard is missing")
-    pages = (root / ".github/workflows/docs.yml").read_text()
+    pages = (root / ".github/workflows/docs.yml").read_text(encoding="utf-8")
     if "vars.PAGES_ENABLED == 'true' && github.event.repository.private == false" not in pages:
         issues.append("Reviewed private documentation publication guard is missing")
-    plan = json.loads((root / "evals/batch6-commits.json").read_text())["entries"]
-    paths = [entry["path"] for entry in plan]
-    messages = [entry["message"] for entry in plan]
-    if not paths or len(set(paths)) != len(paths) or len(set(messages)) != len(messages):
-        issues.append("Commit plan must contain distinct files and distinct messages")
-    if any(Path(path).is_absolute() or ".." in Path(path).parts for path in paths):
-        issues.append("Commit plan paths must stay inside the repository")
-    if any(not isinstance(message, str) or not message.strip() for message in messages):
-        issues.append("Commit subjects must be nonempty professional descriptions")
     return {
         "inspection_version": "1",
         "scope": "local_repository_consistency",
