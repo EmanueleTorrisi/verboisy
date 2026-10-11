@@ -1,54 +1,120 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-<p align="center"><img src="logo.png" alt="Verboisy" width="240" /></p>
-<p align="center"><strong>Research with evidence. Prepare datasets with traceable transformations.</strong></p>
-<p align="center">CLI · Python API · Local files · Public web · Portable provenance</p>
-<p align="center"><strong>1.0.0 development build — production acceptance pending</strong></p>
+<p align="center"><img src="logo.png" alt="Verboisy" width="220" /></p>
+<h1 align="center">Verboisy</h1>
+<p align="center"><strong>From a research question to a dataset you can inspect.</strong></p>
+<p align="center">Evidence-backed research · Structured extraction · Local data preparation · Portable provenance</p>
+<p align="center">
+  <a href="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml/badge.svg" alt="Continuous integration" /></a>
+  <img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB" alt="Python 3.11–3.14" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Source%20inspection%20only-7057ff" alt="Source inspection license" /></a>
+</p>
+<p align="center"><a href="#what-verboisy-does">Overview</a> · <a href="#getting-started">Getting started</a> · <a href="#documentation">Documentation</a> · <a href="#licensing-demos-and-commercial-enquiries">Demos & licensing</a></p>
 
 [Italiano](.github/readme/README.it.md) · [Deutsch](.github/readme/README.de.md) ·
 [Français](.github/readme/README.fr.md) · [Español](.github/readme/README.es.md) ·
 [日本語](.github/readme/README.ja.md) · [한국어](.github/readme/README.ko.md) ·
 [简体中文](.github/readme/README.zh-CN.md)
 
-Verboisy turns a research goal and an explicit data contract into records whose
-supporting observations can be inspected. It also prepares declared datasets
-without model calls. These workflows share an emphasis on source integrity,
-durable recovery and honest completion boundaries.
+## What Verboisy does
 
-The repository is maintained privately by Emanuele Torrisi. The implementation
-batches are complete; human-reviewed product acceptance, live provider qualification,
-independent beta and final commercial/release review remain outstanding.
-[The finite release plan](docs/development-roadmap.md) records those gates.
+Verboisy is a research and data extraction engine for people who need structured
+information and a way to inspect where it came from. Define a question, a schema
+and permitted sources. Verboisy acquires observations, checks proposed records,
+retains evidence and produces datasets with traceable output transformations.
 
-## Choose the workflow
+The same project also prepares existing local and declared HTTP datasets through
+deterministic adapters. A separate streaming workflow handles large local inputs
+without returning every row in one in-memory list. The CLI and Python API support
+repeatable workflows, saved state and explicit recovery.
 
-| Workflow | Inputs | Result | Important boundary |
+**Source-visible, commercially licensed.** Reading the source is permitted under
+[LICENSE](LICENSE). Running, testing, modifying or deploying Verboisy requires a
+separate written license. The examples below describe authorized use. For a demo,
+evaluation or enterprise license, contact [Emanuele Torrisi](mailto:emanueletorrisi98@gmail.com).
+
+## Why this approach matters
+
+A JSON response or a scraped table does not explain whether a fact was observed,
+whether two measurements are comparable, or how a displayed value was derived.
+Verboisy makes those questions part of the data workflow:
+
+- **Evidence before acceptance.** Model-generated candidates need observed source
+  bindings and deterministic verification; semantic review is a separate boundary.
+- **A data contract you control.** JSON Schema, identity rules, source scope and
+  comparability requirements define acceptable output.
+- **Recoverable work.** Persistent frontiers, immutable source captures, request
+  journals and checkpoints preserve progress and expenditure across resume.
+- **Explainable transformations.** Unit conversion, display choices, projections
+  and grouped results retain links to their raw evidence and contributors.
+- **Explicit decisions.** Proposed changes pause work for review instead of silently
+  substituting a different question or schema.
+
+This is useful for analyst research, reference-data collection, data preparation,
+internal information workflows and reproducible investigations. Scientific and
+regulated uses still require independent review of sources, sampling and conclusions.
+Verboisy's long-term ambition is to become a trusted standard for evidence-backed
+data extraction; that is a product direction, not a claim of market leadership.
+
+## Choose your workflow
+
+| Workflow | Typical input | Output | Execution |
 | --- | --- | --- | --- |
-| Web research | Goal, columns/schema, explicit seeds or configured search | Accepted records, citations, snapshots, events and optional proof | Model suggestions require deterministic grounding and semantic review |
-| Dataset preparation | Granted local files or declared HTTP GET sources | Typed or projected records and replayable source assets | Deterministic adapters make no model, search or browser calls |
-| Large local preparation | CSV, TSV, JSONL, text or arbitrary asset bytes | Counts, paged records, checkpoints and streaming bundles | Separate ledger; no model research, large HTTP streaming or out-of-core sorting |
+| Web research | A question, columns or schema, permitted sites | Structured records, evidence and saved research state | Browser and configured model; optional search discovery |
+| Dataset preparation | Granted local files or declared HTTP GET sources | Validated/projected records and retained source assets | Deterministic parsing without model, search or browser calls |
+| Large local preparation | CSV, TSV, JSONL, text or asset bytes | Paged records, counts, durable checkpoints and streaming bundles | Separate disk-backed ledger and bounded buffers |
 
-Arbitrary files can be captured and indexed with their hash. Capture does not mean
-that an image, video, archive or scientific format has been understood. The
-[capability registry](docs/formats.md) distinguishes exact parsing from capture-only
-support. Time-series ordering and diagnostics require an explicit task policy.
+| Input capability | Supported interpretation |
+| --- | --- |
+| CSV / TSV | Exact text fields, explicit headers and row-width checks |
+| JSON / JSONL | Typed object records with strict decoding |
+| Text | Text records with source locations |
+| DOCX / XLSX | Bounded, documented Office adapters; no macro or formula execution |
+| Other files, including images or video | Immutable byte capture, hashes and reference records; no automatic content interpretation |
+| Time-series observations | Explicit series/timestamp policies, ordering and gap/duplicate diagnostics |
 
-## Install from this repository
+See [file capabilities](docs/formats.md) for precise contracts. Binary capture is
+not OCR, image understanding or universal document extraction. Service-specific
+connectors, OAuth flows and API pagination require explicit integrations.
 
-Use Python 3.11–3.14 and Poetry. A C++ compiler is **not** required for normal use.
-No public package availability is assumed by these instructions.
+## Getting started
+
+### Requirements
+
+- Python **3.11–3.14** and Poetry; Linux, macOS and Windows are covered by CI.
+- A written evaluation or usage license for execution.
+- For model-based research, an approved provider profile and its credentials.
+- For browser acquisition, Chromium and the required system libraries.
+- For local ingestion, an explicit source-directory grant and sufficient disk space.
+
+Normal installation requires **no C++ compiler**. Optional native components have
+Python reference paths and separate build instructions. Deterministic local data
+preparation does not require a model key or a browser.
+
+From an authorized checkout:
 
 ```bash
 poetry install
 poetry run verboisy --help
 ```
 
-For web research, configure your provider privately in `.env`, then provision
-Chromium with `poetry run verboisy setup`. Local dataset preparation does not start
-a browser. Linux browser system libraries may require system provisioning; see
-[installation and validation](docs/validation.md).
+Keep provider credentials in your private environment or `.env`; start from
+[.env.example](.env.example). Do not commit populated secrets. Provision Chromium
+when using web research:
 
-## Research a declared question
+```bash
+poetry run verboisy setup
+poetry run verboisy model-config
+```
+
+Shell examples use POSIX syntax; on Windows, configure environment variables using
+the equivalent shell syntax or your private `.env`.
+
+The configuration inspector reports settings and credential presence without
+printing key values. Review [provider configuration](docs/providers.md) and
+[installation checks](docs/validation.md) before connecting a provider.
+
+### Research a question
 
 ```bash
 poetry run verboisy run \
@@ -57,10 +123,10 @@ poetry run verboisy run \
   --export institutions.json
 ```
 
-Automatic discovery needs a configured search provider. Explicit browser seeds can
-be declared in a task instead. Missing facts may remain `null`; unsupported facts
-are rejected. Search snippets are discovery material, not final record evidence.
-Use explicit JSON Schema and identity fields when inferred columns are insufficient.
+Automatic discovery needs a configured search provider; explicit seeds can instead
+be declared in a task. Use JSON Schema when types, required fields and validation
+rules need precise control. Missing facts may remain `null`; unsupported values are
+rejected. Accepted results do not imply exhaustive coverage of the web.
 
 ```python
 from verboisy import run
@@ -73,13 +139,10 @@ result = run(
 print(result.run_id, result.status, result.records)
 ```
 
-The ordinary `run`/`arun` API materializes accepted rows. It is not the gigabyte
-streaming API. [CLI contracts](docs/cli.md) cover seeds, identity, grouping,
-ordering, SmartID, proof and multiple exports.
+Async applications use `arun`. The ordinary research API materializes accepted
+rows; use the streaming API for large local inputs.
 
-## Prepare local or internal data
-
-Grant the source directory explicitly; model credentials grant no filesystem access.
+### Prepare local or internal data
 
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
@@ -89,13 +152,13 @@ poetry run verboisy run \
   --export observations.json
 ```
 
-CSV, JSON, JSONL, TSV, text, DOCX and XLSX have bounded deterministic adapters.
-Declared HTTP GET sources use URL policy, bounded downloads, DNS pinning and
-origin-scoped secret headers. OAuth, database drivers and service-specific API
-pagination are separate connector requirements, not implicit HTTP capabilities.
-See [source ingestion](docs/ingestion.md) and [file contracts](docs/formats.md).
+The directory and schema file must exist. Model credentials do not grant filesystem
+access. Declared HTTP sources use bounded downloads, redirect policy, DNS-pinned
+transport and origin-scoped credentials. A local source workflow can remain local;
+choosing a remote model separately determines what observation content is sent
+outside the machine. Review [ingestion](docs/ingestion.md) and [enterprise deployment](docs/commercial.md).
 
-## Prepare large local files
+### Prepare large local inputs
 
 ```bash
 poetry run verboisy stream \
@@ -105,90 +168,101 @@ poetry run verboisy stream \
   --export observations.jsonl
 ```
 
-The separate streaming ledger retains immutable source chunks, bounded row batches
-and transactionally committed progress. `stream-status` exposes job IDs; `stream
---resume JOB_ID` continues the saved contract. Python consumers page through
-`StreamLedger` rather than receiving every row in one list.
+The streaming ledger retains source chunks and transactionally committed progress.
+`stream-status` lists jobs; `stream --resume JOB_ID` continues a saved job. Python
+consumers page through `StreamLedger` instead of loading all rows at once.
 
-| Recorded Linux/Python 3.12 workload | Measurement |
-| --- | --- |
-| Distinct JSONL rows | 1,000,000 |
-| Source bytes | 1,105,888,890 |
-| Peak process RSS | 89.15 MiB |
-| Preparation and export | 130.81 seconds; 7,644.72 rows/second |
-| Recovery and verification | Original source deleted; all exported rows, evidence and checksums verified |
+A recorded Linux/Python 3.12 workload prepared and exported **1,000,000 JSONL rows**
+from **1,105,888,890 input bytes**, with **89.15 MiB peak process RSS** and **130.81 s**
+elapsed time. Recovery after deletion of the original source and export integrity
+were verified. These measurements describe one workload, not a universal speed or
+memory guarantee. See [streaming](docs/streaming.md) and [benchmarks](docs/benchmarks.md).
 
-This is one measured workload, not a guarantee for every machine, schema or format.
-The [streaming contract](docs/streaming.md) documents resource ceilings, disk use,
-portable bundle version and exclusions. Its raw report is retained under `evals/results`.
+## Review, resume and inspect
 
-## Decisions, ranges and display choices
-
-Verboisy can pause before export with a grounded alternative: a different search
-scope, changed types, added columns or removed columns. Inspect its exact saved
-contract with `verboisy changes --run-id RUN_ID`.
-
-- `verboisy run --resume RUN_ID` continues the current requirements and declines the offer.
-- `verboisy run --okresume RUN_ID` accepts the exact offered changes.
-
-Observed intervals remain intervals. A lower bound does not become an exact number
-or an invented maximum. Numeric min/max columns are a separate requested schema.
-Defaults are kilograms, metres and day/month/year; explicit lb/ft/iso/mdy/source
-preferences change presentation while preserving original evidence.
-
-Explicit time-series tasks order actual instants within declared series and report
-duplicates, invalid timestamps and declared-cadence gaps. Ambiguous daylight-saving
-clock readings are not guessed. Diagnostics do not interpolate observations or
-certify endpoint coverage. [Research semantics](docs/research-semantics.md) explains
-these contracts and the scope of null-column notices.
-
-## Inspect and recover
+Verboisy may offer a grounded alternative when requirements conflict with the
+observed data: different types, added or removed columns, or another search scope.
+Inspect the exact proposal before deciding:
 
 ```bash
+poetry run verboisy changes --run-id RUN_ID
 poetry run verboisy status --run-id RUN_ID
-poetry run verboisy model-config
 poetry run verboisy run --resume RUN_ID
 ```
 
-Requests are budgeted and journaled; resume does not reset expenditure. Models
-cannot accept their own proposed records. Compatible provider prefixes, custom
-endpoints and local execution use explicit profiles; an arbitrary API is not
-certified merely because a routing library can address it.
-[Provider contracts](docs/providers.md) explain compatibility and role configuration.
+`--resume` keeps the current requirements and declines the offer. `--okresume`
+accepts the exact saved proposal. Resume retains consumed budgets; it does not
+reset expenditure or silently authorize additional sources.
 
-Portable exports retain source assets or snapshots, evidence, relevant events and
-output lineage. Grouped rows identify contributors; display transformations retain
-raw values. Checksums establish integrity relative to the manifest, not factual
-truth or independent authenticity. Inspect [proof and provenance](docs/proof.md).
+Ranges stay ranges. A lower bound does not become an exact weight or an invented
+maximum. Numeric minima and maxima require an appropriate schema. Presentation
+defaults are kilograms, metres and day/month/year, with explicit alternatives;
+original values remain in the evidence. Time-series diagnostics do not fill missing
+observations or resolve ambiguous local times by guessing.
 
-## Engineering and release status
+Portable exports include evidence, relevant events, output lineage and retained
+source material where applicable. Grouped rows identify their contributing records.
+Checksums establish byte consistency with the manifest, not independent truth or
+source authenticity. See [proof and provenance](docs/proof.md).
 
-```bash
-make validate
-make repo-check
-```
+## Architecture and engineering
 
-Validation covers lint, formatting, types, offline coverage, required browser
-integration, dependency audit, strict documentation and package builds. Optional
-C++ matchers retain Python references, native tests and measured build provenance;
-see [native execution](docs/native.md). Platform, package and live acceptance must
-be verified for the release commit, not inferred from an earlier run.
+Python owns orchestration, contracts, adapters, ledgers and the CLI. Optional C++17
+components accelerate specific evidence-matching work while preserving Python
+reference semantics. SQLite provides durable research and streaming state.
 
-[Architecture](ARCHITECTURE.md) explains ownership, ledgers and trust boundaries.
-[Maintainer workflow](.github/CONTRIBUTING.md), [security reporting](.github/SECURITY.md),
-[release checklist](docs/release-checklist.md) and [commit policy](docs/commit-policy.md)
-record operational expectations. External code contributions are not currently
-accepted; authorized issue reports and product feedback remain welcome.
+The test suite covers request boundaries, grounding, replay, malformed inputs,
+interruption, output lineage and browser integration. CI checks supported Python
+and operating-system combinations; full statement and branch coverage is required.
+Model compatibility and real-task quality depend on the selected profile and sources
+and require their own evaluation.
 
-## Licensing and commercial readiness
+[Architecture](ARCHITECTURE.md) explains component ownership, data flow and trust
+boundaries. [Validation](docs/validation.md) describes reproducible engineering checks.
 
-The repository currently contains the BSD-2-Clause licence in [LICENSE](LICENSE).
-Copyright notices and private development do not replace those terms. The intended
-public distribution/commercial terms require review before publication; this batch
-does not enact a new licence or register a trademark. Publication and funding are
-separate from product qualification. See [distribution readiness](docs/distribution.md).
+## Documentation
 
-No exhaustive web coverage, perfect factual accuracy, access-control bypass or
-universal file/provider compatibility is promised. Release readiness is determined
-by recorded acceptance results and the seven gates, not repository size or language
-percentages.
+| Start here | Technical references |
+| --- | --- |
+| [CLI reference](docs/cli.md) · [Python API](docs/api.md) | [Contracts](docs/contracts.md) · [Identity and SmartID](docs/smartid.md) |
+| [Source ingestion](docs/ingestion.md) · [File capabilities](docs/formats.md) | [Projection and source evidence](docs/proof.md) · [Search and recovery](docs/search-and-recovery.md) |
+| [Presentation](docs/presentation.md) · [Research semantics](docs/research-semantics.md) | [Providers](docs/providers.md) · [Large local datasets](docs/streaming.md) |
+| [Security policy](.github/SECURITY.md) · [Reporting and collaboration](.github/CONTRIBUTING.md) | [Release notes](CHANGELOG.md) · [Roadmap](docs/development-roadmap.md) |
+| [Licensing](docs/licensing.md) · [Commercial enquiries](docs/commercial.md) | [Copyright and third-party notices](COPYRIGHT.md) |
+
+## Licensing, demos and commercial enquiries
+
+Verboisy is proprietary software with source inspection permissions, **not an
+open-source project**. Execution, testing, modification, integration, deployment
+and redistribution require separate written permission. [LICENSE](LICENSE) is the
+authoritative English text; translations of this README do not alter its terms.
+Third-party components retain their respective licenses.
+
+Contact **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** for:
+
+- A guided demo or an evaluation tailored to your data workflow.
+- Internal-use, enterprise, integration or other commercial licensing.
+- Investment, partnerships or business discussions.
+- Potential paid engineering collaboration under an agreed contract.
+
+Describe the workflow, source types, expected volume and deployment environment.
+Do not send confidential datasets or credentials in an initial enquiry. Pricing,
+support, delivery dates and usage rights are agreed individually.
+
+## Feedback and future releases
+
+Verboisy is created and maintained by **Emanuele Torrisi**, currently the project's
+sole developer. Bug reports and feature requests are welcome through
+[GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues). Report security
+issues privately using the [security policy](.github/SECURITY.md).
+
+Unsolicited code contributions are not currently accepted. Future paid collaboration
+may be arranged where it fits the product roadmap; discuss scope, compensation and
+intellectual-property terms before beginning work. See [participation guidelines](.github/CONTRIBUTING.md).
+
+Further versions are planned to improve extraction quality, source coverage,
+scalability and usability. The [roadmap](docs/development-roadmap.md) separates
+implemented capabilities from future directions. The project does not promise
+perfect accuracy, universal provider compatibility or a replacement for every data
+platform. Source permissions, independent review and measured task outcomes remain
+essential to responsible use.
