@@ -1,68 +1,146 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-<p align="center"><img src="../../logo.png" alt="Verboisy" width="240" /></p>
+<p align="center"><img src="../../logo.png" alt="Verboisy" width="220" /></p>
 
-# 根拠に基づく調査と、出所を追跡できるデータ整備
+[English](../../README.md) · [Italiano](README.it.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [简体中文](README.zh-CN.md)
 
-Verboisy は、検証済みのウェブ調査、決定的なファイル処理、大規模なローカルデータ用の独立した処理経路を提供します。現在は開発版であり、製品の適格性評価は未完了です。
+# Verboisy
 
-日本語の導入説明です。完全な技術契約は、下記の英語文書を参照してください。
+**調査の問いから、出典を確認できるデータセットへ。**
 
-[English](../../README.md) · [Italiano](README.it.md) · [Deutsch](README.de.md) ·
-[Français](README.fr.md) · [Español](README.es.md) · [日本語](README.ja.md) ·
-[한국어](README.ko.md) · [简体中文](README.zh-CN.md)
+証拠に基づく調査 · 構造化抽出 · ローカルデータ · 持ち運べる来歴
 
-## リポジトリからのインストール
+## 製品について
+
+Verboisy は、構造化された情報と、その情報がどこから得られたかを確認する手段を必要とする人のための調査・データ抽出エンジンです。問い、スキーマ、許可された情報源で作業を定義します。観測を取得し、提案されたレコードを検証して、根拠と出力変換を保持します。CLI と Python API は、再現可能な処理と保存済み作業の再開に対応します。
+
+ローカルファイルや宣言された HTTP データセットは、モデル・検索・ブラウザーを呼ばない決定論的アダプターでも処理できます。大容量のローカル入力には、バッファーを制限し、ディスク上の台帳を使う独立した処理経路があります。
+
+**ソースは閲覧可能ですが、実行には別途ライセンスが必要です。** [LICENSE](../../LICENSE) が許可するのはソースの検査です。実行、テスト、変更、配布には別の書面による許可が必要です。以下の例は許可された利用を説明します。
+
+## この設計の意義
+
+JSON や表だけでは、その事実が実際に観測されたのか、値がどのように変換されたのかは分かりません。Verboisy はその確認を処理の一部にします。
+
+- **採用前の証拠検証：** モデルの候補は観測済みの出典と決定論的検証を必要とし、意味的レビューは別の段階です。
+- **利用者が決める契約：** JSON Schema、同一性、情報源の範囲、比較可能性が許容する出力を定義します。
+- **復旧可能な作業：** 不変の取得データ、チェックポイント、リクエスト記録が進捗と消費量を保存します。
+- **説明可能な変換：** 単位、射影、表示、集約は元の値と寄与レコードに結び付きます。
+- **明示的な判断：** 問いやスキーマを黙って変更せず、提案を示して処理を停止します。
+
+分析、参照データの収集、データ準備、社内情報の処理、再現可能な調査に役立ちます。科学研究や規制対象の用途では、情報源、標本、結論を独立して評価する必要があります。証拠に基づくデータ抽出の信頼できる標準を目指していますが、現在の市場での地位を主張するものではありません。
+
+## 処理経路と形式
+
+Web 調査はブラウザーと設定済みモデルを使い、検索による情報源発見は任意です。決定論的準備は許可されたファイルや宣言済み HTTP GET 情報源を読みます。独立したストリーミング処理は件数、レコードのページ、チェックポイントを返します。
+
+| 入力 | 解釈 |
+| --- | --- |
+| CSV / TSV | 正確な文字列、明示的なヘッダー、列数の検査 |
+| JSON / JSONL | 厳密にデコードする型付きオブジェクト |
+| テキスト | 出典位置を持つテキストレコード |
+| DOCX / XLSX | 制限が文書化されたアダプター。マクロや数式を実行しません |
+| 画像、動画、その他のファイル | 不変のバイト取得、ハッシュ、参照。内容の自動理解は行いません |
+| 時系列 | 系列・時刻の明示的な規則、並べ替え、欠落と重複の診断 |
+
+バイナリー取得は OCR やあらゆる文書の解釈を意味しません。OAuth、データベースドライバー、アプリのコネクター、API のページ処理には個別の実装が必要です。[形式](../../docs/formats.md)を参照してください。
+
+## インストールと設定
+
+Python **3.11–3.14**、Poetry、実行に関する書面の許可が必要です。CI は Linux、macOS、Windows を対象とします。モデル調査には互換プロファイルと資格情報、Web 取得には Chromium とシステムライブラリーが必要です。ローカル入力にはディレクトリーの明示的な許可と十分な空き容量が必要です。通常のインストールに C++ コンパイラーは不要です。
 
 ```bash
 poetry install
 poetry run verboisy --help
 ```
 
-## 利用できる処理経路
+キーは私的な環境または `.env` に保存し、[.env.example](../../.env.example)を参照してください。キーをコミットしないでください。シェル例は POSIX 構文です。Windows では同等の方法で環境変数を設定します。
 
-ウェブ調査では、観測した引用を検証してからレコードを受け入れます。ローカルファイルにはディレクトリの明示的な許可が必要です。HTTP データは宣言されたオリジンを使用します。CSV、JSON、JSONL、TSV、テキスト、DOCX、XLSX は限定された契約で処理します。その他のファイルは、内容を解釈せずに取得・索引化できます。
+```bash
+poetry run verboisy setup
+poetry run verboisy model-config
+```
+
+`model-config` は設定と資格情報の有無を表示し、キーの値は表示しません。ローカルの決定論的準備にはモデルもブラウザーも不要です。[プロバイダー](../../docs/providers.md)と[検証](../../docs/validation.md)を参照してください。
+
+## Web 調査と API
 
 ```bash
 poetry run verboisy run \
-  --goal "Find research institutions and their published homepages" \
+  --goal "Find research institutions and their explicitly published homepages" \
   --schema '[name,website,country]' \
   --export institutions.json
 ```
 
-[Providers](../../docs/providers.md) · [Sources](../../docs/ingestion.md) ·
-[File capabilities](../../docs/formats.md)
+自動発見には検索プロバイダーが必要です。タスクに開始 URL を明示する方法もあります。JSON Schema で型と制約を定義できます。欠けた情報は `null` のままとなり、裏付けのない値は拒否されます。採用された出力は Web 全体の網羅性を保証しません。
 
-## 大規模なローカルファイル
+```python
+from verboisy import run
 
-stream は別の台帳、上限付きバッファ、チェックポイント、ページ単位のアクセスを使用します。Linux で 1 GiB を超える 100 万行の JSONL を検証しました。これは普遍的な性能保証でも、ウェブ調査のストリーミングでもありません。
+result = run(
+    goal="Find research institutions and their published homepages",
+    schema=["name", "website", "country"],
+    export="institutions.json",
+)
+print(result.run_id, result.status, result.records)
+```
+
+非同期アプリは `arun` を使います。通常の API は採用レコードをメモリー上にまとめます。大容量のローカル入力にはストリーミング経路を使ってください。
+
+## ローカル・社内データ
 
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+poetry run verboisy run \
+  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
+  --schema observation-schema.json \
+  --export observations.json
+```
+
+ディレクトリーとスキーマファイルはあらかじめ必要です。モデル資格情報はファイルシステムへのアクセス権を与えません。宣言済み HTTP 情報源では、取得量制限、リダイレクト規則、DNS 固定、オリジン別の資格情報を使います。情報源の場所とモデルの実行場所は別です。リモートモデルには観測内容が送られることがあります。機密情報を扱う前に、転送、ログ、ネットワーク、保存方針を確認してください。
+
+## 大容量データセット
+
+```bash
 poetry run verboisy stream \
   --database observations-stream.db \
   --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
+  --schema observation-schema.json \
   --export observations.jsonl
 ```
 
-[Streaming contract](../../docs/streaming.md)
+台帳は不変の取得ブロックとトランザクション単位の進捗を保存します。`stream-status` でジョブを一覧し、`stream --resume JOB_ID` で保存済みジョブを再開できます。`StreamLedger` はページ単位のアクセスを提供します。
 
-## 判断とデータの意味
+Linux/Python 3.12 の JSONL 測定では、**1,000,000 行**、**1,105,888,890 バイト**を準備・出力し、最大 RSS は **89.15 MiB**、経過時間は **130.81 秒**でした。元ファイル削除後の復旧と出力の整合性も確認しました。これは一つの負荷の測定で、一般的な速度や容量の保証ではありません。[ストリーミング](../../docs/streaming.md)と[ベンチマーク](../../docs/benchmarks.md)を参照してください。
 
---resume は要件を維持して提案を拒否し、--okresume は提示された変更のみを承認します。範囲、単位、日付の表示を変えても元の根拠は保持します。時系列には、時点の順序、タイムゾーンの曖昧さ、補間を伴わない欠測診断のための明示的なポリシーが必要です。
-
-[Semantics](../../docs/research-semantics.md) · [Display](../../docs/presentation.md) ·
-[CLI](../../docs/cli.md)
-
-## 状態と保守
-
-通常の利用に C++ コンパイラは不要です。ネイティブテストは別に実行します。外部からのコード貢献は現在受け付けていません。現在のライセンスは BSD-2-Clause のままです。商用配布の条件は公開前に審査する必要があります。
+## 提案、再開、証拠
 
 ```bash
-make validate
-make repo-check
+poetry run verboisy changes --run-id RUN_ID
+poetry run verboisy status --run-id RUN_ID
+poetry run verboisy run --resume RUN_ID
 ```
 
-[Architecture](../../ARCHITECTURE.md) · [Release gates](../../docs/release-checklist.md) ·
-[Security](../SECURITY.md) · [Maintainer policy](../CONTRIBUTING.md) ·
-[Licence](../../LICENSE) · [Commercial review](../../docs/distribution.md)
+`--resume` は現在の要件を維持して提案を辞退します。`--okresume` は保存された変更だけを承認します。提案は型、列、調査範囲を変更できます。再開は消費量をリセットせず、情報源への権限も暗黙に増やしません。
+
+範囲は範囲として保持します。下限を正確な値や架空の上限に変換しません。数値の最小・最大列には適切なスキーマが必要です。表示の既定値はキログラム、メートル、日/月/年で、明示的な代替設定でも元の証拠を保存します。時系列診断は欠けた観測を補間せず、曖昧な現地時刻を推測しません。
+
+持ち運べる出力には、証拠、関連イベント、出力来歴、該当する取得資料が含まれます。集約には寄与レコードを記録します。チェックサムはマニフェストとのバイト整合性を示し、真実性や独立した真正性を証明しません。[来歴](../../docs/proof.md)を参照してください。
+
+## 設計と文書
+
+Python が制御、契約、アダプター、CLI、SQLite 台帳を担当します。任意の C++17 コンポーネントは特定の証拠照合作業を高速化し、Python 参照実装を保持します。テストと CI は各環境、ブラウザー、復旧、整合性を検証し、命令・分岐の完全なカバレッジを要求します。実際の調査品質とプロバイダー互換性は別途評価が必要です。
+
+[CLI](../../docs/cli.md) · [API](../../docs/api.md) · [契約](../../docs/contracts.md) · [同一性](../../docs/smartid.md) · [入力](../../docs/ingestion.md) · [表示](../../docs/presentation.md) · [意味](../../docs/research-semantics.md) · [設計](../../ARCHITECTURE.md) · [変更履歴](../../CHANGELOG.md)
+
+## ライセンス、デモ、商談
+
+Verboisy は独自ライセンスのソフトウェアで、**オープンソースではありません**。英語の LICENSE が正式な条件で、この翻訳は権利を変更しません。識別子は `LicenseRef-Verboisy-Source-Inspection-1.0` です。第三者のコンポーネントにはそれぞれのライセンスが適用されます。実行、テスト、変更、統合、配布、ホスティングには別の書面による許可が必要です。
+
+デモ、評価、社内・企業ライセンス、投資、提携、将来の有償協力については **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** へ連絡してください。用途、情報源、量、実行環境を説明し、資格情報や機密データは送らないでください。料金、サポート、権利は個別に合意します。[ライセンス](../../docs/licensing.md)と[商談](../../docs/commercial.md)を参照してください。
+
+## フィードバックと今後の版
+
+**Emanuele Torrisi** が Verboisy を制作・保守し、現在は唯一の開発者です。[不具合報告と機能要望](https://github.com/EmanueleTorrisi/verboisy/issues)を歓迎します。脆弱性は[セキュリティ方針](../SECURITY.md)に従い非公開で報告してください。
+
+依頼していないコードの提供は受け付けません。有償協力は将来合意できる場合があります。作業前に範囲、報酬、守秘義務、知的財産権を取り決めてください。品質、対応情報源、規模、使いやすさを改善する次期版を計画しています。[ロードマップ](../../docs/development-roadmap.md)は現在の機能と将来の方向を区別します。完全な正確性や万能な互換性は保証しません。[参加方針](../CONTRIBUTING.md)と[著作権](../../COPYRIGHT.md)も参照してください。
