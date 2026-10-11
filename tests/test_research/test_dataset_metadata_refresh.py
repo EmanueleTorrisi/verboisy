@@ -70,7 +70,7 @@ async def test_repair_completion_lineage_and_resume(site, tmp_path, kind):
         summary = store.summary(result.run_id)
     finally:
         store.close()
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     cell = next(cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/population")
     assert cell["status"] == "resolved" and cell["temporal_derivation"]["reference_year"] == 2025
     assert "unit_derivation" in cell and "descriptor_derivations" in cell
