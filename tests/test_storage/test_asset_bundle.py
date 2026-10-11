@@ -62,7 +62,7 @@ def test_original_bytes_and_locators_replay_without_database(tmp_path, fmt, body
     manifest = export_dataset(store, rid, tmp_path / "rows.json", target_schema, spec)
     store.close()
     database.unlink()
-    info = json.loads(manifest.read_text())
+    info = json.loads(manifest.read_text(encoding="utf-8"))
     sidecar = tmp_path / info["asset_bundle"]
     assert info["asset_bundle"] == "rows.json.assets.json"
     assert info["files"][sidecar.name] == hashlib.sha256(sidecar.read_bytes()).hexdigest()
@@ -90,13 +90,14 @@ async def test_public_sorted_exports_bind_back_to_raw_rows(dataset_site, tmp_pat
     assert result.completed and result.records[0]["name"] == "Anaïs"
     Path(config.sqlite_db_path).unlink()
     for manifest_path in result.manifest_paths:
-        info = json.loads(manifest_path.read_text())
+        info = json.loads(manifest_path.read_text(encoding="utf-8"))
         assert info["provenance"] == "exact_dataset_values"
         assert info["truth_verified"] is info["global_completeness_claimed"] is False
         restored = {item.id: item for item in load_portable_assets(manifest_path)}
         evidence_file = next(name for name in info["files"] if name.endswith(".evidence.json"))
         evidence = {
-            item["record_id"]: item for item in json.loads((tmp_path / evidence_file).read_text())
+            item["record_id"]: item
+            for item in json.loads((tmp_path / evidence_file).read_text(encoding="utf-8"))
         }
         for mapping in info["output_lineage"]:
             item = evidence[mapping["record_id"]]
@@ -125,24 +126,24 @@ def test_web_only_and_older_manifests_have_no_asset_sidecar(tmp_path):
             spec,
             metadata={"asset_bundle": "forged"},
         )
-        info = json.loads(manifest.read_text())
+        info = json.loads(manifest.read_text(encoding="utf-8"))
         assert info["asset_bundle"] is None and load_portable_assets(manifest) == []
         assert not (tmp_path / "empty.json.assets.json").exists()
         del info["asset_bundle"]
-        manifest.write_text(json.dumps(info))
+        manifest.write_text(json.dumps(info), encoding="utf-8")
         assert load_portable_assets(manifest) == []
     finally:
         store.close()
 
 
 def mutate(manifest, action):
-    info = json.loads(manifest.read_text())
+    info = json.loads(manifest.read_text(encoding="utf-8"))
     sidecar = manifest.parent / info["asset_bundle"]
-    data = json.loads(sidecar.read_text())
+    data = json.loads(sidecar.read_text(encoding="utf-8"))
     action(data)
-    sidecar.write_text(json.dumps(data, ensure_ascii=False))
+    sidecar.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     info["files"][sidecar.name] = hashlib.sha256(sidecar.read_bytes()).hexdigest()
-    manifest.write_text(json.dumps(info))
+    manifest.write_text(json.dumps(info), encoding="utf-8")
 
 
 @pytest.mark.parametrize(
@@ -191,7 +192,7 @@ def test_rechecks_internal_integrity_even_when_sidecar_hash_is_updated(exported,
 
 def test_outer_checksum_is_verified(exported):
     _, _, manifest = exported
-    info = json.loads(manifest.read_text())
+    info = json.loads(manifest.read_text(encoding="utf-8"))
     sidecar = manifest.parent / info["asset_bundle"]
     sidecar.write_bytes(sidecar.read_bytes() + b" ")
     with pytest.raises(DatasetAssetError, match="checksum mismatch"):
@@ -201,16 +202,16 @@ def test_outer_checksum_is_verified(exported):
 @pytest.mark.parametrize("name", ["../outside.json", "/outside.json", "", ".", "..", 123])
 def test_manifest_cannot_choose_an_unsafe_sidecar_path(exported, name):
     _, _, manifest = exported
-    info = json.loads(manifest.read_text())
+    info = json.loads(manifest.read_text(encoding="utf-8"))
     info["asset_bundle"] = name
-    manifest.write_text(json.dumps(info))
+    manifest.write_text(json.dumps(info), encoding="utf-8")
     with pytest.raises(DatasetAssetError, match="Unsafe portable asset filename"):
         load_portable_assets(manifest)
 
 
 def test_symlink_sidecar_is_rejected(exported, tmp_path):
     _, _, manifest = exported
-    info = json.loads(manifest.read_text())
+    info = json.loads(manifest.read_text(encoding="utf-8"))
     sidecar = tmp_path / info["asset_bundle"]
     original = sidecar.read_bytes()
     other = tmp_path / "other.json"
@@ -231,7 +232,7 @@ def test_reader_byte_cap_and_missing_file_fail_closed(exported):
     _, _, manifest = exported
     with pytest.raises(DatasetAssetError, match="byte limit exceeded"):
         load_portable_assets(manifest, max_bundle_bytes=1)
-    info = json.loads(manifest.read_text())
+    info = json.loads(manifest.read_text(encoding="utf-8"))
     (manifest.parent / info["asset_bundle"]).unlink()
     with pytest.raises(DatasetAssetError, match="Cannot verify"):
         load_portable_assets(manifest)
@@ -288,13 +289,13 @@ def test_output_sidecars_cannot_overwrite_database(tmp_path, suffix):
 async def test_asset_sidecar_cannot_overwrite_schema_input(tmp_path):
     destination = tmp_path / "rows.json"
     source = tmp_path / "rows.json.assets.json"
-    source.write_text(json.dumps(schema({"name": {"type": "string"}})))
+    source.write_text(json.dumps(schema({"name": {"type": "string"}})), encoding="utf-8")
     with pytest.raises(VerboisyError, match="schema/task inputs"):
         await arun(goal="Read rows", schema=source, export=destination)
 
 
 def test_invalid_manifest_shape_is_rejected(tmp_path):
     manifest = tmp_path / "invalid.json"
-    manifest.write_text("[]")
+    manifest.write_text("[]", encoding="utf-8")
     with pytest.raises(DatasetAssetError, match="Cannot verify"):
         load_portable_assets(manifest)
