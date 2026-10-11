@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """First-use browser setup; imports and --help never download a browser."""
 
 import asyncio
