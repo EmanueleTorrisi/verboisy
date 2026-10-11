@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Search and recovery
 
 Use source URLs when you know the scope. Otherwise configure `SEARCH_PROVIDER=brave`
