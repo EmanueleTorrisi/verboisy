@@ -47,8 +47,12 @@ support, across at least two schemas per class and repeated runs. Measure field 
 record recall, false completion, rejected/conflicting records, latency and cost. Set the
 release thresholds before evaluating: recommended initial goals are >=99% supported-field
 precision, >=95% recall on finite annotated sources, and zero known critical negative
-control failures. Those thresholds are proposed gates, not results claimed by this bundle.
+control failures. These thresholds define acceptance criteria; measured results must be recorded separately.
 
 For an ML use case, additionally review source permissions, leakage, label quality,
 duplicates, missingness, sampling bias and temporal drift. A schema-valid dataset alone
 is not suitable evidence for training or scientific conclusions.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
