@@ -16,7 +16,14 @@ from benchmarks.runner import main as benchmark
 def report(tmp_path):
     path = tmp_path / "before.json"
     benchmark(["--case", "parse_json", "--rows", "4", "--repeats", "1", "--output", str(path)])
-    return json.loads(path.read_text())
+    value = json.loads(path.read_text(encoding="utf-8"))
+    # Comparison tests exercise report contracts, not the host timer resolution.
+    # Tiny workloads can legitimately consume zero CPU ticks on Windows.
+    for result in value["results"]:
+        for sample in result["samples"]:
+            sample.update(cpu_ns=1000, wall_ns=1000)
+        result.update(median_cpu_ns=1000, median_wall_ns=1000)
+    return value
 
 
 def test_compatible_changes_show_ratios_and_source_identity(report):
@@ -142,15 +149,15 @@ def test_cli_writes_comparison_and_preserves_inputs(report, tmp_path, capsys):
     before, after, output = (
         tmp_path / name for name in ("before.json", "after.json", "comparison.json")
     )
-    before.write_text(json.dumps(report))
-    after.write_text(json.dumps(report))
+    before.write_text(json.dumps(report), encoding="utf-8")
+    after.write_text(json.dumps(report), encoding="utf-8")
     original = before.read_bytes()
     assert main([str(before), str(after), "--output", str(output)]) == 0
-    assert json.loads(output.read_text())["all_cases_comparable"] is True
+    assert json.loads(output.read_text(encoding="utf-8"))["all_cases_comparable"] is True
     assert before.read_bytes() == original
     changed = copy.deepcopy(report)
     changed["platform"] = "different"
-    after.write_text(json.dumps(changed))
+    after.write_text(json.dumps(changed), encoding="utf-8")
     assert main([str(before), str(after)]) == 1
     assert '"status": "incompatible"' in capsys.readouterr().out
     with pytest.raises(SystemExit) as error:
@@ -162,7 +169,7 @@ def test_cli_writes_comparison_and_preserves_inputs(report, tmp_path, capsys):
 @pytest.mark.parametrize("body", ['{"x":1,"x":2}', '{"x":NaN}', '{"x":Infinity}', "invalid JSON"])
 def test_cli_rejects_invalid_json_before_writing(tmp_path, body):
     source, output = tmp_path / "source.json", tmp_path / "output.json"
-    source.write_text(body)
+    source.write_text(body, encoding="utf-8")
     with pytest.raises(SystemExit) as error:
         main([str(source), str(source), "--output", str(output)])
     assert error.value.code == 2
