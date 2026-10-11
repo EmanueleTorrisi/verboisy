@@ -100,14 +100,14 @@ notices, the task contract and contributor mappings travel with the ordinary
 portable manifest. Checksums provide integrity relative to that manifest, not
 independent authentication or factual truth.
 
-## Qualification boundary
+## Verification scope
 
 Offline fixtures cover offset chronology, DST ambiguity, leap dates, duplicate and
 large-gap handling, null coverage, immutable evidence on re-export, fixed task
 policy and historical declined proposals. Existing range, unit/date presentation
 and proposal-decision suites are run alongside them. This is engineering evidence;
 cross-domain human-reviewed held-out research and live provider qualification
-are assessed through [real-task acceptance](production-acceptance.md). Evaluation
+are assessed through [research evaluation](evaluation.md). Evaluation
 requires authorized sources and an explicit provider spending limit.
 
 ---
