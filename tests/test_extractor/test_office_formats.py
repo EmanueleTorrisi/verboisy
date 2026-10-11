@@ -274,6 +274,20 @@ def test_archive_members_are_not_extracted(name):
         parse_dataset(archive({name: "x"}), "docx")
 
 
+def test_original_member_names_are_checked_before_platform_normalization(monkeypatch):
+    original = zipfile.ZipInfo.__init__
+
+    def normalize(self, *args, **kwargs):
+        original(self, *args, **kwargs)
+        self.filename = self.filename.replace("\\", "/")
+
+    raw = archive({"a\\b": "x"})
+    # Exercise Windows reader behavior on every runner, including Linux.
+    monkeypatch.setattr(zipfile.ZipInfo, "__init__", normalize)
+    with pytest.raises(DatasetParseError, match="Unsafe"):
+        parse_dataset(raw, "docx")
+
+
 def test_symlinks_duplicate_members_and_unsupported_compression():
     out = io.BytesIO()
     with zipfile.ZipFile(out, "w") as package:
