@@ -153,7 +153,7 @@ async def test_public_run_ingests_exact_rows_and_resumes_without_fetch(site, tmp
     finally:
         store.close()
     assert seen == ["/data"]
-    assert json.loads(output.read_text()) == result.records
+    assert json.loads(output.read_text(encoding="utf-8")) == result.records
 
 
 async def test_native_json_types_nested_pointers_and_urls(site):
