@@ -1,0 +1,64 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "organization": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Organization name explicitly attached to the facility"
+      },
+      "facility_name": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Published name of the facility; one facility per row"
+      },
+      "facility_type": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Published facility category, without inferred classification"
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Country explicitly stated for this facility"
+      },
+      "city": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "City explicitly stated for this facility"
+      },
+      "homepage": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "uri",
+        "description": "Observed facility-specific website link"
+      },
+      "services": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Published services or instrument description verbatim"
+      }
+    },
+    "required": [
+      "organization",
+      "facility_name",
+      "facility_type",
+      "country",
+      "city",
+      "homepage",
+      "services"
+    ]
+  }
+}
