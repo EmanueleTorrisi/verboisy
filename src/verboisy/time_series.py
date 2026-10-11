@@ -18,7 +18,12 @@ from verboisy.time_series_contract import TimeSeriesSpec as TimeSeriesSpec
 from verboisy.utils.exceptions import VerboisyError
 
 _DAY = 86_400_000_000
-_INSTANT = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})?")
+# Validate clock fields before parsing: newer Python versions accept and normalize
+# 24:00:00. The research contract retains invalid observations without interpreting them.
+_INSTANT = re.compile(
+    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+    r"(?:\.[0-9]{1,6})?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])?"
+)
 
 
 def validate_time_series(
