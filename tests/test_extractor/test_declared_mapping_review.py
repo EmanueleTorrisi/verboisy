@@ -81,18 +81,21 @@ def test_declared_conversion_failure_blocks_cli_approval(tmp_path, saved, conver
                     }
                 ]
             }
-        )
+        ),
+        encoding="utf-8",
     )
     output = tmp_path / "report.json"
     result = command(
         saved, output, "--projection", str(projection), "--plan", str(tmp_path / "approved.json")
     )
     assert result.exit_code == 2, result.output
-    report = json.loads(output.read_text())
+    report = json.loads(output.read_text(encoding="utf-8"))
     assert report["decision"] == "blocked" and report["proposal_kind"] == "declared_plan"
     assert (
         report["suggestion"]["plan_json"]
-        == ProjectionPlan.model_validate_json(projection.read_text()).model_dump_json()
+        == ProjectionPlan.model_validate_json(
+            projection.read_text(encoding="utf-8")
+        ).model_dump_json()
     )
     store = ResearchStore(str(db))
     assert store.events(rid, "dataset_mapping_review")[-1]["payload"] == report
@@ -103,7 +106,9 @@ def test_declared_conversion_failure_blocks_cli_approval(tmp_path, saved, conver
 @pytest.mark.parametrize("approve", [False, True])
 def test_cli_explicit_plan_report_and_optional_approval(tmp_path, saved, approve):
     projection = tmp_path / "input.json"
-    projection.write_text('{"fields":[{"source":"/name","target":"/name","conversion":"string"}]}')
+    projection.write_text(
+        '{"fields":[{"source":"/name","target":"/name","conversion":"string"}]}', encoding="utf-8"
+    )
     before = projection.read_bytes()
     output = tmp_path / "report.json"
     result = command(
@@ -114,7 +119,7 @@ def test_cli_explicit_plan_report_and_optional_approval(tmp_path, saved, approve
         *(["--plan", str(tmp_path / "approved.json")] if approve else []),
     )
     assert result.exit_code == 0, result.output
-    report = json.loads(output.read_text())
+    report = json.loads(output.read_text(encoding="utf-8"))
     assert report["decision"] == ("approved" if approve else "proposed")
     assert report["suggestion"]["decisions"][0]["basis"] == "declared_plan"
     assert report["plan"]["fields"][0]["conversion"] == "string"
@@ -144,7 +149,7 @@ def test_invalid_declared_plan_does_not_write_report(tmp_path, saved, data):
 def test_explicit_input_overlap_and_conflicting_aliases(tmp_path, saved, kind):
     db, rid, aid = saved
     projection = tmp_path / "input.json"
-    projection.write_text('{"fields":[{"source":"/name","target":"/name"}]}')
+    projection.write_text('{"fields":[{"source":"/name","target":"/name"}]}', encoding="utf-8")
     kwargs = {"projection_path": projection}
     if kind == "both":
         kwargs["aliases_path"] = tmp_path / "aliases.json"
