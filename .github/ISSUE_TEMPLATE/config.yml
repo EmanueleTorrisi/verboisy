@@ -2,12 +2,10 @@
 # See LICENSE for applicable terms.
 
 blank_issues_enabled: false
-
 contact_links:
-  - name: Questions & Discussions
-    url: https://github.com/EmanueleTorrisi/verboisy/discussions
-    about: Ask questions, discuss ideas, and get help from the community.
-
-  - name: Security Vulnerability
-    url: https://github.com/EmanueleTorrisi/verboisy/security/advisories/new
-    about: Please report security vulnerabilities privately.
+  - name: Demos, licensing and commercial enquiries
+    url: https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md
+    about: Contact the author for evaluations, enterprise use, investment or paid collaboration.
+  - name: Private security reporting
+    url: https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md
+    about: Report vulnerabilities privately; do not include exploits or secrets in public issues.
