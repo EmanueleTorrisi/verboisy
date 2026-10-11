@@ -200,8 +200,7 @@ Reports record `native_verifier_quote_mode` as `scalar` or `batch`, as well as t
 source and binary fingerprints. All schema, projection, scope, mapping, value and
 identity checks remain active. Tests compare complete ordered rejection lists,
 mixed eligible/ineligible proofs, JSON mapping keys and multi-chunk candidates.
-The existing R10j binaries are compatible; this Python integration does not
-require a native rebuild. Explicit native errors still propagate rather than
+Explicit native errors propagate rather than
 returning partially verified evidence. Normal Python installation needs no binary
 or compiler and keeps the same default behavior.
 
@@ -286,3 +285,7 @@ its read-only production report; the stricter preflight applies to the explicit
 developer test command, with no change to installation or normal research use.
 Fingerprints establish consistency with the inspected files, not trust in
 metadata or proof that remote CI has passed.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
