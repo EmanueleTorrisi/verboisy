@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """
 DOM cleaning and parsing utility for optimizing LLM context windows.
 """
