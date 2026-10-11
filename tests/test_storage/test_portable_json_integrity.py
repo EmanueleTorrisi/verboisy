@@ -50,7 +50,7 @@ def test_ambiguous_json_stops_before_capture_replay(exported, boundary, fragment
     target.write_bytes(changed_json(target.read_bytes(), fragment))
     if boundary == "sidecar":
         info["files"][sidecar.name] = hashlib.sha256(sidecar.read_bytes()).hexdigest()
-        manifest.write_text(json.dumps(info))
+        manifest.write_text(json.dumps(info), encoding="utf-8")
     before = (manifest.read_bytes(), sidecar.read_bytes())
     with (
         patch(
@@ -92,10 +92,10 @@ def test_valid_historical_json_byte_encodings_remain_supported(exported, encodin
     info, sidecar = paths(manifest)
     expected = store.dataset_assets(rid)
     target = manifest if boundary == "manifest" else sidecar
-    target.write_bytes(target.read_text().encode(encoding))
+    target.write_bytes(target.read_text(encoding="utf-8").encode(encoding))
     if boundary == "sidecar":
         info["files"][sidecar.name] = hashlib.sha256(sidecar.read_bytes()).hexdigest()
-        manifest.write_text(json.dumps(info))
+        manifest.write_text(json.dumps(info), encoding="utf-8")
     before = (manifest.read_bytes(), sidecar.read_bytes())
     assert load_portable_assets(manifest) == expected
     assert (manifest.read_bytes(), sidecar.read_bytes()) == before
