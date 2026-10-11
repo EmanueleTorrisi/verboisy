@@ -143,7 +143,7 @@ Python owns product policy, evidence, persistence, providers and public interfac
 Optional C++17 quote matching/batching and Unicode-boundary helpers have Python references,
 differential tests and standalone native tests. Build tooling records binary provenance.
 Normal installation requires no compiler; unavailable native execution must preserve
-the supported Python path. A language percentage is not a reason to move policy into C++.
+the supported Python path. Native components are selected for measured workloads and semantic equivalence.
 
 ## Verification and release
 
@@ -155,4 +155,4 @@ security, package and live research results must be recorded for the release com
 
 The release matrix retains unrun human-reviewed and beta requirements explicitly.
 Source changes, dependency changes or different model profiles can require renewed
-qualification. No commit count, file count, badge or successful build supersedes those gates.
+qualification. Release claims remain scoped to the recorded validation and acceptance results.
