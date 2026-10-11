@@ -2,49 +2,88 @@
 
 # Changelog
 
-This file records notable product and compatibility changes. Entries marked
-**Unreleased** describe current development and do not identify a published stable
-release. Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Changes are grouped by product version and technical subsystem. Version identifiers
+refer to the corresponding implementation; publication dates are recorded with
+release tags rather than inferred from documentation edits.
 
-## Unreleased
+## 1.0.0
 
-### Research and data preparation
+### Acquisition and provider execution
 
-- Add explicit provider profiles, model-role routing and durable request accounting.
-- Add granted local inputs and declared HTTP datasets with origin-scoped credentials.
-- Add strict deterministic CSV, TSV, JSON, JSONL, text, DOCX and XLSX adapters.
-- Add immutable binary asset capture, portable bundles and grounded projections.
-- Add separate disk-backed local streaming, paging and interruption recovery.
-- Add observed units, descriptors, reference periods, ranges and time-series policies.
-- Add reviewable requirement proposals with distinct accept and decline resume paths.
-- Preserve row and cell lineage through grouping, sorting and display changes.
+- Route semantic planning, source assessment, extraction and escalation through
+  explicit model profiles, isolated credentials and endpoint-specific parameters.
+- Reserve model request units before transport; persist reported usage independently
+  from conservative reservations. Count search attempts across providers and resume.
+- Enforce host and path policy before following browser redirects. Pin dataset
+  connections to validated DNS addresses while preserving TLS hostname verification.
+- Acquire explicitly granted local files and declared HTTP GET sources with
+  origin-scoped headers, response-size limits and immutable byte captures.
 
-### Reliability and developer interfaces
+### Structured extraction and evidence
 
-- Provide CLI and synchronous/asynchronous Python APIs with saved-run diagnostics.
-- Preserve budgets, evidence ownership and strict JSON replay across resume.
-- Enforce redirect scope before fetching excluded browser destinations.
-- Add Python/OS CI, real browser integration and optional C++ equivalence checks.
-- Reject office archive names altered by platform normalization.
-- Cover strict timestamp clock/offset boundaries across Python versions.
-- Improve Windows text-encoding fixtures and bounded process-termination recovery.
+- Parse CSV/TSV with unique headers and exact row widths; decode JSON/JSONL with
+  duplicate-key, non-finite-number and object-row rejection.
+- Support bounded text, DOCX and XLSX adapters without executing formulas, macros
+  or embedded content. Preserve arbitrary asset bytes with hash/reference records.
+- Apply explicit projections, mappings, reference periods and grounded unit
+  conversions. Preserve raw observations independently from displayed values.
+- Verify snapshot ownership, observed quotes, entity scope, candidate identity and
+  strict stored JSON before admission, comparison, evidence refresh or export.
+- Preserve output-to-record and per-cell derivation through sorting, grouping,
+  numeric display and re-export; unresolved derivations remain explicitly marked.
 
-### Documentation and distribution
+### Persistent execution and large local datasets
 
-- Expand the product README and seven translations with supported workflow examples.
-- Document security reporting, enterprise deployment and commercial enquiries.
-- Introduce source-inspection terms for this version and align package metadata.
-- Preserve independent third-party licenses and earlier grants for historic versions.
+- Persist research frontiers, candidate decisions, requirement proposals and request
+  journals in SQLite. Validate saved contracts before resume changes run state.
+- Distinguish declining a requirement proposal with `--resume` from accepting its
+  exact saved terms with `--okresume`.
+- Provide a separate streaming ledger with immutable chunks, bounded row/byte
+  buffers, transactional progress and cursor paging. Resume from captured input
+  after interruption or removal of the original source.
+- Export streaming rows and evidence as JSONL with source captures and checksums;
+  ordinary research retains its materialized record-list API.
+- Order declared time series by verified timestamps; diagnose duplicates, gaps and
+  ambiguous local clocks without interpolating missing observations.
 
-Real-task quality, provider compatibility, support scope and deployment suitability
-remain evaluated for each release and configuration. See the
-[roadmap](docs/development-roadmap.md) and [release checklist](docs/release-checklist.md).
+### Interfaces and portability
 
-## 0.2.0rc1 — Evidence engine candidate
+- Provide CLI, synchronous/asynchronous research APIs, streaming APIs, safe model
+  configuration inspection, saved-run diagnostics and portable evidence readers.
+- Add optional C++17 scalar/batch quote matching and Unicode-boundary helpers,
+  Python reference paths, native provenance and differential tests.
+- Reject OOXML member names changed by ZIP normalization; make UTF-8 fixture/export
+  decoding explicit on Windows; bound recovery after hard process termination.
+- Validate clock and UTC-offset boundaries consistently across supported Python versions.
 
-- Replace unverified extraction and model-directed completion with persistent
-  crawling, evidence checks and independently reviewed candidate acceptance.
-- Preserve user schemas and introduce proof, provenance and manifest sidecars.
-- Quarantine identity conflicts and retain legacy databases without silent rewriting.
-- Add browser provisioning, independent semantic review and shared request accounting.
-- Introduce breaking internal API and ledger changes; see [migration](docs/migration.md).
+### Distribution and documentation
+
+- Declare source-inspection terms and proprietary package metadata. Execution and
+  reuse require separate written permission; third-party notices remain independent.
+- Provide English documentation and seven README translations, security reporting,
+  commercial contact, technical examples and scoped performance measurements.
+
+## 0.2.0rc1
+
+### Evidence engine replacement
+
+- Replace model-directed action/completion and raw extraction with a persistent
+  crawl frontier, structured candidates and independent evidence admission.
+- Introduce source snapshots, proof bindings, identity conflict quarantine and
+  evidence/manifest export sidecars.
+- Add browser provisioning, semantic review and durable model request accounting.
+- Replace legacy internal agent/planner interfaces and introduce the research ledger.
+  See [migration](docs/migration.md) for integration and database boundaries.
+
+## 0.1.0
+
+### Initial research interface
+
+- Establish the goal-and-schema research interface, model/browser orchestration
+  and structured extraction/export workflow.
+- This historical implementation predates the persistent evidence admission and
+  streaming contracts described above.
+
+[Version evolution](docs/development-roadmap.md) connects these milestones to the
+current component architecture. Earlier license grants remain governed by the
+terms accompanying their versions.
