@@ -47,7 +47,7 @@ async def test_reviewed_alias_plan_ingestion_exports_and_resume(site, tmp_path):
         {"id": 1, "name": "Anaïs", "age": 31},
         {"id": 2, "name": "李雷", "age": 22},
     ]
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     name = next(cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/name")
     assert name["source_pointer"] == "/Name"
     assert name["source_value"] == "Anaïs"
