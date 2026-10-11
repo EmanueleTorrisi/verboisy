@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Migrating from 0.1 to 0.2
 
 This is an architectural replacement and a release candidate, not a compatible internal
