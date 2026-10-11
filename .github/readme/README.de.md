@@ -139,8 +139,13 @@ Verboisy ist proprietäre Software, **kein Open Source**. Maßgeblich ist die en
 
 Kontakt: **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** für Demos, Evaluationen, interne/Enterprise-Lizenzen, Investitionen, Partnerschaften und mögliche bezahlte Zusammenarbeit. Ablauf, Quellen, Datenvolumen und Umgebung beschreiben; keine vertraulichen Daten oder Schlüssel mitsenden. Preise, Support und Rechte werden individuell vereinbart. Siehe [Lizenzierung](../../docs/licensing.md) und [geschäftliche Anfragen](../../docs/commercial.md).
 
-## Rückmeldungen und weitere Versionen
+## Feedback und Zusammenarbeit
 
 **Emanuele Torrisi** entwickelt und betreut Verboisy derzeit als einziger Entwickler. [Fehlerberichte und Funktionswünsche](https://github.com/EmanueleTorrisi/verboisy/issues) sind willkommen. Sicherheitsprobleme gemäß [Sicherheitsrichtlinie](../SECURITY.md) privat melden.
 
-Unaufgeforderte Codebeiträge werden nicht angenommen. Künftige bezahlte Zusammenarbeit kann vereinbart werden; Umfang, Vergütung, Vertraulichkeit und IP-Rechte vor Beginn festlegen. Weitere Versionen sollen Qualität, Quellen, Skalierung und Bedienbarkeit verbessern. Die [Roadmap](../../docs/development-roadmap.md) trennt heutige Fähigkeiten von zukünftigen Zielen. Perfekte Genauigkeit und universelle Kompatibilität werden nicht versprochen. Siehe [Teilnahme](../CONTRIBUTING.md) und [Copyright](../../COPYRIGHT.md).
+Unaufgeforderte Codebeiträge werden derzeit nicht angenommen. Bezahlte Zusammenarbeit erfordert vorherige Vereinbarungen zu Umfang, Vergütung, Vertraulichkeit und geistigem Eigentum. Versionsänderungen stehen im [Changelog](../../CHANGELOG.md); die [Versionsgeschichte](../../docs/development-roadmap.md) beschreibt den Weg von 0.1.0 zu 1.0.0. Siehe [Teilnahme](../CONTRIBUTING.md) und [Copyright](../../COPYRIGHT.md).
+## Anwendungsbeispiele
+
+[Research catalogue](../../examples/research_catalog/README.md) ·
+[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
+[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
