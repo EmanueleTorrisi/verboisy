@@ -93,3 +93,7 @@ These limits are part of the current bounded adapter contract. A rejected source
 is recorded through the existing failure outcome, not presented as a completed
 interpretation. To retain a file that falls outside a parser contract, select
 `asset` explicitly; Verboisy does not silently downgrade parsing to capture.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
