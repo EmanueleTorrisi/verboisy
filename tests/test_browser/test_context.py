@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Browser lifecycle and network-boundary tests."""
 
 import asyncio
@@ -241,3 +244,24 @@ async def test_provision_failure_cleans_playwright(runtime, monkeypatch):
     with pytest.raises(NavigationError, match="setup failed"):
         await runtime.manager.start()
     runtime.playwright.stop.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_cleanup_ignores_already_closed_context(config):
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    from verboisy.browser.context import BrowserManager
+
+    class TargetClosedError(Exception):
+        pass
+
+    manager = BrowserManager(config)
+
+    manager._context = SimpleNamespace(close=AsyncMock(side_effect=TargetClosedError()))
+    manager._browser = None
+    manager._playwright = None
+
+    await manager.close()
+
+    assert manager._context is None
