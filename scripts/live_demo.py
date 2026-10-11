@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Recordable acceptance run with a real configured model and real Chromium."""
 
 import functools
