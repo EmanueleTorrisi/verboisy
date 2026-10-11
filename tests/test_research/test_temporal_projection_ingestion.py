@@ -85,7 +85,7 @@ async def test_temporal_completion_lineage_metadata_composition_and_offline_resu
     assert result.completed
     assert [row["population"] for row in result.records] == [2000 if unit else 2] * 2
     manifest_path = output.with_suffix(".json.manifest.json")
-    manifest = json.loads(manifest_path.read_text())
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     cells = [cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/population"]
     assets = load_portable_assets(manifest_path)
     assert assets[0].download.dataset.original_bytes == body
@@ -290,7 +290,7 @@ async def test_cli_approved_year_binding_and_grouped_contributor_lineage(site, t
     supplied, report, approved = (
         tmp_path / name for name in ("supplied.json", "review.json", "approved.json")
     )
-    supplied.write_text(json.dumps(plan(True, True)))
+    supplied.write_text(json.dumps(plan(True, True)), encoding="utf-8")
     result = CliRunner().invoke(
         app,
         [
@@ -310,7 +310,10 @@ async def test_cli_approved_year_binding_and_grouped_contributor_lineage(site, t
         ],
     )
     assert result.exit_code == 0, result.output
-    assert json.loads(report.read_text())["suggestion"]["unmapped_profile_pointers"] == []
+    assert (
+        json.loads(report.read_text(encoding="utf-8"))["suggestion"]["unmapped_profile_pointers"]
+        == []
+    )
     output = tmp_path / "group.json"
     accepted = await arun(
         goal="Population in 2025",
@@ -323,7 +326,7 @@ async def test_cli_approved_year_binding_and_grouped_contributor_lineage(site, t
         config=config,
     )
     assert accepted.completed and len(accepted.records) == 1 and seen == ["/people", "/people"]
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     cell = next(cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/population")
     assert cell["status"] == "resolved" and [
         source["temporal_derivation"]["row_index"] for source in cell["contributors"]
