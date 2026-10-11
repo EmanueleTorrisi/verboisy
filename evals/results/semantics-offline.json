@@ -1,0 +1,30 @@
+{
+  "copyright": "Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms.",
+  "verification_version": "1",
+  "scope": "offline engineering verification; held-out research and live providers not qualified",
+  "new_regression_cases": 43,
+  "full_offline_tests_passed": 4725,
+  "excluded_browser_tests": 11,
+  "statement_coverage_percent": 100,
+  "branch_coverage_percent": 100,
+  "source_statements": 8472,
+  "source_branches": 2980,
+  "full_offline_seconds": 136.23,
+  "mypy_source_files": 119,
+  "provider_campaign_authorized": false,
+  "heldout_research_status": "not_run",
+  "browser_verification": "run make validate in the deployment environment",
+  "documentation_build": "run make validate in the deployment environment",
+  "implementation_sha256": {
+    "src/verboisy/evidence/models.py": "cf0de5d6c8b27f0396c00a6037cb013d51a9a15cb6b2c30263d301a60f4bf6ec",
+    "src/verboisy/api.py": "f9e813112b12d1ec610be8ca84ccb1915267f73b76fb99b23b3988aed9633477",
+    "src/verboisy/output.py": "394907cace80f253ce8c592e04aa3ad2612118a80f719175570a98e3eaa62202",
+    "src/verboisy/extractor/range_changes.py": "825eb566058ea402f22acee5963be5d57498b850ccf474fe36d0208b707e633a",
+    "src/verboisy/extractor/research_changes.py": "21438868089298a74e235015d6d4640387f709db7577071ef005645bb5d8dec8",
+    "src/verboisy/time_series.py": "7a89bac308c2253861183afc0815fcf7f8e251cbc7818e24b27620933a155e43",
+    "src/verboisy/time_series_contract.py": "a07e60718926597ac171294e03328ed0356ce952202382dd5901f92fd1481f6a",
+    "src/verboisy/research_summary.py": "822a7910690cb46d3c86c5b51ba4b95cd41c2aaba75a41ca275a369cf1b75462",
+    "tests/test_time_series.py": "ba04c25e2b9e5b78a9aeb19df450802e5ac1a8d142ce16dceb95086faf720414",
+    "tests/test_semantics_contract.py": "d235d3a231777681845567eac7daafba3983335e7aa25e90655c083d3afbe2f8"
+  }
+}
