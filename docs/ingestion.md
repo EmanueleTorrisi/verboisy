@@ -60,7 +60,8 @@ be mixed into the declared-dataset workflow.
 Deterministic local ingestion makes no model, search or browser calls. This does
 not imply that every Verboisy research workflow is offline. It also does not
 qualify gigabyte-scale inputs: current acquisition and replay defaults remain
-16 MiB and 100,000 rows pending the streaming batch.
+16 MiB and 100,000 rows. Larger local inputs use the separate
+[streaming workflow](streaming.md).
 
 ### Internal and authenticated HTTP endpoints
 
@@ -307,7 +308,7 @@ calls are made. Normal export defaults, identity and source policies apply.
 saved declarations are reused, so do not repeat `--dataset-source` on resume.
 Python callers may use `dataset_sources`; conflicting task declarations fail.
 
-## Explicit projection engine (R7a)
+## Explicit projection engine
 
 `verboisy.extractor.projection` provides a deterministic projection primitive.
 Plans can be applied through declared-source ingestion or directly to captured
@@ -354,7 +355,7 @@ returns no partial result. Ingestion binds derivations to the immutable asset an
 record against its target schema.
 
 
-## Projected ingestion (R7b)
+## Projected ingestion
 
 Provide `--dataset-projection plan.json` alongside `--dataset-source`. For example,
 use a JSON plan with the `Person` to `name` and `Age` to `years` mappings above:
@@ -391,7 +392,7 @@ its projection plan and resulting value before later normalization or export sha
 Projected runs use `provenance: projected_dataset_values` and retain false truth and
 global completeness claims. No browser, search or model calls are introduced.
 
-## Bounded source profiles (R7c)
+## Bounded source profiles
 
 Declared-source ingestion journals one `dataset_profile` event for each captured
 asset, before row projection or acceptance. It profiles original source fields,
@@ -432,7 +433,7 @@ and 1,024 preview bytes. Zero examples is supported. Frozen profile objects cont
 immutable statistics and previews; raw captured rows are unchanged. Profiling
 introduces no browser, search or model requests and makes no automatic mappings.
 
-## Conservative mapping suggestions (R7d)
+## Conservative mapping suggestions
 
 `verboisy.extractor.mapping` proposes explicit identity mappings from a bounded
 source profile. Exact JSON pointers take precedence. When an exact pointer is
@@ -1003,3 +1004,7 @@ establish bans; a city statement does not establish a countrywide statement.
 These instructions guide proposals and review; deterministic verification and
 semantic rejection remain authoritative. Prompt changes do not establish that a
 particular page contains qualifying records or that live extraction will succeed.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
