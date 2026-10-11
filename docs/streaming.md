@@ -170,7 +170,7 @@ Checksums establish integrity relative to the supplied manifest, not authenticit
 or factual truth. Completion means the fixed local preparation contract reached
 EOF; it makes no global research completeness claim.
 
-## Scale qualification
+## Recorded scale workload
 
 Run the reproducible Linux benchmark without provider credentials or network calls:
 
