@@ -1,23 +1,36 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Verboisy
+# Verboisy documentation
 
-Verboisy is an evidence-backed autonomous web research engine that turns a goal and requested columns into a persistent structured dataset.
+Verboisy turns research questions and permitted sources into structured records with
+inspectable evidence. It also prepares existing datasets through deterministic
+adapters and supports a separate disk-backed workflow for large local files.
 
-Start with the simple interface:
+## Start with your workflow
 
-```bash
-verboisy run \
-  --goal "Find white laptops under €1000" \
-  --schema '[name,brand,color,price,screen_size]' \
-  --export laptops.csv
-```
+| Goal | Guide |
+| --- | --- |
+| Research a question and export structured records | [CLI](cli.md), [contracts](contracts.md) and [providers](providers.md) |
+| Prepare local or declared HTTP inputs | [Ingestion](ingestion.md) and [file capabilities](formats.md) |
+| Prepare large local files with checkpoints | [Streaming](streaming.md) |
+| Integrate with an application | [Python API](api.md) |
+| Inspect evidence and transformations | [Proof](proof.md), [research semantics](research-semantics.md) and [presentation](presentation.md) |
 
-The same evidence engine still supports explicit JSON Schema and advanced TaskSpec configuration.
+## Understand the system
 
-Read the [CLI reference](cli.md), [dataset contract](contracts.md), [SmartID guide](smartid.md), and [proof guide](proof.md). The [architecture document](https://github.com/EmanueleTorrisi/verboisy/blob/main/ARCHITECTURE.md) explains the research and verification boundaries.
+[Architecture](architecture.md) describes component ownership and trust boundaries.
+[Validation](validation.md) and [acceptance methodology](production-acceptance.md)
+explain how engineering correctness and real-task quality are evaluated. Read
+[release notes](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)
+and the [roadmap](development-roadmap.md) for changes and future direction.
 
-Package metadata currently identifies a `1.0.0` development build. Production
-acceptance remains pending. Follow the [finite release plan](development-roadmap.md)
-and [acceptance protocol](production-acceptance.md). Current limitations remain
-documented in the README and architecture documentation.
+## Licensing and contact
+
+Verboisy is proprietary, with limited source-inspection permissions. Software
+execution, testing, modification and deployment require separate written permission.
+Read [licensing](licensing.md). For demos, evaluations, enterprise use, investment
+or paid collaboration, contact [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com).
+See [commercial enquiries](commercial.md).
+
+Bug reports and feature requests are welcome. Security reports should be sent
+privately through the [security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
