@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Best-effort network boundary for browser-driven research."""
 
 import asyncio
