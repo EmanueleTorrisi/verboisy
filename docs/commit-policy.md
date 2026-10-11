@@ -1,35 +1,45 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Per-file maintainer commits
+# Engineering change workflow
 
-The maintainer's selected workflow uses one changed file per commit and a distinct,
-professional message explaining that file's change. A delivered patch is not itself
-a commit. Review and apply it before creating history in the actual Git checkout.
+Changes should be reviewable, explain their user-visible effect and preserve the
+public contracts documented in this repository. Repository access and code changes
+are limited to the maintainer and explicitly authorized collaborators.
 
-`evals/batch6-commits.json` contains the reviewed file/message plan for Batch 6.
-Subsequent batches should provide an equivalent plan. Inspect the diff for each file,
-then use an explicit path rather than staging the whole repository:
+## Describe the change
+
+A commit subject should use a clear verb and a concrete outcome. Conventional
+prefixes such as `fix`, `feat`, `docs`, `test` and `build` are useful when they clarify
+the purpose. The description should explain the problem, resulting behavior and
+relevant verification. Avoid generic subjects that say only “update” or “changes”.
+
+## Review and validate
+
+Inspect the diff and stage explicit paths. Keep unrelated work out of the change.
+Preserve copyright notices, third-party attribution and exact-byte evidence fixtures.
+Document compatibility implications, migrations and material limitations.
 
 ```bash
 git diff -- path/to/file
 git add -- path/to/file
-git commit --only -m "docs: explain the accepted-record scope of time-series diagnostics" -- path/to/file
+make validate
 ```
 
-Use the applicable planned message, not the example verbatim for every file. `--only`
-limits that commit to its path and leaves unrelated staged work outside the commit.
-New files must first be added. Do not use `git add .`, automatic force pushes or commit
-amendment to collect unrelated changes. Renames/deletions need an explicit reviewed
-plan because a rename has two paths and is not a literal one-path commit.
+Validate the completed change against the commit proposed for review. Browser,
+optional native and model-based evaluations have different runtime requirements;
+record which checks actually ran. A test failure must not be hidden by an unrelated
+skip, weakened assertion or a fabricated report.
 
-A batch can contain dependencies between files. Intermediate per-file commits may
-therefore fail validation until the batch is complete. Run the full validation on
-its final HEAD before pushing the sequence; record that tested HEAD in release evidence.
-A historical commit touching one file is not automatically a releasable artifact.
+## Review and merge
 
-Messages use a clear verb and concrete outcome: `docs`, `fix`, `feat`, `test`, `build`
-or `chore` may identify the purpose. Avoid generic messages such as “update file”,
-“changes”, “final fix” or praise about quality. A one-file commit should still explain
-why the change matters when its reason is not evident from the subject.
+Use a pull request that explains the final implementation and links relevant issues.
+Require the applicable CI checks and review before merging. Keep credentials,
+private inputs and generated diagnostic logs out of repository history. Release
+artifacts are rebuilt from a reviewed version; see [release operations](release.md).
 
-No installer creates commits, publishes the repository or changes its visibility.
+Bug reports and feature suggestions are welcome. Unsolicited implementation changes
+are not currently accepted; see [participation](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md).
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
