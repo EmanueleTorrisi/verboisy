@@ -34,8 +34,7 @@ is not a general performance guarantee.
 
 A written evaluation agreement should establish software permissions, deployment,
 source rights, spending limits, data handling, duration and support scope. See
-[licensing](licensing.md), [acceptance methodology](production-acceptance.md) and
-[demonstrations](demo.md).
+[licensing](licensing.md), [evaluation](evaluation.md) and [workflow examples](examples.md).
 
 ## Local and enterprise deployment
 
