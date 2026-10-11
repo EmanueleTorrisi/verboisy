@@ -139,8 +139,13 @@ Verboisy est propriétaire, **pas open source**. La licence anglaise fait autori
 
 Contacter **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** pour une démo, une évaluation, une licence interne/entreprise, un investissement, un partenariat ou une éventuelle collaboration rémunérée. Décrire processus, sources, volume et environnement ; ne pas envoyer de secrets ou de données confidentielles. Prix, support et droits sont convenus individuellement. Voir [licences](../../docs/licensing.md) et [contacts commerciaux](../../docs/commercial.md).
 
-## Retours et prochaines versions
+## Retours et collaboration
 
 **Emanuele Torrisi** crée et maintient Verboisy et en est actuellement le seul développeur. [Rapports de bugs et demandes de fonctionnalités](https://github.com/EmanueleTorrisi/verboisy/issues) sont bienvenus. Les vulnérabilités se signalent en privé selon la [politique de sécurité](../SECURITY.md).
 
-Les contributions de code non sollicitées ne sont pas acceptées. Une collaboration rémunérée pourra être convenue : définir périmètre, rémunération, confidentialité et propriété intellectuelle avant le travail. D'autres versions sont prévues pour améliorer qualité, sources, capacité et ergonomie. La [feuille de route](../../docs/development-roadmap.md) distingue fonctions actuelles et directions futures. Aucune exactitude parfaite ou compatibilité universelle n'est promise. Voir [participation](../CONTRIBUTING.md) et [copyright](../../COPYRIGHT.md).
+Les contributions de code non sollicitées ne sont pas acceptées. Une collaboration rémunérée nécessite un accord préalable sur le périmètre, la rémunération, la confidentialité et la propriété intellectuelle. Les changements figurent dans le [changelog](../../CHANGELOG.md) ; l’[historique](../../docs/development-roadmap.md) décrit le parcours de 0.1.0 à 1.0.0. Voir [participation](../CONTRIBUTING.md) et [droits](../../COPYRIGHT.md).
+## Exemples de workflows
+
+[Research catalogue](../../examples/research_catalog/README.md) ·
+[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
+[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
