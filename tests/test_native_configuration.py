@@ -36,7 +36,7 @@ def build(tmp_path, monkeypatch):
         "source_hashes": sources,
         "compiler": "untrusted compiler details",
     }
-    metadata.write_text(json.dumps(data))
+    metadata.write_text(json.dumps(data), encoding="utf-8")
     return tmp_path, binary, metadata, data
 
 
@@ -91,7 +91,7 @@ def test_binary_and_source_drift_are_separately_reported(build):
 @pytest.mark.parametrize(
     "raw, message",
     [
-        (b"x" * 65537, "exceeds"),
+        pytest.param(b"x" * 65537, "exceeds", id="oversized-metadata"),
         (b"{broken", "JSON"),
         (b"\xff", "JSON"),
         (b"[]", "build_version"),
@@ -118,7 +118,7 @@ def test_hash_validation(build, value, field):
         data["module_sha256"] = value
     else:
         data["source_hashes"][inspection._SOURCES[0]] = value
-    metadata.write_text(json.dumps(data))
+    metadata.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError, match="SHA-256"):
         inspection.inspect_native_configuration()
 
@@ -146,7 +146,9 @@ def test_platform_eligibility_is_not_a_load_test(
 def test_cli_ignores_dotenv_and_never_loads_settings_or_native_code(build, monkeypatch):
     root, _, _, _ = build
     monkeypatch.chdir(root)
-    (root / ".env").write_text("VERBOISY_QUOTE_MATCHER=native\nLITELLM_MODEL=PRIVATE\n")
+    (root / ".env").write_text(
+        "VERBOISY_QUOTE_MATCHER=native\nLITELLM_MODEL=PRIVATE\n", encoding="utf-8"
+    )
     with (
         patch("verboisy.cli.main.Settings", side_effect=AssertionError("settings")),
         patch(
