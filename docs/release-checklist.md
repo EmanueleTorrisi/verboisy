@@ -1,47 +1,55 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Release evidence checklist
+# Release checklist
 
-The six implementation batches prepare a candidate. They do not close the seven
-release gates. Record the tested Git HEAD, platform, Python version, dependency lock,
-provider/profile, settings and report hashes for each applicable result.
+A release should identify its source commit, dependency lock, artifacts and verified
+support scope. Tests, benchmarks and model evaluations answer different questions;
+record their actual environment and outcome rather than treating one as a substitute
+for another.
 
-| Gate | Evidence required before marking complete |
+| Area | Evidence to retain |
 | --- | --- |
-| Contract | Reviewed scope, numerical quality/economic targets and paid campaign budget |
-| Product acceptance | Independently annotated held-out sources, pilot review, full campaign, negative controls and failures |
-| Experience/economics | Intended-user flows, useful proposals/recovery, measured costs/latency and supported completion behavior |
-| Reliability | Final-HEAD Python/OS matrix, required browser, native equivalence, package/container/security and interruption evidence |
-| Repository/legal | Documentation/editorial and translation review, ownership/licensing decision, third-party obligations and accurate claims |
-| Independent beta | Representative users finish tasks without developer intervention; defects triaged and resolved |
-| Distribution | Frozen verified artifacts, reviewed go/no-go, installation verification, support and commercial presentation |
+| Product contract | Supported workflows, schema/source boundaries and declared limitations |
+| Real-task acceptance | Independently reviewed results, negative controls and recorded failures |
+| Experience and economics | Usability, recovery, completion, latency and billed-cost measurements |
+| Reliability | Applicable platform, browser, native, package, security and interruption checks |
+| Documentation and rights | README/translations, current license, ownership review and third-party notices |
+| Independent beta | Representative users complete intended tasks; defects are triaged |
+| Distribution | Artifact hashes, installation verification, support scope and release notes |
 
-## Maintainer execution
+## Engineering checks
 
 ```bash
 make validate
 make repo-check
 ```
 
-`repo-check` is read-only. It checks repository consistency and reports the saved
-production status. A successful repository check does not imply completed product
-qualification. `validate` additionally exercises the configured runtime, browser,
-audit, strict docs and build commands. Record failures; do not convert a required
-check into a skip. Use the native and container checks documented in validation.md
-for the corresponding release profiles.
+Record the final tested commit and rebuild after code, dependency or packaging changes.
+A required failure must be resolved, not converted to a skip. Optional native builds
+and deployment-specific container checks need their documented profiles. Model-based
+evaluation requires authorized sources, credentials and an explicit spending limit.
 
-The paid pilot/campaign remains separately authorized. Select sources and independent
-gold review before spending. Do not use current user datasets, provider secrets or
-private systems as convenient test fixtures without explicit source authorization.
+## Package and documentation checks
 
-Prepare per-file commits according to the commit policy, then validate the completed
-sequence's final HEAD. Rebuild after changes to code, dependencies or packaging. A
-release must refer to final artifact hashes, not a mutable branch name or a previous
-installer's results. Keep publication flags disabled while a required gate is pending.
+- Verify version metadata, LICENSE, included notices and package contents.
+- Install the built artifact in a clean environment and check CLI/API entry points.
+- Check navigation, examples and translations against the same supported contract.
+- Review dependency advisories and publication credentials for least privilege.
+- Ensure reports, examples and logs contain no secrets or confidential material.
+- Confirm release notes state known limitations and the applicable support policy.
 
-## Recorded implementation evidence
+## Commercial and publication checks
 
-Batch 4's measured JSONL workload and Batch 5's offline semantics verification remain
-under `evals/results`. They qualify their stated workloads and build snapshots only.
-The release matrix still records held-out/provider/beta requirements as unrun. A later
-refactor does not retroactively change the hashes or scope of those historical reports.
+Review prior license grants and included Git history before the initial public
+source release. Confirm permissions for supplied artifacts and separately licensed
+execution. Review claims against measured evidence and establish commercial support
+terms where applicable. Enable publication only for a reviewed release.
+
+Historical evaluation reports retain their original scope and hashes. They are
+useful evidence, but do not certify a later commit, different provider or new input
+class. See [release operations](release.md), [distribution](distribution.md) and
+[licensing](licensing.md).
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
