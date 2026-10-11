@@ -139,7 +139,7 @@ async def test_public_period_repair_request_is_portable_and_clears(
     assert len(repairs) == int(mode is not None)
     if repairs:
         assert repairs[0]["target_mode"] == mode and repairs[0]["target_year"] == target
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     assert manifest["dataset_consistency"] == result.dataset_consistency
     bodies.pop("/undated")
     resumed = await arun(resume=result.run_id, config=config)
