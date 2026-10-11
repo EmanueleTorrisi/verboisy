@@ -261,6 +261,23 @@ Describe the workflow, source types, expected volume and deployment environment.
 Do not send confidential datasets or credentials in an initial enquiry. Pricing,
 support, delivery dates and usage rights are agreed individually.
 
+## Commercial solutions and product direction
+
+Verboisy welcomes independent professionals, researchers, startups, agencies and
+enterprise teams. Commercial discussions can start with a single workflow:
+a guided evaluation, usage licensing, integration work or deployment planning.
+
+The paid product direction includes managed research, scheduled workflows, team
+workspaces, internal-source connectors, private deployments, high-volume workload
+management, integration interfaces, quality tooling and support agreements.
+Availability, delivery and service commitments are confirmed in each proposal.
+See [commercial solutions](docs/commercial.md) for the scope and enquiry process.
+
+The public repository is intended to receive maintained, documented updates as
+Verboisy develops. Commercial extensions and managed-service infrastructure may
+be distributed separately. Source visibility and product updates do not change
+the permissions set out in [LICENSE](LICENSE).
+
 ## Feedback and collaboration
 
 Verboisy is created and maintained by **Emanuele Torrisi**, currently the project's
