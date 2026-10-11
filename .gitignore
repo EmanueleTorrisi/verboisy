@@ -73,3 +73,8 @@ pytest-of-*/
 
 # Reproducible benchmark reports and profiles
 benchmark-results/
+
+# Local example inputs, research exports and screen recordings
+example-runs/
+evaluation-results/
+recordings/
