@@ -19,10 +19,10 @@ adapters and supports a separate disk-backed workflow for large local files.
 ## Understand the system
 
 [Architecture](architecture.md) describes component ownership and trust boundaries.
-[Validation](validation.md) and [acceptance methodology](production-acceptance.md)
+[Engineering validation](validation.md) and [evaluation](evaluation.md)
 explain how engineering correctness and real-task quality are evaluated. Read
 [release notes](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)
-and the [roadmap](development-roadmap.md) for changes and future direction.
+and the [roadmap](development-roadmap.md) for technical changes and version evolution.
 
 ## Licensing and contact
 
