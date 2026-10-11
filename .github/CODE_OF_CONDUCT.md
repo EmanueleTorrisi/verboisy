@@ -1,3 +1,6 @@
+<!-- Project-specific adaptations copyright (c) 2026 Emanuele Torrisi.
+Contributor Covenant attribution is retained below; see COPYRIGHT.md. -->
+
 # Code of Conduct
 
 ## Our Pledge
@@ -41,7 +44,7 @@ Examples of representing the project include using an official project email add
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainers.
 
-To report an issue, please contact the project maintainers through the project's official private communication channels.
+Report conduct concerns privately to [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com). Include the relevant context and avoid unnecessary personal information.
 
 Security vulnerabilities must not be reported through this process. Please follow the instructions in [SECURITY.md](SECURITY.md).
 
