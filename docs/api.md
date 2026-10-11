@@ -32,3 +32,7 @@ Bare CLI `--resume` or Python `resume=True` selects the latest incomplete resear
 Completed records can be re-exported without starting a browser or calling a model.
 Internal 0.1 `Agent`, `Planner`, raw `ExtractionEngine` and `DatabaseManager` APIs are
 retired; importing them is intentionally unsupported in this breaking revision.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [Licensing](licensing.md)
