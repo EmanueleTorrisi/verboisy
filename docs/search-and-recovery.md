@@ -32,3 +32,7 @@ batch/entity to manufacture a successful result is not a recovery strategy.
 
 Use a new run to change schema, scope, identity policy or task limits. Preserve the old
 run as evidence. Do not edit records in SQLite and then label them accepted by the engine.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
