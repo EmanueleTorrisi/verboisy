@@ -34,3 +34,7 @@ The machine-readable evidence sidecar and checksummed manifest remain available 
 ## What proof does not claim
 
 A proof report demonstrates what the engine observed and how accepted values were supported. It does not independently establish that a public source is factually correct, nor does it claim exhaustive web coverage.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
