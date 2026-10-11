@@ -105,7 +105,7 @@ the call. Output rows, contributor order and the accepted ledger are not mutated
 Compare both scalar and grouped lineage with the retained baseline:
 
 ```bash
-poetry run python -m benchmarks.runner --case lineage_scalar --case lineage_grouped --lineage-rows 100 --repeats 3 --output benchmark-results/lineage-r9k.json
+poetry run python -m benchmarks.runner --case lineage_scalar --case lineage_grouped --lineage-rows 100 --repeats 3 --output benchmark-results/lineage.json
 ```
 
 Correctness regressions pin both 100-row derivation digests from the pre-reuse
@@ -123,7 +123,7 @@ builds, Unicode equivalence checks and complete-verifier comparisons.
 
 ## Verification rule overhead
 
-R10c profiles complete verification before changing its field loop. In the local
+Profiling complete verification identifies the cost of its field loop. In the local
 10,000-record workload, schema validation remains the largest cumulative cost.
 The field loop now constructs at most one default `FieldRule` per verification
 call, only when an unspecified field needs one. Explicit rules remain authoritative;
@@ -137,7 +137,7 @@ This is a synthetic verifier result, not a promised improvement to network or
 model-driven research. Compare the same workload on the target machine:
 
 ```bash
-poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --profile-dir benchmark-results/profiles-r10c --output benchmark-results/verify-r10c.json
+poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --profile-dir benchmark-results/profiles-verifier --output benchmark-results/verify-profile.json
 ```
 
 Profile files add instrumentation overhead; use the report's unprofiled samples
@@ -149,7 +149,7 @@ The offline comparison command reads two saved reports; it does not rerun worklo
 read `.env`, open the research ledger, or contact providers:
 
 ```bash
-poetry run python -m benchmarks.comparison benchmark-results/verify-r10a-python.json benchmark-results/verify-r10c.json --output benchmark-results/comparison-r10c.json
+poetry run python -m benchmarks.comparison benchmark-results/verify-python.json benchmark-results/verify-profile.json --output benchmark-results/comparison-verifier.json
 ```
 
 Matching cases must have the same row count, domain, GC state, relevant fixture
@@ -174,3 +174,7 @@ Status 2 means an invalid report, unsupported version, file error or output path
 that would overwrite an input. Duplicate JSON keys and non-finite numbers are
 rejected. Input files remain unchanged; `--output` writes a separate atomic JSON
 report. Omitting `--output` prints the comparison instead. There is no speed gate.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
