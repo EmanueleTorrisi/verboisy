@@ -61,7 +61,7 @@ async def test_projection_exports_and_offline_resume(site, tmp_path, fmt, body):
         {"id": 1, "name": "Anaïs", "years": 31},
         {"id": 2, "name": "李雷", "years": 22},
     ]
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     cell = next(c for c in manifest["cell_lineage"] if c["pointer"] == "/years")
     assert cell["source_value"] == "31"
     assert cell["source_pointer"] == "/Age"
@@ -230,7 +230,7 @@ async def test_common_plan_validation_and_conflicts(site, tmp_path):
     bodies["/people"] = (200, b'[{"Person":"A","Age":"31"}]')
     sources = [{"url": base + "/people", "format": "json"}]
     plan_file = tmp_path / "plan.json"
-    plan_file.write_text(json.dumps(PLAN))
+    plan_file.write_text(json.dumps(PLAN), encoding="utf-8")
     result = await arun(
         goal="Names",
         schema=SCHEMA,
@@ -291,9 +291,9 @@ def test_cli_projection_plan(site, tmp_path):
     base, bodies, seen, config = site
     bodies["/people"] = (200, b"Person,Age\r\nAna,31\r\n")
     plan_file = tmp_path / "plan.json"
-    plan_file.write_text(json.dumps(PLAN))
+    plan_file.write_text(json.dumps(PLAN), encoding="utf-8")
     schema_file = tmp_path / "schema.json"
-    schema_file.write_text(json.dumps(SCHEMA))
+    schema_file.write_text(json.dumps(SCHEMA), encoding="utf-8")
     cli = importlib.import_module("verboisy.cli.main")
     with patch.object(cli, "Settings", return_value=config):
         result = CliRunner().invoke(
@@ -315,7 +315,7 @@ def test_cli_projection_plan(site, tmp_path):
             ],
         )
         assert result.exit_code == 0, result.output
-    assert json.loads((tmp_path / "cli.json").read_text()) == [
+    assert json.loads((tmp_path / "cli.json").read_text(encoding="utf-8")) == [
         {"id": 1, "name": "Ana", "years": 31}
     ]
     assert seen == ["/people"]
