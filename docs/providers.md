@@ -86,3 +86,7 @@ additional custom authentication or request parameters need an adapter or a
 configured gateway; unsupported parameters are not accepted as arbitrary kwargs.
 See the upstream [SDK](https://docs.litellm.ai/docs/python_sdk) and
 [custom-provider interface](https://docs.litellm.ai/docs/providers/custom_llm_server).
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
