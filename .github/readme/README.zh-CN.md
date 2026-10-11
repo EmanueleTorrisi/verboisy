@@ -1,68 +1,146 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-<p align="center"><img src="../../logo.png" alt="Verboisy" width="240" /></p>
+<p align="center"><img src="../../logo.png" alt="Verboisy" width="220" /></p>
 
-# 基于证据的研究与可追溯的数据准备
+[English](../../README.md) · [Italiano](README.it.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [简体中文](README.zh-CN.md)
 
-Verboisy 提供经过验证的网页研究、确定性文件处理，以及独立的大规模本地数据处理流程。目前为开发版本，产品资格验证尚未完成。
+# Verboisy
 
-这是本地化入门说明；完整技术契约请参阅下方链接的英文文档。
+**从研究问题，到能够核查来源的数据集。**
 
-[English](../../README.md) · [Italiano](README.it.md) · [Deutsch](README.de.md) ·
-[Français](README.fr.md) · [Español](README.es.md) · [日本語](README.ja.md) ·
-[한국어](README.ko.md) · [简体中文](README.zh-CN.md)
+基于证据的研究 · 结构化提取 · 本地数据 · 可移植溯源
 
-## 从仓库安装
+## 产品介绍
+
+Verboisy 是一个研究与数据提取引擎，面向需要结构化信息并希望核查其来源的用户。问题、模式和允许的来源共同定义任务。系统采集观察内容，验证候选记录，保留证据及输出转换过程。CLI 和 Python API 支持可重复的工作流以及已保存任务的恢复。
+
+它也能通过确定性适配器准备本地或声明的 HTTP 数据集，无需调用模型、搜索或浏览器。大型本地文件使用独立流程，通过受限缓冲区和磁盘台账处理。
+
+**源码可供查阅，运行需要单独许可。** [LICENSE](../../LICENSE) 允许源码审查，不授予运行权。测试、修改和部署需要另行书面授权。以下示例描述的是已获授权的使用方式。
+
+## 这种设计的意义
+
+JSON 或表格本身不能说明事实是否被观察到，也不能解释数值如何转换。Verboisy 将这些检查纳入数据流程：
+
+- **先验证证据，再接受记录：** 模型候选需要关联已观察的来源并接受确定性验证；语义审查是独立环节。
+- **由用户控制的数据约定：** JSON Schema、身份规则、来源范围和可比性要求决定哪些输出可接受。
+- **可恢复的工作：** 不可变采集、检查点和请求日志保留进度与消耗。
+- **可解释的转换：** 单位、投影、显示和分组仍关联原始值及贡献记录。
+- **明确的决策：** 变更建议会暂停任务，而不会悄悄替换问题或模式。
+
+它适用于分析、参考数据收集、数据准备、内部信息流程和可重复调查。科学研究及受监管用途仍需独立检查来源、抽样和结论。长期目标是成为值得信赖的证据型数据提取标准，而不是声称已经具备市场领导地位。
+
+## 工作流与格式
+
+网页研究使用浏览器及已配置模型，搜索发现来源为可选功能。确定性准备读取获准文件或声明的 HTTP GET 来源。独立流式流程返回计数、记录分页和检查点。
+
+| 输入 | 解释方式 |
+| --- | --- |
+| CSV / TSV | 保留精确文本，使用明确表头并检查行宽 |
+| JSON / JSONL | 严格解码的带类型对象 |
+| 文本 | 带来源位置的文本记录 |
+| DOCX / XLSX | 具有明确限制的适配器，不执行宏或公式 |
+| 图片、视频及其他文件 | 不可变字节采集、哈希及引用，不自动理解内容 |
+| 时间序列 | 明确的序列与时间戳策略、排序、缺口和重复诊断 |
+
+二进制采集不等同于 OCR 或通用文档理解。OAuth、数据库驱动、应用连接器和 API 分页需要专门集成。请参阅[格式能力](../../docs/formats.md)。
+
+## 安装与配置
+
+需要 Python **3.11–3.14**、Poetry 和书面运行许可。CI 覆盖 Linux、macOS 和 Windows。模型研究需要兼容配置及凭据；网页采集需要 Chromium 和系统库。本地输入需要明确目录授权和足够磁盘空间。普通安装不需要 C++ 编译器。
 
 ```bash
 poetry install
 poetry run verboisy --help
 ```
 
-## 可用流程
+请按照 [.env.example](../../.env.example) 将密钥放在私有环境或 `.env` 中，不要提交真实密钥。Shell 示例采用 POSIX 语法；Windows 请使用等效方法设置环境变量。
 
-网页研究在接受记录前验证已观察到的引用。本地文件需要明确授权的目录，HTTP 数据使用声明的来源。CSV、JSON、JSONL、TSV、文本、DOCX 和 XLSX 按限定的契约处理。其他文件可以被采集和索引，但不会因此被解释。
+```bash
+poetry run verboisy setup
+poetry run verboisy model-config
+```
+
+`model-config` 显示设置和凭据是否存在，不显示密钥值。确定性的本地准备无需模型或浏览器。请参阅[提供商](../../docs/providers.md)和[验证](../../docs/validation.md)。
+
+## 网页研究与 API
 
 ```bash
 poetry run verboisy run \
-  --goal "Find research institutions and their published homepages" \
+  --goal "Find research institutions and their explicitly published homepages" \
   --schema '[name,website,country]' \
   --export institutions.json
 ```
 
-[Providers](../../docs/providers.md) · [Sources](../../docs/ingestion.md) ·
-[File capabilities](../../docs/formats.md)
+自动发现需要搜索提供商，也可在任务中声明起始 URL。JSON Schema 可精确定义类型与约束。缺失信息可能保持为 `null`；无证据支持的值会被拒绝。接受输出不代表已穷尽整个网页范围。
 
-## 大型本地文件
+```python
+from verboisy import run
 
-stream 使用独立账本、有界缓冲区、检查点和分页访问。已在 Linux 上验证超过 1 GiB 的一百万行 JSONL。该结果并非通用性能保证，也不代表支持网页研究流式处理。
+result = run(
+    goal="Find research institutions and their published homepages",
+    schema=["name", "website", "country"],
+    export="institutions.json",
+)
+print(result.run_id, result.status, result.records)
+```
+
+异步应用使用 `arun`。普通 API 会将接受的记录物化到内存；大型本地输入应使用流式流程。
+
+## 本地与内部数据
 
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+poetry run verboisy run \
+  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
+  --schema observation-schema.json \
+  --export observations.json
+```
+
+目录和模式文件必须存在。模型凭据不会授予文件系统权限。声明的 HTTP 来源采用受限下载、重定向策略、DNS 固定以及按来源绑定的凭据。来源位置与模型运行位置是独立选择：远程模型可能接收观察内容。处理机密数据前应检查传输、日志、网络和保留策略。
+
+## 大型数据集
+
+```bash
 poetry run verboisy stream \
   --database observations-stream.db \
   --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
+  --schema observation-schema.json \
   --export observations.jsonl
 ```
 
-[Streaming contract](../../docs/streaming.md)
+流式台账保存不可变来源块及事务提交的进度。`stream-status` 列出任务，`stream --resume JOB_ID` 恢复已保存任务。`StreamLedger` 提供分页读取。
 
-## 决策与数据语义
+在 Linux/Python 3.12 的 JSONL 测量中，处理并导出了 **1,000,000 行**、**1,105,888,890 字节**，峰值 RSS 为 **89.15 MiB**，耗时 **130.81 秒**。删除原始来源后的恢复和导出完整性也经过验证。这是一项特定负载的测量，不是普遍速度或内存保证。请参阅[流式处理](../../docs/streaming.md)和[基准测试](../../docs/benchmarks.md)。
 
---resume 保留原要求并拒绝提议；--okresume 仅接受明确提出的变更。范围、单位和日期的显示不会覆盖原始证据。时间序列需要明确策略，以按实际时刻排序、处理时区歧义，并在不插值的情况下诊断缺口。
-
-[Semantics](../../docs/research-semantics.md) · [Display](../../docs/presentation.md) ·
-[CLI](../../docs/cli.md)
-
-## 状态与维护
-
-正常使用不需要 C++ 编译器。原生测试单独执行。目前不接受外部代码贡献。当前许可证仍为 BSD-2-Clause，商业分发条款需要在公开发布前审核。
+## 建议、恢复与证据
 
 ```bash
-make validate
-make repo-check
+poetry run verboisy changes --run-id RUN_ID
+poetry run verboisy status --run-id RUN_ID
+poetry run verboisy run --resume RUN_ID
 ```
 
-[Architecture](../../ARCHITECTURE.md) · [Release gates](../../docs/release-checklist.md) ·
-[Security](../SECURITY.md) · [Maintainer policy](../CONTRIBUTING.md) ·
-[Licence](../../LICENSE) · [Commercial review](../../docs/distribution.md)
+`--resume` 保留原要求并拒绝建议；`--okresume` 只接受已保存的确切变更。建议可改变类型、列或搜索范围。恢复不会重置消耗，也不会隐式扩大来源权限。
+
+区间仍是区间：下界不会变成精确值或虚构上界。数值型 min/max 列需要适合的模式。默认显示单位为千克、米，日期为日/月/年；明确的替代设置仍保留原始证据。时间序列诊断不会插补缺失观察，也不会猜测有歧义的本地时间。
+
+可移植导出包含证据、相关事件、输出溯源及适用的已采集材料。分组标明贡献记录。校验和证明与清单的字节一致性，不证明事实正确或独立真实性。请参阅[溯源](../../docs/proof.md)。
+
+## 架构与文档
+
+Python 负责流程编排、数据约定、适配器、CLI 和 SQLite 台账。可选 C++17 组件加速特定证据匹配，同时保留 Python 参考实现。测试和 CI 覆盖平台、浏览器、恢复与完整性，要求完整语句及分支覆盖。真实研究质量和提供商兼容性需要独立评估。
+
+[CLI](../../docs/cli.md) · [API](../../docs/api.md) · [数据约定](../../docs/contracts.md) · [身份](../../docs/smartid.md) · [摄取](../../docs/ingestion.md) · [显示](../../docs/presentation.md) · [语义](../../docs/research-semantics.md) · [架构](../../ARCHITECTURE.md) · [版本记录](../../CHANGELOG.md)
+
+## 许可、演示与商业联系
+
+Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条款，本译文不改变权限。标识符为 `LicenseRef-Verboisy-Source-Inspection-1.0`。第三方组件保留各自许可证。运行、测试、修改、集成、分发和托管需要单独书面许可。
+
+如需演示、评估、内部或企业许可、投资、合作及潜在有偿工程协作，请联系 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**。说明工作流、来源、规模和环境，不要发送凭据或机密数据。价格、支持和权利逐项商定。请参阅[许可](../../docs/licensing.md)和[商业联系](../../docs/commercial.md)。
+
+## 反馈与未来版本
+
+**Emanuele Torrisi** 创建并维护 Verboisy，目前是项目唯一开发者。欢迎通过 [GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues) 提交缺陷和功能请求。漏洞请按照[安全政策](../SECURITY.md)私下报告。
+
+目前不接受未经邀请的代码贡献。未来可商定有偿合作，工作前需明确范围、报酬、保密和知识产权。后续版本计划改进质量、来源覆盖、规模及易用性。[路线图](../../docs/development-roadmap.md) 区分当前能力与未来方向。项目不承诺完美准确或通用兼容。另请参阅[参与指南](../CONTRIBUTING.md)和[版权](../../COPYRIGHT.md)。
