@@ -15,7 +15,9 @@ body:
         ## Thank you for helping improve Verboisy
 
         Please describe the problem you are trying to solve and the outcome
-        you would like to achieve.
+        you would like to achieve. Share synthetic examples rather than private
+        source data or credentials. Feature feedback is welcome; code collaboration
+        and software execution remain subject to the project licensing policy.
 
   - type: textarea
     id: problem
