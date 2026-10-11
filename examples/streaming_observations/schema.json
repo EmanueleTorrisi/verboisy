@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "observation_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "station_id": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "power_kw": {
+      "type": "number",
+      "minimum": 0
+    },
+    "unit": {
+      "const": "kW"
+    },
+    "quality": {
+      "enum": [
+        "synthetic"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stream": {
+          "const": "generated-example"
+        },
+        "padding": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "stream",
+        "padding"
+      ]
+    }
+  },
+  "required": [
+    "observation_id",
+    "station_id",
+    "observed_at",
+    "power_kw",
+    "unit",
+    "quality",
+    "metadata"
+  ]
+}
