@@ -147,9 +147,11 @@ def test_valid_historical_json_and_accounting_survive_export(tmp_path, extension
         assert store.events(rid, "custom_event")[0]["payload"] == payload
         assert store.search_attempt_count(rid) == 2
         destination = tmp_path / ("rows." + extension)
-        manifest = json.loads(export_dataset(store, rid, destination, SCHEMA, task).read_text())
+        manifest = json.loads(
+            export_dataset(store, rid, destination, SCHEMA, task).read_text(encoding="utf-8")
+        )
         journal = json.loads(
-            destination.with_suffix(destination.suffix + ".events.json").read_text()
+            destination.with_suffix(destination.suffix + ".events.json").read_text(encoding="utf-8")
         )
         assert journal["events"] == expected
         assert manifest["search_attempts_reserved"] == {"openai": 1, "brave": 1}
