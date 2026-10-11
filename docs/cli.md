@@ -402,3 +402,7 @@ fingerprints without loading a binary. It uses shell environment flags, reports
 missing or changed build inputs, and does not contact providers or open a ledger.
 Matching hashes do not establish binary compatibility. See [native validation](native.md)
 for the separate compiled-test gate.
+
+---
+
+[Overview](index.md) · [API](api.md) · [Licensing](licensing.md)
