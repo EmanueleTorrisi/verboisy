@@ -79,3 +79,7 @@ For example, `--identity /namespace --identity /sku` distinguishes the same SKU
 used by separate source namespaces. Missing namespaces remain unresolved, and
 multiple prior IDs for the complete key remain ambiguous. Resume reuses the saved
 key. Runs with no declared key retain the existing SmartID heuristics.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
