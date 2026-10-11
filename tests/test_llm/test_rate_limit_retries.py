@@ -1,4 +1,7 @@
-"""Offline regression tests for provider rate-limit retry handling."""
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
+"""Offline regression tests for provider retry and rate-limit handling."""
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -6,7 +9,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from verboisy.llm.client import LLMClient
 from verboisy.utils.config import settings
-from verboisy.utils.exceptions import LLMError
+from verboisy.utils.exceptions import LLMError, LLMRateLimitError
 
 
 class FakeProviderError(Exception):
@@ -14,14 +17,14 @@ class FakeProviderError(Exception):
 
     def __init__(
         self,
-        message="temporary rate limit",
+        message: str = "temporary rate limit",
         *,
-        status=429,
-        headers=None,
-        response_status=None,
-        exception_headers=None,
-        code=None,
-    ):
+        status: int | None = 429,
+        headers: dict[str, str] | None = None,
+        response_status: int | None = None,
+        exception_headers: dict[str, str] | None = None,
+        code: str | None = None,
+    ) -> None:
         super().__init__(message)
 
         if status is not None:
@@ -42,7 +45,7 @@ class FakeProviderError(Exception):
             self.code = code
 
 
-def success_response():
+def success_response() -> SimpleNamespace:
     return SimpleNamespace(
         usage=SimpleNamespace(total_tokens=9),
         choices=[
@@ -55,7 +58,7 @@ def success_response():
 
 
 async def invoke(*responses):
-    """Return the result/error and mocks from an entirely offline call."""
+    """Return result/error and mocks from an entirely offline call."""
 
     completion = AsyncMock(side_effect=list(responses))
     sleeping = AsyncMock()
@@ -77,10 +80,6 @@ async def invoke(*responses):
             "verboisy.llm.client.asyncio.sleep",
             new=sleeping,
         ),
-        patch(
-            "random.uniform",
-            return_value=0,
-        ),
     ):
         try:
             result = await LLMClient(config=config).complete_json(
@@ -95,37 +94,32 @@ async def invoke(*responses):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ("headers", "expected_delay"),
+    "error",
     [
-        (None, 15),
-        ({"Retry-After": "4"}, 4),
-        ({"retry-after": "3"}, 3),
-        ({"Retry-After": "not-a-date"}, 15),
-        ({"Retry-After": "nan"}, 15),
-        ({"Retry-After": "inf"}, 15),
-        (
-            {"Retry-After": "Wed, 21 Oct 2015 07:28:00 GMT"},
-            1,
+        FakeProviderError(),
+        FakeProviderError(
+            headers={"Retry-After": "30"},
         ),
-        (
-            {"Retry-After": "Wed, 21 Oct 2015 07:28:00"},
-            1,
+        FakeProviderError(
+            exception_headers={"RETRY-AFTER": "30"},
+        ),
+        FakeProviderError(
+            status=None,
+            response_status=429,
         ),
     ],
 )
-async def test_rate_limit_retry_delays(
-    headers,
-    expected_delay,
-):
-    result, error, completion, sleeping = await invoke(
-        FakeProviderError(headers=headers),
+async def test_rate_limit_pauses_immediately(error):
+    result, failure, completion, sleeping = await invoke(
+        error,
         success_response(),
     )
 
-    assert error is None
-    assert result == {"results": []}
-    assert completion.await_count == 2
-    sleeping.assert_awaited_once_with(expected_delay)
+    assert result is None
+    assert isinstance(failure, LLMRateLimitError)
+    assert str(failure) == "OpenAI rate limit reached"
+    assert completion.await_count == 1
+    sleeping.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -134,7 +128,10 @@ async def test_rate_limit_retry_delays(
     [
         ("insufficient_quota", None),
         ("tokens per day exceeded", None),
-        ("ordinary provider error", "insufficient_quota"),
+        (
+            "ordinary provider error",
+            "insufficient_quota",
+        ),
         ("credit_balance_exhausted", None),
     ],
 )
@@ -151,50 +148,8 @@ async def test_permanent_quota_errors_are_not_retried(
 
     assert result is None
     assert isinstance(error, LLMError)
+    assert not isinstance(error, LLMRateLimitError)
     assert "quota" in str(error).lower()
-    assert completion.await_count == 1
-    sleeping.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_status_code_from_response():
-    result, error, completion, sleeping = await invoke(
-        FakeProviderError(
-            status=None,
-            response_status=429,
-            headers={"Retry-After": "2"},
-        ),
-        success_response(),
-    )
-
-    assert error is None
-    assert result == {"results": []}
-    assert completion.await_count == 2
-    sleeping.assert_awaited_once_with(2)
-
-
-@pytest.mark.asyncio
-async def test_retry_after_on_exception_headers():
-    result, error, completion, sleeping = await invoke(
-        FakeProviderError(exception_headers={"RETRY-AFTER": "3"}),
-        success_response(),
-    )
-
-    assert error is None
-    assert result == {"results": []}
-    assert completion.await_count == 2
-    sleeping.assert_awaited_once_with(3)
-
-
-@pytest.mark.asyncio
-async def test_excessive_retry_after_stops():
-    result, error, completion, sleeping = await invoke(
-        FakeProviderError(headers={"Retry-After": "121"}),
-    )
-
-    assert result is None
-    assert isinstance(error, LLMError)
-    assert "two minutes" in str(error)
     assert completion.await_count == 1
     sleeping.assert_not_awaited()
 
@@ -219,23 +174,10 @@ async def test_other_transient_failures_retry(error):
     assert failure is None
     assert result == {"results": []}
     assert completion.await_count == 2
-    sleeping.assert_awaited_once_with(1)
+    sleeping.assert_awaited_once()
 
-
-@pytest.mark.asyncio
-async def test_retries_are_bounded():
-    result, error, completion, sleeping = await invoke(
-        FakeProviderError(),
-        FakeProviderError(),
-        FakeProviderError(),
-    )
-
-    assert result is None
-    assert isinstance(error, LLMError)
-    assert "429" in str(error)
-    assert completion.await_count == 3
-    assert sleeping.await_count == 2
-    assert [call.args[0] for call in sleeping.await_args_list] == [15, 30]
+    delay = sleeping.await_args.args[0]
+    assert 1 <= delay <= 2
 
 
 @pytest.mark.asyncio
@@ -249,6 +191,7 @@ async def test_nonretryable_http_error():
 
     assert result is None
     assert isinstance(error, LLMError)
+    assert not isinstance(error, LLMRateLimitError)
     assert "400" in str(error)
     assert completion.await_count == 1
     sleeping.assert_not_awaited()

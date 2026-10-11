@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Atomic JSON and CSV exports. CSV cells are safe to open as text."""
 
 import csv
@@ -34,6 +37,8 @@ def _atomic_write(filepath: str | Path, write: Callable[[TextIO], None]) -> None
             stream.flush()
             os.fsync(stream.fileno())
 
+        # The temporary file lives beside its destination so replacement stays on
+        # one filesystem; readers see a complete old or new file, never partial output.
         Path(temporary).replace(path)
 
     finally:

@@ -1,12 +1,23 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Verboisy
 
-Evidence-backed web datasets using your JSON Schema, a persisted source queue and
-JSON/CSV exports. This revision is a release candidate, not a production certification.
+Verboisy is an evidence-backed autonomous web research engine that turns a goal and requested columns into a persistent structured dataset.
 
-Install a reviewed release with `pip install verboisy`. For the unpublished candidate,
-install its wheel or use `pip install -e .`. Chromium is provisioned on first browser
-use. Native Linux libraries may require system setup or the provided Docker image.
+Start with the simple interface:
 
-Start with the [dataset contract](contracts.md), then the [API](api.md).
-Review [validation](validation.md) and [release operations](release.md) before publishing.
-The [migration guide](migration.md) explains how to preserve 0.1 data and local changes.
+```bash
+verboisy run \
+  --goal "Find white laptops under €1000" \
+  --schema '[name,brand,color,price,screen_size]' \
+  --export laptops.csv
+```
+
+The same evidence engine still supports explicit JSON Schema and advanced TaskSpec configuration.
+
+Read the [CLI reference](cli.md), [dataset contract](contracts.md), [SmartID guide](smartid.md), and [proof guide](proof.md). The [architecture document](https://github.com/EmanueleTorrisi/verboisy/blob/main/ARCHITECTURE.md) explains the research and verification boundaries.
+
+Package metadata currently identifies a `1.0.0` development build. Production
+acceptance remains pending. Follow the [finite release plan](development-roadmap.md)
+and [acceptance protocol](production-acceptance.md). Current limitations remain
+documented in the README and architecture documentation.

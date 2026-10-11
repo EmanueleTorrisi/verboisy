@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Bounded DOM evidence and actual links, with explicit truncation."""
 
 import hashlib
@@ -49,11 +52,16 @@ def snapshot(html: str, url: str, max_chars: int = 120000) -> Snapshot:
     scope_nodes = []
 
     for node in container.select("tr, article, li, [itemscope], [data-record]"):
+        # Header-only rows describe the table rather than an entity.
+        if node.name == "tr" and node.find("td", recursive=False) is None:
+            continue
+
         # A table row is an entity boundary only when it is not already inside
         # a stronger entity container. Product-detail tables commonly use rows
         # for attributes of the surrounding article, not separate entities.
         if node.name == "tr" and any(id(parent) in entity_ids for parent in node.parents):
             continue
+
         scope_nodes.append(node)
 
     scopes = {id(node): f"s{i}" for i, node in enumerate(scope_nodes)}

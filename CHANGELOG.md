@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # 0.2.0rc1 — evidence engine candidate
 
 - Replace model-directed FINISH and unverified extraction with persisted crawling and evidence checks.
@@ -15,6 +17,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Consolidated implementation candidate
+- Add explicit provider profiles and granted local/origin-authenticated HTTP source modes.
+- Add declared file capabilities, immutable assets and bounded Office adapters.
+- Add separate local streaming preparation, measured scale evidence and durable checkpoints.
+- Add explicit time-series diagnostics, scoped coverage notices and preserved proposal decisions.
+- Align architecture, localized introductions, security and release evidence with implemented contracts.
+- Add read-only repository consistency checks and a reviewed per-file commit plan.
+- Retain pending human-reviewed acceptance, live provider, independent beta and commercial/legal gates.
 
 ### Fixed
 - Implemented shared run/arun API and the documented run subcommand with resume.

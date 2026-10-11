@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Dataset contract
 
 The schema is owned by the caller. Draft 2020-12 is supported, with local references.

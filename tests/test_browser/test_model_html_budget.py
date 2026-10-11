@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Resource-heavy documents must expose source facts within the model HTML budget."""
 
 import json

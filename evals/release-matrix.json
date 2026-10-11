@@ -1,0 +1,1175 @@
+{
+  "schema_version": 1,
+  "copyright": "Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms.",
+  "status": "proposed",
+  "version_baseline": "1.0.0",
+  "production_status": "not_certified",
+  "scope": {
+    "product": "General-purpose evidence-backed web research and dataset preparation",
+    "interfaces": [
+      "CLI",
+      "Python API"
+    ],
+    "input_formats": [
+      "observed public HTML",
+      "csv",
+      "json",
+      "jsonl",
+      "tsv",
+      "text",
+      "docx",
+      "xlsx",
+      "asset"
+    ],
+    "output_formats": [
+      "JSON",
+      "CSV",
+      "evidence and event sidecars",
+      "portable manifest",
+      "proof report"
+    ],
+    "normal_installation_requires_cpp_compiler": false,
+    "query_languages": {
+      "initial_qualification": [
+        "English",
+        "Italian"
+      ],
+      "other_languages": "No general accuracy claim without additional acceptance evidence; Unicode content preservation remains required."
+    }
+  },
+  "quality_targets": {
+    "supported_field_precision_min": 0.99,
+    "finite_source_record_recall_min": 0.95,
+    "positive_run_success_min": 0.9,
+    "critical_control_failures_max": 0,
+    "false_completion_cases_max": 0
+  },
+  "economic_targets": {
+    "status": "proposed_not_approved",
+    "currency": "EUR",
+    "positive_web_run_cost_max": 2.0,
+    "cost_per_supported_output_row_max": 0.1,
+    "median_positive_web_run_seconds_max": 180,
+    "p95_positive_web_run_seconds_max": 600,
+    "measurement_profile": {
+      "expected_records_max": 25,
+      "visited_pages_max": 25
+    },
+    "total_paid_campaign_budget": null,
+    "paid_campaign_authorized": false,
+    "request_units_are_currency": false
+  },
+  "workflow_classes": [
+    {
+      "id": "tables",
+      "name": "Static tables",
+      "domain_examples": "people and organisations",
+      "heldout_tasks_required": 2
+    },
+    {
+      "id": "profiles",
+      "name": "Static cards and profiles",
+      "domain_examples": "companies and products",
+      "heldout_tasks_required": 2
+    },
+    {
+      "id": "pagination",
+      "name": "Linked or explicitly configured pagination",
+      "domain_examples": "events and directories",
+      "heldout_tasks_required": 2
+    },
+    {
+      "id": "rendered",
+      "name": "Browser-rendered public pages",
+      "domain_examples": "products and research organisations",
+      "heldout_tasks_required": 2
+    },
+    {
+      "id": "csv",
+      "name": "Declared CSV datasets",
+      "domain_examples": "Unicode people and numeric measurements",
+      "heldout_tasks_required": 2
+    },
+    {
+      "id": "json",
+      "name": "Declared JSON and JSONL datasets",
+      "domain_examples": "events and institutions",
+      "heldout_tasks_required": 2
+    }
+  ],
+  "heldout_tasks": [
+    {
+      "id": "people-ages",
+      "workflow_class": "tables",
+      "goal": "People and explicitly reported ages",
+      "requested_columns": [
+        "full_name",
+        "age_years"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "full_name": {
+              "type": "string"
+            },
+            "age_years": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "full_name",
+            "age_years"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/full_name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "institution-locations",
+      "workflow_class": "tables",
+      "goal": "Institutions and explicitly reported cities/countries",
+      "requested_columns": [
+        "name",
+        "city",
+        "country"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "city": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "country": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "city",
+            "country"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "organisation-homepages",
+      "workflow_class": "profiles",
+      "goal": "Organisation names and actual external homepages",
+      "requested_columns": [
+        "name",
+        "website"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "website": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "website"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json",
+        "field_rules": {
+          "/website": {
+            "source": "link",
+            "external": true
+          }
+        }
+      }
+    },
+    {
+      "id": "product-prices",
+      "workflow_class": "profiles",
+      "goal": "Product catalogue prices with currencies and availability",
+      "requested_columns": [
+        "name",
+        "price",
+        "currency",
+        "availability"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "price": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "currency": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "availability": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "price",
+            "currency",
+            "availability"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "event-listings",
+      "workflow_class": "pagination",
+      "goal": "Event titles and explicit start dates across pages",
+      "requested_columns": [
+        "title",
+        "start_date"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "start_date": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "title",
+            "start_date"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/title"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "directory-identity",
+      "workflow_class": "pagination",
+      "goal": "Distinct directory entities across pages using declared identity",
+      "requested_columns": [
+        "name",
+        "website"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "website": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "website"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "rendered-catalogue",
+      "workflow_class": "rendered",
+      "goal": "Visible rendered product names and complete observed weight ranges",
+      "requested_columns": [
+        "name",
+        "weight_range"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "weight_range": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "weight_range"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "rendered-organisations",
+      "workflow_class": "rendered",
+      "goal": "Visible organisation names, location and website",
+      "requested_columns": [
+        "name",
+        "city",
+        "website"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "city": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "website": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "city",
+            "website"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "csv-people",
+      "workflow_class": "csv",
+      "goal": "Names and text fields without destroying Unicode or quoted newlines",
+      "requested_columns": [
+        "name",
+        "notes"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "notes": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "notes"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "csv-measurements",
+      "workflow_class": "csv",
+      "goal": "Measurements with explicit grounded units and projection",
+      "requested_columns": [
+        "name",
+        "mass",
+        "unit"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "mass": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "x-verboisy-unit-sensitive": true
+            },
+            "unit": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "mass",
+            "unit"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "json-events",
+      "workflow_class": "json",
+      "goal": "JSON event names, explicit dates and nullable locations",
+      "requested_columns": [
+        "title",
+        "start_date",
+        "location"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "start_date": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "location": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "title",
+            "start_date",
+            "location"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/title"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    },
+    {
+      "id": "jsonl-institutions",
+      "workflow_class": "json",
+      "goal": "JSONL institution names and websites with row order and line provenance",
+      "requested_columns": [
+        "name",
+        "website"
+      ],
+      "source_status": "not_selected",
+      "source_urls": [],
+      "capture_sha256": null,
+      "gold_path": null,
+      "annotation_status": "not_started",
+      "results_status": "not_run",
+      "repetitions": 3,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "website": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "website"
+          ]
+        }
+      },
+      "task_template": {
+        "identity_fields": [
+          "/name"
+        ],
+        "max_pages": 25,
+        "max_depth": 3,
+        "csv_mode": "json"
+      }
+    }
+  ],
+  "historical_tasks": [
+    {
+      "id": "breed-weight-range",
+      "requirement": "Complete male/female breed ranges remain ranges; no invented point values or sex attribution. Numeric requirements cause an explicit proposal; ordinary resume declines it and okresume accepts only the exact offered change.",
+      "source_status": "not_selected",
+      "gold_path": null,
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "ban-jurisdiction",
+      "requirement": "Separate national bans, city restrictions and restricted ownership. Require source-supported jurisdiction and legal status; omit or abstain with a useful explanation when country-level evidence is unavailable. Do not claim there are no national bans from incomplete research.",
+      "source_status": "not_selected",
+      "gold_path": null,
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "unit-date-preferences",
+      "requirement": "Kilograms/metres and dmy defaults; explicit lb/ft and iso/mdy choices produce supported transformations, stable resume preferences and portable cell lineage.",
+      "source_status": "not_selected",
+      "gold_path": null,
+      "results_status": "not_run",
+      "repetitions": 3
+    }
+  ],
+  "critical_controls": [
+    {
+      "id": "absent-company-website",
+      "requirement": "No invention of a company homepage from a founder/social link.",
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "hostile-page-text",
+      "requirement": "Untrusted page instructions cannot authorize unsupported facts or bypass policy.",
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "mixed-entities",
+      "requirement": "Values from separate entities cannot be combined into one supported record.",
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "missing-range-endpoint",
+      "requirement": "A lower bound such as over 100 lb cannot become an exact value or a two-ended range.",
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "unknown-methodology",
+      "requirement": "Missing or incompatible required methodology cannot satisfy completion.",
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "blocked-redirect",
+      "requirement": "A forbidden redirect is rejected before the destination is fetched.",
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "request-budget",
+      "requirement": "Budget exhaustion blocks the next paid attempt and remains durable across resume.",
+      "results_status": "not_run",
+      "repetitions": 3
+    },
+    {
+      "id": "interrupted-export-resume",
+      "requirement": "Interrupted work preserves evidence, accounting, pending decisions and the prior valid export generation.",
+      "results_status": "not_run",
+      "repetitions": 3
+    }
+  ],
+  "existing_fixture_ids": [
+    "unicode-people",
+    "nested-products",
+    "event-dates",
+    "absent-company-website",
+    "hostile-page-text",
+    "mixed-entities"
+  ],
+  "execution": {
+    "positive_heldout_runs": 36,
+    "historical_runs": 9,
+    "critical_control_runs": 24,
+    "full_campaign_runs_excluding_baselines": 69,
+    "baseline_comparison": "optional separately budgeted; identical sources and schema; no general superiority claim",
+    "pilot": "Three held-out tasks from three workflow classes, one repetition each; run full campaign only after pilot review."
+  },
+  "gates": [
+    {
+      "id": 1,
+      "name": "Product contract and evaluation design",
+      "status": "draft_for_review"
+    },
+    {
+      "id": 2,
+      "name": "Real product acceptance",
+      "status": "not_started"
+    },
+    {
+      "id": 3,
+      "name": "Product UX and economics",
+      "status": "not_started"
+    },
+    {
+      "id": 4,
+      "name": "Security portability and release reliability",
+      "status": "partially_implemented_unverified"
+    },
+    {
+      "id": 5,
+      "name": "Repository editorial and legal readiness",
+      "status": "partially_implemented_unverified"
+    },
+    {
+      "id": 6,
+      "name": "Independent beta",
+      "status": "not_started"
+    },
+    {
+      "id": 7,
+      "name": "Release and commercial presentation",
+      "status": "not_started"
+    }
+  ],
+  "open_decisions": [
+    "Approve scope and quality targets",
+    "Approve or revise cost/latency targets",
+    "Approve paid pilot and aggregate campaign budget",
+    "Select held-out public sources and independent gold reviewer",
+    "Choose legally reviewed public distribution terms before publication"
+  ],
+  "delivery_batches": [
+    {
+      "id": 1,
+      "name": "provider_contracts",
+      "implementation_status": "implemented_offline_verified",
+      "product_qualification_status": "not_run"
+    },
+    {
+      "id": 2,
+      "name": "source_modes",
+      "implementation_status": "core_local_and_http_adapters_implemented",
+      "product_qualification_status": "not_run"
+    },
+    {
+      "id": 3,
+      "name": "file_and_asset_workflows",
+      "implementation_status": "core_format_adapters_implemented",
+      "product_qualification_status": "not_run"
+    },
+    {
+      "id": 4,
+      "name": "scale",
+      "implementation_status": "core_streaming_local_adapters_implemented",
+      "product_qualification_status": "measured_linux_jsonl_workload_passed_other_workloads_pending"
+    },
+    {
+      "id": 5,
+      "name": "research_semantics_and_experience",
+      "implementation_status": "core_semantics_and_time_series_implemented",
+      "product_qualification_status": "offline_regressions_passed_heldout_not_run"
+    },
+    {
+      "id": 6,
+      "name": "release_finish",
+      "implementation_status": "candidate_repository_and_release_materials_aligned",
+      "product_qualification_status": "final_head_platform_legal_and_beta_review_pending"
+    }
+  ],
+  "extended_qualification": {
+    "status": "planned_not_certified",
+    "file_support_levels": [
+      "capture_and_index",
+      "deterministic_parse",
+      "model_assisted_extraction"
+    ],
+    "file_families": [
+      "structured_text",
+      "office_documents",
+      "columnar_and_scientific",
+      "archives",
+      "images",
+      "audio",
+      "video",
+      "opaque_binary"
+    ],
+    "source_modes": [
+      "web",
+      "local_files",
+      "internal_api"
+    ],
+    "model_execution_modes": [
+      "hosted",
+      "custom_gateway",
+      "local"
+    ],
+    "scale_workloads": {
+      "minimum_rows": 1000000,
+      "minimum_input_bytes": 1073741824,
+      "memory_ceiling_bytes": 201326592,
+      "throughput_target": {
+        "minimum_rows_per_second": 5000,
+        "includes": "capture, admission, resume and portable export"
+      },
+      "results_status": "one_linux_jsonl_workload_passed",
+      "measurement_report": "evals/results/streaming-linux-python312.json",
+      "regression_files": [
+        "tests/test_streaming/test_streaming.py"
+      ],
+      "qualified_scope": "One million distinct local JSONL rows exceeding 1 GiB; source deletion, resume, JSONL export and independent row/evidence/checksum verification.",
+      "unqualified_scope": [
+        "other platforms and workload distributions",
+        "large HTTP streams",
+        "ordinary run/arun materialized research",
+        "out-of-core sorting or aggregation",
+        "entity deduplication"
+      ]
+    },
+    "advertised_format_adapters": {
+      "status": "frozen_batch_3",
+      "items": [
+        {
+          "format": "csv",
+          "support_level": "deterministic_parse",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_dataset_parser.py",
+            "tests/test_research/test_dataset_ingestion.py"
+          ]
+        },
+        {
+          "format": "json",
+          "support_level": "deterministic_parse",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_dataset_parser.py",
+            "tests/test_research/test_dataset_ingestion.py"
+          ]
+        },
+        {
+          "format": "jsonl",
+          "support_level": "deterministic_parse",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_dataset_parser.py",
+            "tests/test_research/test_dataset_ingestion.py"
+          ]
+        },
+        {
+          "format": "tsv",
+          "support_level": "deterministic_parse",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_file_formats.py",
+            "tests/test_research/test_format_workflows.py",
+            "tests/integration/test_file_format_http.py"
+          ]
+        },
+        {
+          "format": "text",
+          "support_level": "deterministic_parse",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_file_formats.py",
+            "tests/test_research/test_format_workflows.py",
+            "tests/integration/test_file_format_http.py"
+          ]
+        },
+        {
+          "format": "docx",
+          "support_level": "deterministic_parse",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_office_formats.py",
+            "tests/test_research/test_format_workflows.py",
+            "tests/integration/test_file_format_http.py"
+          ]
+        },
+        {
+          "format": "xlsx",
+          "support_level": "deterministic_parse",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_office_formats.py",
+            "tests/test_research/test_format_workflows.py",
+            "tests/integration/test_file_format_http.py"
+          ]
+        },
+        {
+          "format": "asset",
+          "support_level": "capture_and_index",
+          "model_assisted_extraction": false,
+          "fixture_inventory": [
+            "immutable_bytes_and_values",
+            "accepted_records_and_locators",
+            "invalid_or_ambiguous_input",
+            "local_api_portable_export_and_resume",
+            "declared_http_media_type"
+          ],
+          "product_qualification": "not_run",
+          "regression_files": [
+            "tests/test_extractor/test_file_formats.py",
+            "tests/test_research/test_format_workflows.py",
+            "tests/integration/test_file_format_http.py"
+          ]
+        }
+      ]
+    },
+    "provider_qualification": {
+      "status": "not_run",
+      "profiles": [],
+      "offline_contract_tests_are_live_certification": false
+    },
+    "source_adapter_support": {
+      "local_files": {
+        "formats": [
+          "csv",
+          "json",
+          "jsonl",
+          "tsv",
+          "text",
+          "docx",
+          "xlsx",
+          "asset"
+        ],
+        "authorization": "explicit_directory_grants",
+        "execution": "deterministic_without_model_search_browser",
+        "qualification": "offline_and_public_api_regressions"
+      },
+      "http_get": {
+        "formats": [
+          "csv",
+          "json",
+          "jsonl",
+          "tsv",
+          "text",
+          "docx",
+          "xlsx",
+          "asset"
+        ],
+        "authorization": "origin_scoped_secret_headers",
+        "qualification": "real_loopback_http_origin_isolation"
+      },
+      "sql_drivers": "not_implemented",
+      "oauth_flows": "not_implemented",
+      "provider_specific_api_pagination": "not_implemented",
+      "enterprise_deployments": "not_qualified",
+      "streaming_local_files": {
+        "formats": [
+          "csv",
+          "tsv",
+          "jsonl",
+          "text",
+          "asset"
+        ],
+        "authorization": "explicit_directory_grants",
+        "execution": "deterministic_without_model_search_browser",
+        "ledger": "separate_streaming_v1",
+        "inspection": "stream-status and bounded keyset row pages",
+        "bundle_version": "stream-1",
+        "qualification": "offline_regressions_and_one_measured_linux_jsonl_workload"
+      }
+    },
+    "research_semantics": {
+      "time_series_contract": "explicit task policy for materialized accepted records",
+      "timezones": "offset instants; declared IANA zone for unambiguous naive clocks",
+      "cadence": "optional fixed elapsed seconds; whole days for calendar dates",
+      "reports": "accepted records only; no endpoint coverage or interpolation claim",
+      "range_proposals": "observed complete intervals only; exact-baseline consent",
+      "coverage_notices": "non-null counts among accepted rows; no global absence claim",
+      "regression_files": [
+        "tests/test_time_series.py",
+        "tests/test_semantics_contract.py",
+        "tests/test_extractor/test_range_changes.py",
+        "tests/test_extractor/test_research_changes.py",
+        "tests/test_research/test_research_changes_workflow.py",
+        "tests/test_presentation.py",
+        "tests/test_presentation_config.py",
+        "tests/test_storage/test_presentation_export.py"
+      ],
+      "heldout_status": "not_run",
+      "verification_record": "evals/results/semantics-offline.json"
+    },
+    "repository_readiness": {
+      "consistency_command": "make repo-check",
+      "source_module_headers": "all production modules audited",
+      "documentation_languages": [
+        "en",
+        "it",
+        "de",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "zh-CN"
+      ],
+      "localized_scope": "introductions linked to complete English technical contracts",
+      "translation_review": "independent editorial review pending",
+      "per_file_commit_plan": "evals/batch6-commits.json",
+      "licensing_decision": "pending; existing BSD-2-Clause unchanged",
+      "qualification": "local consistency checks do not certify production readiness",
+      "verification_record": "evals/results/repository-offline.json",
+      "local_consistency_status": "passed"
+    }
+  }
+}

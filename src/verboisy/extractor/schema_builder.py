@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """JSON Schema is authoritative; Pydantic wraps validated record values."""
 
 import copy
@@ -87,6 +90,8 @@ class SchemaBuilder:
 
     @classmethod
     def validator(cls, schema: dict[str, Any]) -> Draft202012Validator:
+        # Validation must be reproducible offline. Normalization rejects external
+        # references, and the registry supplies no additional remote schema resources.
         return Draft202012Validator(
             cls.normalize(schema), format_checker=FormatChecker(), registry=Registry()
         )

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 import verboisy.cli.ui as ui
 from rich.console import Console
 from rich.progress import Progress

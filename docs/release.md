@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Private validation and public release
 
 Keep this repository private while validating. The supplied workflow intentionally requires
@@ -46,8 +48,11 @@ change. Do not label this candidate production-ready while any release gate is u
    Publisher for owner `EmanueleTorrisi`, repository `verboisy`, workflow `publish.yml`,
    environment `pypi`. Use a pending publisher if the project has not yet been created.
    See [PyPI Trusted Publishers](https://docs.pypi.org/trusted-publishers/).
-5. Set `RELEASE_ENABLED=true` only after those checks. Publish a prerelease first if useful:
-   version `0.2.0rc1`, tag `v0.2.0rc1`. A prerelease normally needs `pip install --pre verboisy`.
+5. Set `RELEASE_ENABLED=true` only after those checks and the acceptance gates.
+   If publishing a prerelease, select a reviewed candidate version, update both package
+   metadata and `__version__`, rerun the gates and use its matching tag. The current
+   `1.0.0` development metadata is not evidence of a published stable release.
+   A prerelease normally needs `pip install --pre verboisy`.
 6. For a stable release, change both `pyproject.toml` and `src/verboisy/__init__.py` to the
    reviewed stable version on a PR, refresh the lockfile as required, rerun all gates,
    merge, and publish the matching GitHub release/tag. The publishing workflow validates
@@ -58,3 +63,12 @@ change. Do not label this candidate production-ready while any release gate is u
 The wheel installs the Python program; Chromium is downloaded at first browser use or
 `verboisy setup`. Linux system libraries cannot reliably be provisioned by pip without
 system privileges. Use a prebuilt, tested container where that requirement is unsuitable.
+
+## Consolidated implementation candidate
+
+The six implementation batches have a finite scope. Their final documentation,
+repository consistency checks and per-file commit plan prepare a reviewable candidate;
+they do not authorize publication or paid research. Follow the
+[release evidence checklist](release-checklist.md), [commit policy](commit-policy.md)
+and [distribution review](distribution.md). Historical benchmark and offline reports
+retain their original implementation hashes and limited qualification scope.

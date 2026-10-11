@@ -1,0 +1,123 @@
+{
+  "copyright": "Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms.",
+  "plan_version": 1,
+  "scope": "one changed file per commit; validate the completed batch HEAD before pushing",
+  "entries": [
+    {
+      "path": ".github/CONTRIBUTING.md",
+      "message": "docs: define the sole-maintainer candidate and commit workflow"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "message": "chore: request workflow and contract evidence in bug reports"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "message": "chore: require concrete workflow evidence for feature requests"
+    },
+    {
+      "path": ".github/SECURITY.md",
+      "message": "docs: state development support and runtime security boundaries"
+    },
+    {
+      "path": ".github/readme/README.de.md",
+      "message": "docs: align the German introduction with current product contracts"
+    },
+    {
+      "path": ".github/readme/README.es.md",
+      "message": "docs: align the Spanish introduction with current product contracts"
+    },
+    {
+      "path": ".github/readme/README.fr.md",
+      "message": "docs: align the French introduction with current product contracts"
+    },
+    {
+      "path": ".github/readme/README.it.md",
+      "message": "docs: align the Italian introduction with current product contracts"
+    },
+    {
+      "path": ".github/readme/README.ja.md",
+      "message": "docs: align the Japanese introduction with current product contracts"
+    },
+    {
+      "path": ".github/readme/README.ko.md",
+      "message": "docs: align the Korean introduction with current product contracts"
+    },
+    {
+      "path": ".github/readme/README.zh-CN.md",
+      "message": "docs: align the Simplified Chinese introduction with current product contracts"
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "message": "docs: describe workflow ownership and evidence trust boundaries"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "message": "docs: summarize the consolidated implementation candidate"
+    },
+    {
+      "path": "Makefile",
+      "message": "build: include read-only repository consistency in validation"
+    },
+    {
+      "path": "README.md",
+      "message": "docs: present the implemented research and dataset workflows accurately"
+    },
+    {
+      "path": "docs/architecture.md",
+      "message": "docs: align the published architecture with the repository contract"
+    },
+    {
+      "path": "docs/development-roadmap.md",
+      "message": "docs: close implementation batches while retaining qualification gates"
+    },
+    {
+      "path": "docs/release.md",
+      "message": "docs: connect publication procedures to the finite release gates"
+    },
+    {
+      "path": "evals/release-matrix.json",
+      "message": "chore: record repository readiness and pending commercial review"
+    },
+    {
+      "path": "mkdocs.yml",
+      "message": "docs: expose release evidence and maintainer policies in navigation"
+    },
+    {
+      "path": "src/verboisy/extractor/__init__.py",
+      "message": "docs: explain the extractor package verification boundary"
+    },
+    {
+      "path": "src/verboisy/llm/__init__.py",
+      "message": "docs: explain the provider package accounting responsibility"
+    },
+    {
+      "path": "docs/commit-policy.md",
+      "message": "docs: define reviewed single-file commits and final-HEAD validation"
+    },
+    {
+      "path": "docs/distribution.md",
+      "message": "docs: record the unresolved commercial distribution decision"
+    },
+    {
+      "path": "docs/release-checklist.md",
+      "message": "docs: enumerate the evidence needed for all seven release gates"
+    },
+    {
+      "path": "scripts/check_repository.py",
+      "message": "build: check local repository contracts without claiming certification"
+    },
+    {
+      "path": "tests/test_repository_check.py",
+      "message": "test: detect repository metadata and documentation tampering"
+    },
+    {
+      "path": "evals/batch6-commits.json",
+      "message": "chore: provide distinct commit subjects for the Batch 6 file plan"
+    },
+    {
+      "path": "evals/results/repository-offline.json",
+      "message": "chore: preserve the scoped repository verification record"
+    }
+  ]
+}

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Provider boundary tests use async responses, never real credentials."""
 
 import asyncio
@@ -7,7 +10,7 @@ from unittest.mock import AsyncMock
 import pytest
 from pydantic import SecretStr
 from verboisy.llm.client import LLMClient
-from verboisy.utils.exceptions import BudgetExceededError, LLMError
+from verboisy.utils.exceptions import BudgetExceededError, LLMError, LLMRateLimitError
 
 
 def response(content):
@@ -47,13 +50,38 @@ async def test_truncated_response(config, monkeypatch):
 
 async def test_transient_retry(config, monkeypatch):
     config.llm_retries = 1
+
     error = RuntimeError("provider secret")
     error.status_code = 429
-    mock = AsyncMock(side_effect=[error, response("{}")])
-    monkeypatch.setattr("verboisy.llm.client._complete", mock)
-    monkeypatch.setattr("verboisy.llm.client.asyncio.sleep", AsyncMock())
-    assert await LLMClient(config=config).complete_json("system", "user") == {}
-    assert mock.await_count == 2
+
+    mock = AsyncMock(
+        side_effect=[
+            error,
+            response("{}"),
+        ]
+    )
+    sleeping = AsyncMock()
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+    monkeypatch.setattr(
+        "verboisy.llm.client.asyncio.sleep",
+        sleeping,
+    )
+
+    with pytest.raises(
+        LLMRateLimitError,
+        match="OpenAI rate limit reached",
+    ):
+        await LLMClient(config=config).complete_json(
+            "system",
+            "user",
+        )
+
+    assert mock.await_count == 1
+    sleeping.assert_not_awaited()
 
 
 async def test_nontransient_error_redacts_details(config, monkeypatch):
@@ -201,3 +229,599 @@ async def test_invalid_json_response_retries_then_succeeds(config, monkeypatch):
         await LLMClient(config=config).complete_json("system", "user")
 
     assert mock.await_count == 2
+
+
+def test_model_for_falls_back_to_default(config):
+    client = LLMClient(
+        model="default-model",
+        config=config,
+    )
+
+    assert client.model_for("semantic_plan") == "default-model"
+
+
+def test_model_for_uses_role_override(config):
+    config.semantic_plan_model = "cheap-model"
+
+    client = LLMClient(
+        model="default-model",
+        config=config,
+    )
+
+    assert client.model_for("semantic_plan") == "cheap-model"
+
+
+@pytest.mark.asyncio
+async def test_complete_json_uses_model_override(
+    config,
+    monkeypatch,
+):
+    mock = AsyncMock(return_value=response("{}"))
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        model="default-model",
+        config=config,
+    )
+
+    assert (
+        await client.complete_json(
+            "system",
+            "user",
+            model="cheap-model",
+        )
+        == {}
+    )
+
+    assert mock.await_args.kwargs["model"] == "cheap-model"
+
+    # Routing must not mutate the client's
+    # default model.
+    assert client.model == "default-model"
+
+
+@pytest.mark.asyncio
+async def test_model_override_routes_matching_credentials(
+    config,
+    monkeypatch,
+):
+    from pydantic import SecretStr
+
+    config.litellm_api_key = None
+    config.openai_api_key = SecretStr("openai-secret")
+    config.anthropic_api_key = None
+
+    mock = AsyncMock(return_value=response("{}"))
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        model="anthropic/claude-example",
+        config=config,
+    )
+
+    await client.complete_json(
+        "system",
+        "user",
+        model="gpt-example",
+    )
+
+    kwargs = mock.await_args.kwargs
+
+    assert kwargs["model"] == "gpt-example"
+    assert kwargs["api_key"] == "openai-secret"
+
+
+@pytest.mark.asyncio
+async def test_complete_json_for_role_routes_real_client(
+    config,
+    monkeypatch,
+):
+    from verboisy.llm.client import (
+        LLMClient,
+        complete_json_for_role,
+    )
+
+    config.semantic_plan_model = "cheap-model"
+
+    mock = AsyncMock(return_value=response("{}"))
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        model="default-model",
+        config=config,
+    )
+
+    result = await complete_json_for_role(
+        client,
+        "semantic_plan",
+        "system",
+        "user",
+    )
+
+    assert result == {}
+    assert mock.await_args.kwargs["model"] == "cheap-model"
+
+    # Routing never mutates the shared
+    # client's default model.
+    assert client.model == "default-model"
+
+
+@pytest.mark.asyncio
+async def test_complete_json_for_role_preserves_test_double_contract():
+    from types import SimpleNamespace
+
+    from verboisy.llm.client import (
+        complete_json_for_role,
+    )
+
+    complete = AsyncMock(return_value={"ok": True})
+
+    client = SimpleNamespace(
+        complete_json=complete,
+    )
+
+    result = await complete_json_for_role(
+        client,
+        "extraction",
+        "system",
+        "user",
+    )
+
+    assert result == {"ok": True}
+
+    complete.assert_awaited_once_with(
+        "system",
+        "user",
+    )
+
+
+@pytest.mark.asyncio
+async def test_complete_json_for_role_handles_legacy_monkeypatched_client(
+    config,
+    monkeypatch,
+):
+    from verboisy.llm.client import (
+        LLMClient,
+        complete_json_for_role,
+    )
+
+    async def legacy_complete(
+        _self,
+        system_prompt,
+        user_prompt,
+    ):
+        assert system_prompt == "system"
+        assert user_prompt == "user"
+
+        return {
+            "ok": True,
+        }
+
+    monkeypatch.setattr(
+        LLMClient,
+        "complete_json",
+        legacy_complete,
+    )
+
+    client = LLMClient(
+        config=config,
+    )
+
+    result = await complete_json_for_role(
+        client,
+        "extraction",
+        "system",
+        "user",
+    )
+
+    assert result == {
+        "ok": True,
+    }
+
+
+@pytest.mark.asyncio
+async def test_complete_json_for_role_falls_back_when_signature_unavailable(
+    monkeypatch,
+):
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    from verboisy.llm.client import (
+        complete_json_for_role,
+    )
+
+    complete = AsyncMock(
+        return_value={"ok": True},
+    )
+
+    client = SimpleNamespace(
+        complete_json=complete,
+    )
+
+    monkeypatch.setattr(
+        "verboisy.llm.client.inspect.signature",
+        lambda _callable: (_ for _ in ()).throw(TypeError("signature unavailable")),
+    )
+
+    result = await complete_json_for_role(
+        client,
+        "extraction",
+        "system",
+        "user",
+    )
+
+    assert result == {"ok": True}
+
+    complete.assert_awaited_once_with(
+        "system",
+        "user",
+    )
+
+
+@pytest.mark.asyncio
+async def test_validated_role_escalates_invalid_json_contract(
+    config,
+    monkeypatch,
+):
+    from verboisy.llm.client import (
+        LLMClient,
+        complete_validated_for_role,
+    )
+
+    config.llm_retries = 0
+    config.extraction_model = "normal-model"
+    config.escalation_model = "strong-model"
+
+    mock = AsyncMock(
+        side_effect=[
+            response("not json"),
+            response('{"value": 2}'),
+        ]
+    )
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        model="default-model",
+        config=config,
+    )
+
+    result = await complete_validated_for_role(
+        client,
+        "extraction",
+        "system",
+        "user",
+        lambda payload: payload["value"],
+    )
+
+    assert result == 2
+
+    assert [call.kwargs["model"] for call in mock.await_args_list] == [
+        "normal-model",
+        "strong-model",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_validated_role_escalates_pydantic_contract_failure(
+    config,
+    monkeypatch,
+):
+    from pydantic import BaseModel, ConfigDict
+    from verboisy.llm.client import (
+        LLMClient,
+        complete_validated_for_role,
+    )
+
+    class Contract(BaseModel):
+        model_config = ConfigDict(
+            extra="forbid",
+            strict=True,
+        )
+
+        value: int
+
+    config.llm_retries = 0
+    config.source_assessment_model = "cheap-model"
+    config.escalation_model = "strong-model"
+
+    mock = AsyncMock(
+        side_effect=[
+            response('{"value":"wrong"}'),
+            response('{"value":2}'),
+        ]
+    )
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        model="default-model",
+        config=config,
+    )
+
+    result = await complete_validated_for_role(
+        client,
+        "source_assessment",
+        "system",
+        "user",
+        Contract.model_validate,
+    )
+
+    assert result.value == 2
+
+    assert [call.kwargs["model"] for call in mock.await_args_list] == [
+        "cheap-model",
+        "strong-model",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_validated_role_does_not_escalate_without_configured_model(
+    config,
+    monkeypatch,
+):
+    from verboisy.llm.client import (
+        LLMClient,
+        complete_validated_for_role,
+    )
+    from verboisy.utils.exceptions import (
+        LLMResponseError,
+    )
+
+    config.llm_retries = 0
+    config.escalation_model = None
+
+    mock = AsyncMock(return_value=response("not json"))
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        config=config,
+    )
+
+    with pytest.raises(LLMResponseError):
+        await complete_validated_for_role(
+            client,
+            "extraction",
+            "system",
+            "user",
+            dict,
+        )
+
+    assert mock.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_validated_role_does_not_escalate_rate_limit(
+    config,
+    monkeypatch,
+):
+    from verboisy.llm.client import (
+        LLMClient,
+        complete_validated_for_role,
+    )
+    from verboisy.utils.exceptions import (
+        LLMRateLimitError,
+    )
+
+    config.llm_retries = 0
+    config.extraction_model = "normal-model"
+    config.escalation_model = "strong-model"
+
+    error = RuntimeError("rate limited")
+    error.status_code = 429
+
+    mock = AsyncMock(side_effect=error)
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        config=config,
+    )
+
+    with pytest.raises(LLMRateLimitError):
+        await complete_validated_for_role(
+            client,
+            "extraction",
+            "system",
+            "user",
+            dict,
+        )
+
+    assert mock.await_count == 1
+
+
+def test_escalation_unavailable_without_model_for():
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    from verboisy.llm.client import (
+        escalation_available,
+    )
+
+    client = SimpleNamespace(
+        config=SimpleNamespace(
+            escalation_model="strong-model",
+        ),
+        complete_json=AsyncMock(),
+    )
+
+    assert not escalation_available(
+        client,
+        "extraction",
+    )
+
+
+def test_escalation_unavailable_without_complete_json():
+    from types import SimpleNamespace
+
+    from verboisy.llm.client import (
+        escalation_available,
+    )
+
+    class Client:
+        config = SimpleNamespace(
+            escalation_model="strong-model",
+        )
+        complete_json = None
+
+        def model_for(self, role):
+            if role == "escalation":
+                return "strong-model"
+            return "normal-model"
+
+    assert not escalation_available(
+        Client(),
+        "extraction",
+    )
+
+
+def test_escalation_unavailable_when_signature_cannot_be_inspected(
+    monkeypatch,
+):
+    from types import SimpleNamespace
+
+    from verboisy.llm.client import (
+        escalation_available,
+    )
+
+    class Client:
+        config = SimpleNamespace(
+            escalation_model="strong-model",
+        )
+
+        async def complete_json(
+            self,
+            _system_prompt,
+            _user_prompt,
+            *,
+            _model=None,
+        ):
+            return {}
+
+        def model_for(self, role):
+            if role == "escalation":
+                return "strong-model"
+            return "normal-model"
+
+    def fail_signature(_callable):
+        raise TypeError("signature unavailable")
+
+    monkeypatch.setattr(
+        "verboisy.llm.client.inspect.signature",
+        fail_signature,
+    )
+
+    assert not escalation_available(
+        Client(),
+        "extraction",
+    )
+
+
+def test_escalation_unavailable_for_legacy_complete_json_signature():
+    from types import SimpleNamespace
+
+    from verboisy.llm.client import (
+        escalation_available,
+    )
+
+    class Client:
+        config = SimpleNamespace(
+            escalation_model="strong-model",
+        )
+
+        async def complete_json(
+            self,
+            _system_prompt,
+            _user_prompt,
+        ):
+            return {}
+
+        def model_for(self, role):
+            if role == "escalation":
+                return "strong-model"
+            return "normal-model"
+
+    assert not escalation_available(
+        Client(),
+        "extraction",
+    )
+
+
+@pytest.mark.asyncio
+async def test_validated_role_reports_escalation(
+    config,
+    monkeypatch,
+):
+    from unittest.mock import MagicMock
+
+    from verboisy.llm.client import (
+        LLMClient,
+        complete_validated_for_role,
+    )
+
+    config.llm_retries = 0
+    config.extraction_model = "cheap-model"
+    config.escalation_model = "strong-model"
+
+    mock = AsyncMock(
+        side_effect=[
+            response("not json"),
+            response('{"value":2}'),
+        ]
+    )
+
+    monkeypatch.setattr(
+        "verboisy.llm.client._complete",
+        mock,
+    )
+
+    client = LLMClient(
+        config=config,
+    )
+
+    on_escalation = MagicMock()
+    client.on_escalation = on_escalation
+
+    result = await complete_validated_for_role(
+        client,
+        "extraction",
+        "system",
+        "user",
+        lambda payload: payload["value"],
+    )
+
+    assert result == 2
+
+    on_escalation.assert_called_once_with(
+        {
+            "role": "extraction",
+            "reason": "invalid_model_response",
+            "primary_model": "cheap-model",
+            "escalation_model": "strong-model",
+        }
+    )

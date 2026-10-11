@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Run this example with a user-owned task policy and real source goal."""
 
 import argparse

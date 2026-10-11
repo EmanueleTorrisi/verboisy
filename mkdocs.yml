@@ -1,13 +1,34 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 site_name: Verboisy
-site_description: Evidence-backed web datasets.
+site_description: Evidence-backed autonomous web research to structured datasets.
 theme:
   name: material
 nav:
   - Home: index.md
+  - CLI: cli.md
+  - Model providers: providers.md
+  - Display preferences: presentation.md
+  - Research semantics: research-semantics.md
   - Dataset contract: contracts.md
+  - Dataset ingestion: ingestion.md
+  - File capabilities: formats.md
+  - Large local datasets: streaming.md
+  - Development roadmap: development-roadmap.md
+  - Production acceptance: production-acceptance.md
+  - Engineering history: engineering-history.md
+  - SmartID: smartid.md
+  - Proof and provenance: proof.md
   - API: api.md
+  - Architecture: architecture.md
+  - CPU and memory benchmarks: benchmarks.md
+  - Optional native matcher: native.md
   - Search and recovery: search-and-recovery.md
   - Demonstrations: demo.md
   - Validation: validation.md
   - Migration: migration.md
   - Release operations: release.md
+  - Release evidence: release-checklist.md
+  - Distribution review: distribution.md
+  - Commit policy: commit-policy.md

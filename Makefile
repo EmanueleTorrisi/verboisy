@@ -1,4 +1,7 @@
-.PHONY: install test test-browser lint format build security docs validate clean
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
+.PHONY: install test test-browser lint format build security docs validate repo-check clean
 
 install:
 	poetry install
@@ -28,7 +31,10 @@ security:
 docs:
 	poetry run mkdocs build --strict
 
-validate: lint test test-browser security docs build
+repo-check:
+	poetry run python scripts/check_repository.py --json
+
+validate: lint test test-browser security docs build repo-check
 
 clean:
 	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov dist build site

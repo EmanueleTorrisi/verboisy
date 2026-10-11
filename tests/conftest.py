@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Offline fixtures. Only explicitly marked live tests call a real model."""
 
 import json
@@ -30,7 +33,7 @@ def config(tmp_path):
         llm_retries=0,
         litellm_model="openai/test",
         user_agent_rotation=False,
-        search_provider="google",
+        search_provider="disabled",
         browser_action_timeout_ms=10000,
         max_action_failures=3,
         llm_min_interval_seconds=0,

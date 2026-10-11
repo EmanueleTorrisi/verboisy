@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Demonstrations
 
 Use `scripts/evaluate.py` for an opt-in, paid evaluation across six fixed source layouts

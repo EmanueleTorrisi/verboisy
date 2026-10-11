@@ -1,0 +1,136 @@
+{
+  "copyright": "Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms.",
+  "verification_version": "1",
+  "scope": "offline repository engineering; final-HEAD deployment, product and legal qualification remain pending",
+  "full_offline_tests_passed": 4712,
+  "excluded_browser_tests": 11,
+  "full_offline_seconds": 151.07,
+  "new_repository_regression_cases": 15,
+  "statement_coverage_percent": 100,
+  "branch_coverage_percent": 100,
+  "mypy_source_files": 119,
+  "repository_check": {
+    "inspection_version": "1",
+    "scope": "local_repository_consistency",
+    "passed": true,
+    "source_modules": 119,
+    "documents": 35,
+    "issues": [],
+    "production_status": "not_certified",
+    "release_gates": [
+      {
+        "id": 1,
+        "name": "Product contract and evaluation design",
+        "status": "draft_for_review"
+      },
+      {
+        "id": 2,
+        "name": "Real product acceptance",
+        "status": "not_started"
+      },
+      {
+        "id": 3,
+        "name": "Product UX and economics",
+        "status": "not_started"
+      },
+      {
+        "id": 4,
+        "name": "Security portability and release reliability",
+        "status": "partially_implemented_unverified"
+      },
+      {
+        "id": 5,
+        "name": "Repository editorial and legal readiness",
+        "status": "partially_implemented_unverified"
+      },
+      {
+        "id": 6,
+        "name": "Independent beta",
+        "status": "not_started"
+      },
+      {
+        "id": 7,
+        "name": "Release and commercial presentation",
+        "status": "not_started"
+      }
+    ],
+    "legal_review_performed": false,
+    "live_or_platform_qualification_performed": false
+  },
+  "package_check": {
+    "wheel_import_and_help": "passed",
+    "dependency_environment": "existing offline test dependencies; wheel installed into an independent target",
+    "distribution_sha256": {
+      "verboisy-1.0.0.tar.gz": "d3cb6f860ce4748870f7f57708ec39e3649be0c6db65e578cc70bdc928a6e3a9",
+      "verboisy-1.0.0-py3-none-any.whl": "b2f54f8fb0eee0e084c58eeb9623412afba5ca0e3a5881929454232b6f0dcefc"
+    },
+    "ordinary_compiler_required": false,
+    "live_provider_calls": 0,
+    "verification_scope": "original Batch 6 distributions; not rebuilt during reconciliation"
+  },
+  "not_performed": [
+    "live held-out research",
+    "independent beta",
+    "commercial or trademark legal review",
+    "final-HEAD multi-platform/browser/native/container qualification",
+    "MkDocs strict build in this runtime"
+  ],
+  "file_sha256": {
+    ".github/CONTRIBUTING.md": "14e49ae83b93402c311245368fa1816bb8b845abbc6f2777a50f5c01483baa5c",
+    ".github/ISSUE_TEMPLATE/bug_report.yml": "127423d44e666bb82c83c7312df0b6c5e0b192f5b977247fa826a59304f5eae3",
+    ".github/ISSUE_TEMPLATE/feature_request.yml": "9d603725c86474feb1fc7916a0e0158636dca2d7fa5b366f0d5858c872e772cb",
+    ".github/SECURITY.md": "92fe08a1bf1db04678a255ec4ecdbb648342570563c0e6e9f2e5381722ea75f2",
+    ".github/readme/README.de.md": "73dced53aa1dbfe5fe53920050dd51dd14eb7decbac7241cd377586761adf86d",
+    ".github/readme/README.es.md": "ee74009cd15c1a5c87ad81a66882ac442767cbd623a6b6b7abfee71641b596bf",
+    ".github/readme/README.fr.md": "16de5d79fe159bd0c682c724be120677b840aeeb7559616f82728f851af13dde",
+    ".github/readme/README.it.md": "7bef74743d832082f7273d361592fb8837b22dee2adfcd58b36d36415a053f27",
+    ".github/readme/README.ja.md": "105606cf7a4b858c4a3da2603cded49df60f1c87f2bbfad0696739b37bb20c01",
+    ".github/readme/README.ko.md": "ed6c937818414d9210e8170c968851393497a3fa6a21438e8eb08a10a268a2e6",
+    ".github/readme/README.zh-CN.md": "ea2001dfda5de5789fd7cc204bbaaaf8ab0fdba9c8fda140038961f1f97b258b",
+    "ARCHITECTURE.md": "d627f0423bbfc8306e7c39dbfb21db1320a0514f9be49cb0e6231827346e119b",
+    "CHANGELOG.md": "89502a2e33648c51aeb0f3f8251efa9c5a0ce6b11590cb5d9870d4a0d1379f5d",
+    "Makefile": "9f8af2c3432dbada19157f5f95b5043d02535ec63f0d05eb8c2a3276f148442b",
+    "README.md": "1f22ad64ce1820e222c3e97a104f900a3ad930e905833452bcb75ef3fead57d5",
+    "docs/architecture.md": "d627f0423bbfc8306e7c39dbfb21db1320a0514f9be49cb0e6231827346e119b",
+    "docs/development-roadmap.md": "d0fe150b3465379cba67aa79efc2a6d7a86c77f4648b982f7e697d5fe1c22ca2",
+    "docs/release.md": "464fe94e93bd3061a2386638208482d1e70287978e7285e6e8442f7f99ec5815",
+    "mkdocs.yml": "2bb32e6083e237f1f891e561b57c560ae02a500b259c1793a323ad5170a5af15",
+    "src/verboisy/extractor/__init__.py": "8a02cafb8f237cdcebd8450eb256433d99ffaf6cbcf65e5390e5a76c3af42c1f",
+    "src/verboisy/llm/__init__.py": "80200112b108f16e438e21db9404e9d783713109853992282a2e3f0582621602",
+    "docs/commit-policy.md": "dc9929e3c6b1304438af620cf1d735e7a7d0a260b1b98fe223b14202e648d162",
+    "docs/distribution.md": "d64fccb40b5e88e6db19bd254031f2e2381e91ab40f9dfcc5f738ca968e8b2c2",
+    "docs/release-checklist.md": "01843a6c98dc4264e11f8e5f9e8bd99eff42095ac126f0d8d050d6a1b094a1e8",
+    "scripts/check_repository.py": "1e0a233884bbd7e52fc95a34d508503ee6e06e842fc1194de4cba87d7878b80d",
+    "tests/test_repository_check.py": "51a6af1412654654080e7edf39b1b50628775016e60ac5aa224b72e556966b19",
+    "evals/batch6-commits.json": "eec4adf9a747a7d67cd5324ee69eee112ebd998ffa72dbc4fa62cc78c5effb8b"
+  },
+  "historical_batch6_test_result": {
+    "passed": 4740,
+    "seconds": 151.59
+  },
+  "full_offline_tests_skipped": 28,
+  "reconciliation": {
+    "date_utc": "2026-10-11",
+    "uploaded_archive_sha256": "57e82388979ae5b56a85112fea6f96b06a12c5f7f26df1d362bf0ad8495a7187",
+    "python": "3.12.14",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+    "scope": "uploaded working tree plus the preserved Batch 6 merge",
+    "tests": {
+      "offline_passed": 4712,
+      "offline_optional_native_skipped_before_build": 28,
+      "browser_deselected": 11,
+      "native_gate_after_build_passed": 28,
+      "native_gate_skipped": 0,
+      "statement_coverage_percent": 100,
+      "branch_coverage_percent": 100
+    },
+    "lint": "passed",
+    "formatting": "345 files passed",
+    "types": "119 source files passed",
+    "repository_consistency": "passed",
+    "dependency_environment": "existing offline runtime; uploaded multidict 6.9.1 lockfile preserved but not freshly resolved",
+    "preserved_uncovered_files": 409,
+    "paid_provider_calls": 0,
+    "git_commits_created": 0
+  }
+}

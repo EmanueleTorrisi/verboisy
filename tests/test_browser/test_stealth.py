@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 from unittest.mock import AsyncMock, Mock
 
 import pytest

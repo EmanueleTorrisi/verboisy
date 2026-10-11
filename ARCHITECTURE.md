@@ -1,307 +1,158 @@
-# Verboisy architecture
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-Verboisy 0.2 is a single-user, asynchronous, evidence-backed web research engine. The public contract is `run()` / `arun()` plus `verboisy run`. A run combines four user-owned inputs: a goal, a JSON Schema, a bounded task policy, and optional runtime configuration.
+# Architecture and contracts
 
-The model does not directly “write trusted rows.” It proposes candidates and evidence references. Python owns source scope, traversal, schema validation, provenance checks, identity handling, persistence, stop conditions, export, and manifest generation. A separate model review checks semantic relevance and same-entity meaning after deterministic validation.
-
-This document describes the implementation boundary of revision 0.2. Passing offline tests does not by itself establish live-model accuracy, target-site availability, global research completeness, or external factual truth.
-
-## Design principles
-
-1. **Evidence before acceptance.** Every non-null scalar must be supported by admitted page evidence or an explicitly authorized page URL.
-2. **Code controls the contract.** The model cannot relax JSON Schema, source scope, identity rules, or completion conditions.
-3. **Bounded research over open-ended autonomy.** Traversal is constrained by seeds/search, host/path policy, depth, page count, and interaction limits.
-4. **Durable work.** Page frontier, snapshots, candidates, records, events, and accounting persist in SQLite and survive interruption.
-5. **Conflicts remain visible.** Equal identities with contradictory payloads are quarantined rather than fuzzy-merged.
-6. **Partial states are first-class.** Budget exhaustion, unavailable sources, coverage gaps, conflicts, and scope exhaustion are not mislabeled as successful completeness.
-
-## Modules and ownership
-
-| Module | Responsibility |
-| --- | --- |
-| `api.py` | Validate new/resume arguments, normalize schema/task input, open the run store, invoke research, export results, and return `RunResult` |
-| `cli/main.py` | Parse `run`, `setup`, and `doctor`; map run states to user-facing output and exit codes |
-| `core/research.py` | Own the persistent research loop, frontier scheduling, page processing, discovery, completion logic, and interruption/failure transitions |
-| `core/search.py` | Optional bounded public-web discovery when the task has no supplied seeds |
-| `browser/context.py` | Chromium lifecycle, sandboxed context, URL policy integration, navigation, capture, and cleanup |
-| `browser/policy.py` | HTTP(S) validation, credential rejection, exact host restrictions, private-network policy, and destination checks |
-| `browser/dom_parser.py` | Browser-visible DOM capture/cleanup used before evidence snapshotting |
-| `browser/provision.py` | Download/check the matching Chromium build on actual browser use or explicit setup |
-| `evidence/models.py` | Strict Pydantic boundaries for `TaskSpec`, `Snapshot`, `Source`, `Candidate`, `Proof`, and semantic review output |
-| `evidence/snapshot.py` | Convert visible HTML into bounded text/link evidence, resolved URLs, entity scopes, content hashes, and model batches |
-| `evidence/verify.py` | Deterministic schema, provenance, scope, quote, URL, transform, type, mapping, and identity validation |
-| `extractor/schema_builder.py` | Draft 2020-12 JSON Schema normalization/validation using strict dynamic Pydantic models |
-| `extractor/evidenced.py` | Prompt the model for page proposals and perform the separate semantic relevance/same-entity review |
-| `llm/client.py` | Async LiteLLM transport, provider routing, pacing, bounded retries, malformed-response handling, request accounting, and safe error translation |
-| `storage/research.py` | SQLite research schema, run/page lifecycle, snapshots, candidates, identity reconciliation, records, events, and recovery |
-| `storage/dataset.py` | Build canonical run datasets and evidence payloads from accepted persistent state |
-| `storage/exporters.py` | Atomic JSON/CSV writes and generation manifest hashing |
-| `utils/config.py` | Validated runtime configuration loaded per invocation |
-| `utils/exceptions.py` | Stable application exception taxonomy, including provider and unusable-model-response failures |
-
-The CLI does not own a second execution engine. Browser/storage modules do not call model SDKs. `run()` wraps the same async implementation exposed by `arun()`.
-
-## Execution flow
+Verboisy separates acquisition, evidence validation, admission and presentation.
+The separation matters during recovery: a model response, partially downloaded
+file, console message or interrupted export cannot become accepted evidence merely
+because another step succeeded. The public CLI and Python interfaces normalize
+explicit contracts before executing one of three workflows.
 
 ```mermaid
 flowchart TD
-    Input["Goal + Schema + Task + Config"] --> Resume{"New run or resume"}
-    Resume --> Queue["Persistent page frontier"]
-    Queue --> Work{"Next eligible page"}
-    Work -->|none| Stop{"Failed / gaps / exhausted"}
-    Work --> Browser["Chromium navigate + capture"]
-    Browser --> Snapshot["Visible evidence snapshot"]
-    Snapshot --> Batch["Entity-preserving evidence batches"]
-    Batch --> Propose["Model proposal: candidates + priority links"]
-    Propose --> Verify["Schema + deterministic provenance checks"]
-    Verify --> Review["Semantic relevance / same-entity review"]
-    Review --> Store["Accept / duplicate / reject / conflict"]
-    Store --> Discover["Observed in-scope link discovery"]
-    Discover --> Queue
-    Store --> Target{"Target + collection constraints satisfied?"}
-    Target -->|yes| Complete["COMPLETED / target_met"]
-    Target -->|no| Queue
-    Complete --> Export["Dataset + evidence + checksummed manifest"]
-    Stop --> ExportPartial["Partial export + persisted run state"]
+    Entry["CLI and Python API"] --> Contract["Schema, source and task contracts"]
+    Contract --> Web["Observed web research"]
+    Contract --> Dataset["Bounded dataset preparation"]
+    Contract --> Stream["Large local preparation"]
+    Web --> ResearchLedger["Research ledger"]
+    Dataset --> ResearchLedger
+    Stream --> StreamLedger["Streaming ledger"]
+    ResearchLedger --> Output["Verified export generation"]
+    StreamLedger --> Output
 ```
 
-A run can stop and later resume without rebuilding its accepted dataset from model output. The SQLite database is the durable source of truth for run state.
-
-## Task and scope contract
-
-`TaskSpec` defines the bounded research policy:
-
-- `seed_urls`: explicit starting pages.
-- `allowed_hosts`: exact host admission for crawl/discovery.
-- `include_paths` / `exclude_paths`: glob-style path filters.
-- `target_records`: explicit accepted-record target, if any.
-- `identity_fields`: RFC 6901 pointers used for deterministic entity identity.
-- `field_rules`: per-field source requirements, page-URL authorization, external-link requirements, and explicit normalization mappings.
-- `max_depth`, `max_pages`, `max_links_per_page`: traversal bounds.
-- `pagination_selector`, `max_interactions_per_page`, `settle_ms`: bounded JavaScript pagination controls.
-- `allow_nulls` and `csv_mode`: output/evidence policy.
-
-When seeds are known, `SEARCH_PROVIDER=disabled` prevents the engine from widening scope through search. When discovery is configured, search produces candidate starting URLs but does not bypass the same browser/network/task policy used by ordinary page traversal.
-
-## Evidence snapshot and entity scope
-
-The browser captures visible HTML after navigation/settling. `snapshot()` removes non-evidence elements such as scripts, styles, hidden nodes, SVG/template/iframe/head content and converts the remaining page into typed `Source` objects:
-
-- `text`: a normalized visible text fragment.
-- `link`: visible anchor text plus a canonical resolved HTTP(S) destination.
-
-Each source receives an entity scope. Strong entity containers include `article`, `li`, `[itemscope]`, and `[data-record]`. Standalone table rows can form their own entity scopes, but table rows nested inside a stronger entity container are treated as attributes of that surrounding entity rather than unrelated records.
-
-This prevents evidence from one product/company/person row from being silently borrowed by another while still allowing detail tables inside a single entity card/page.
-
-Snapshot metadata includes the final page URL, timestamp, content hash, admitted evidence sources, and a truncation flag. The full captured HTML is retained separately in SQLite for audit/debugging.
-
-## Evidence batching
-
-Model input is bounded by `MAX_DOM_CHARS`. Batching groups sources by entity scope and prefers keeping a complete entity together when possible. A single evidence object larger than the configured batch budget is not prefix-truncated into an ambiguous fragment; it creates a coverage-gap condition.
-
-A proposal batch returns:
-
-```json
-{
-  "candidates": [
-    {
-      "scope": "s12",
-      "record": {"...": "..."},
-      "evidence": {
-        "/field": {
-          "source": "e41",
-          "quote": "exact observed text",
-          "transform": "text"
-        }
-      }
-    }
-  ],
-  "priority_links": ["e99"]
-}
-```
-
-Priority links can reorder observed discovery, but they are still restricted to links actually present in the supplied snapshot and to the user's task scope.
-
-## Deterministic provenance verification
-
-Before semantic review, `verify()` enforces the hard contract:
-
-1. The candidate record validates against the user's row schema without coercion.
-2. Empty records are rejected.
-3. Evidence pointers must correspond to actual scalar leaves in the candidate.
-4. Every non-null scalar requires proof unless policy explicitly permits an unknown/null representation.
-5. Non-page evidence must exist in the supplied snapshot batch and have exactly the candidate's entity scope.
-6. Page URL evidence is accepted only for fields explicitly authorized with `field_rules["/pointer"].source == "page_url"`, and the value must equal the browser's final page URL.
-7. URL values use observed link destinations (`href`) rather than inferred text.
-8. Text proofs require exact normalized literal equality.
-9. Numeric/integer proofs require complete signed decimal literals; decimal fragments and dropped signs are rejected.
-10. Boolean proofs require observed boolean literals or an explicit user mapping.
-11. User mappings are applied only when declared in the task policy.
-12. Every declared identity pointer must exist and resolve to a non-empty scalar.
-
-These checks prove provenance relative to the captured page, not external factual truth.
-
-## Semantic review
-
-Candidates that pass deterministic checks receive a second model call containing only the candidate, schema/goal context, current URL, and same-entity evidence context.
-
-The review must classify:
-
-- whether the candidate is relevant to the goal,
-- whether the fields belong to the same entity,
-- which scalar pointers are supported,
-- which pointers should be rejected.
-
-Every non-null field must be accounted for exactly once across supported/rejected pointers. A rejected or incomplete review prevents acceptance.
-
-Malformed/incomplete model JSON is distinguished from provider/network failure. The client can retry unusable responses within `LLM_RETRIES`; once exhausted, the research loop records a coverage gap for that proposal/review path rather than misreporting a local parse error as a provider HTTP failure.
-
-## Identity, deduplication, and conflicts
-
-With `identity_fields`, the storage layer computes a deterministic identity tuple from the accepted candidate.
-
-- Same identity + same payload → `duplicate`; the existing authoritative row remains.
-- Same identity + different payload → identity conflict; contradictory versions are rejected/quarantined and the identity is no longer treated as an authoritative accepted record.
-- No identity fields → only exactly equal canonical records are deduplicated.
-
-The model does not decide which contradictory value “wins.”
-
-Because `target_records` is an early-stop target, the engine is not required to crawl pages it has not yet needed after the target is satisfied. Consequently, `COMPLETED` is target completion within observed work, not an assertion that unseen pages contain no contradiction or additional match.
-
-## Persistent database
-
-The 0.2 research database uses dedicated tables for durable evidence work:
-
-| Table | Purpose |
-| --- | --- |
-| `research_runs` | Run id, serialized goal/schema/task, status/reason, accounting, timestamps, export metadata |
-| `pages` | Persistent frontier entries, parent URL, depth, lifecycle status, failure reason |
-| `snapshots` | Snapshot payload plus captured/visible HTML associated with a page |
-| `candidates` | Every proposed candidate, acceptance bit, deterministic/semantic rejection reasons |
-| `records` | Current authoritative accepted records and identity information |
-| `events` | Run configuration, candidate outcomes, coverage gaps, identity conflicts, page failures, and other audit events |
-
-Accepted records and page transitions are committed incrementally. A process interruption therefore does not require the model to recreate earlier accepted rows.
-
-0.1 databases are historical evidence and are not automatically rewritten into the 0.2 schema. Use a new `SQLITE_DB_PATH` for 0.2 runs.
-
-## Run states and stop reasons
-
-The engine distinguishes state instead of collapsing every non-success into one outcome:
-
-- `COMPLETED / target_met`: explicit target and collection constraints satisfied.
-- `PAUSED / page_budget`: invocation work allowance ended while resumable work remains.
-- `PAUSED / model_request_budget`: conservative request budget exhausted.
-- `PAUSED / run_timeout`: invocation time budget ended.
-- `PAUSED / interrupted`: SIGINT/cancellation checkpointed; committed records remain.
-- `PAUSED / coverage_or_identity_gaps`: observed work contains unresolved gap/conflict conditions that prevent a clean completion path.
-- `FAILED / source_failures`: required queued sources failed navigation and no clean completion was reached.
-- `FAILED / <LLM/provider error>`: a fatal provider/configuration failure escaped bounded retry handling.
-- `EXHAUSTED / observed_scope_exhausted`: no eligible pages remain without reaching an explicit target.
-
-CLI exit mapping keeps interruption distinct (`130`) and separates target success from partial/exhausted work.
-
-## Completion semantics
-
-`target_met()` is deliberately narrower than “the internet is complete.” For an explicit target it verifies the required accepted-record count, identity consistency, and collection-level schema constraints.
-
-A manifest may report:
-
-- `COMPLETED` with `target_met` for the requested bounded target,
-- partial/failed states that still export useful rows,
-- `truth_verified: false` / no global completeness claim where applicable.
-
-The architecture never treats occurrence of text on a source page as proof of independent factual truth.
-
-## Interruption and resume
-
-On startup/resume, active/interrupted page work is recovered into a schedulable state. The run keeps the original goal/schema/task contract and cumulative accounting.
-
-A real SIGINT path has the following intended behavior:
-
-1. committed candidate/record writes stay durable,
-2. the run transitions to `PAUSED` with reason `interrupted`,
-3. the CLI exits `130`,
-4. `verboisy run --resume <id>` continues the same database/run,
-5. duplicate identity handling prevents replay from duplicating already accepted rows.
-
-Browser cookies, tabs, scroll position, and arbitrary in-page JavaScript session state are not treated as durable transactional state.
-
-## Search and link discovery
-
-Normal crawl discovery is deterministic over observed links:
-
-1. read link sources from the current snapshot,
-2. stable-sort model-prioritized observed link IDs first,
-3. canonicalize and filter through host/path/network policy,
-4. deduplicate against the persistent frontier,
-5. queue within the configured per-page link bound.
-
-The model cannot return an arbitrary unseen URL as a privileged navigation command.
-
-Optional search is a separate seed-discovery mechanism. It remains subject to configuration, provider credentials, time/size limits, and downstream browser/task policy.
-
-## Model accounting and retries
-
-One `LLMClient` is shared for the run. Each attempt reserves a conservative local request unit derived from serialized request content plus the configured maximum output allocation. This is a workload guard, not a provider billing meter.
-
-Provider-reported token usage is tracked separately. Transient provider failures and unusable/incomplete JSON may be retried within `LLM_RETRIES`; every retry is a real accounted request.
-
-Request budgets are intentionally explicit on resume. Repeatedly raising them to hide stalled discovery is not considered a successful acceptance strategy.
-
-## Export generation
-
-JSON export writes the canonical dataset plus an evidence sidecar. The manifest is written last and records the run/schema/task state, model invocation metadata, collection validation, and SHA-256 hashes for the generated files.
-
-Writes use temporary files and atomic replacement so a failed generation does not leave a half-written canonical artifact.
-
-CSV supports two policies:
-
-- `json`: each present cell is JSON-encoded for exact type-preserving round trips; blank is absence.
-- `spreadsheet`: conventional cells with formula-like string escaping; easier for manual spreadsheet use but not exact missing/null preservation.
-
-## Browser and network boundary
-
-Chromium sandboxing is enabled by default. The browser manager and network policy reject unsafe URL forms, credentials in URLs, and private/non-public destinations unless explicitly allowed. Exact allowed-domain restrictions can narrow egress further.
-
-Downloads/service-worker or browser features that would expand the supported attack surface are intentionally limited. The application guard remains defense in depth rather than a complete hostile-network sandbox.
-
-For untrusted browsing, deploy with:
-
-- an unprivileged OS/container user,
-- no sensitive browser profile or host mounts,
-- Chromium sandboxing enabled,
-- restricted outbound network access,
-- separate credentials scoped to the minimum required provider/search services.
-
-## Security and prompt injection
-
-Page text is untrusted data. Proposal/review prompts explicitly tell the model not to treat source text as instructions. More importantly, model output is restricted to typed candidate/evidence structures and cannot directly execute arbitrary JavaScript, shell commands, file operations, or schema relaxation.
-
-This reduces the authority of prompt injection but does not claim complete resistance. Model semantic judgment remains fallible; browser vulnerabilities, DNS rebinding, malicious rendering, and provider behavior require independent deployment controls.
-
-## Tests and acceptance
-
-The release gate combines deterministic tests and live acceptance rather than treating either alone as sufficient:
-
-- Ruff format/lint and MyPy.
-- Offline tests with 100% statement and branch coverage.
-- Real Chromium browser tests.
-- Strict MkDocs build and dependency audit.
-- Wheel/sdist build plus clean-environment wheel install.
-- Docker sandbox setup.
-- Repeated live fixed fixtures for people, nested products, event dates, absent facts, hostile text, and mixed entities.
-- Held-out product-detail extraction with independent annotation.
-- Held-out pagination crossing a catalog boundary.
-- Invalid/incomplete model-response recovery and real transient provider retry.
-- Real SIGINT checkpoint plus same-run resume.
-- Missing-required-fact and unavailable-source fail-closed behavior.
-- Duplicate and conflicting identity regressions.
-- Held-out non-ecommerce technical-registry extraction with independent annotation and manifest verification.
-
-Those checks demonstrate that the documented mechanics work in the tested environments. They do not certify universal site compatibility or open-web factual truth.
-
-## Release boundary
-
-0.2.0rc1 is a release candidate. Publication should occur only after the repository's current CI, browser/Docker jobs, release variables, packaging ownership, and release procedure in `docs/release.md` are reviewed on the commit/tag that will actually be published.
+## Ownership
+
+| Boundary | Principal modules | Owns | Does not own |
+| --- | --- | --- | --- |
+| User intent | `cli`, `api`, `product`, `evidence.models` | Options, schema/task normalization, recovery selection | Independent truth claims or source authorization by model text |
+| Provider execution | `llm.client`, provider profiles, `core.search` | Request parameters, credentials/endpoints, role routing, reservations and journals | Candidate admission or unapproved budget increases |
+| Web acquisition | `core.research`, `browser`, `evidence.snapshot` | Persistent frontier, scope checks, observed DOM snapshots | Dataset decoding or credential entry inferred from pages |
+| File acquisition | `extractor.local`, `download`, `transport`, `storage.assets` | Explicit grants, bounded bytes, DNS-pinned HTTP and immutable capture | Arbitrary file execution or interactive authentication |
+| Deterministic adapters | `dataset`, `docx`, `xlsx`, `projection`, unit/descriptor/temporal helpers | Declared parsing and explicit replayable projections | Silent coercion or arbitrary multimedia understanding |
+| Evidence admission | `evidence.verify`, semantic review, `storage.admission` | Schema checks, observed citations, scope, stable identity and acceptance | Model self-certification |
+| Research recovery | `storage.research`, journals and saved-evidence readers | Runs, queues, candidates, snapshots, records, events and accounting | Resetting expenditure on resume |
+| Large preparation | `streaming` and `cli.streaming` | Chunk capture, bounded row commits, keyset paging and streaming exports | Materialized web research or global entity fusion |
+| Output semantics | `output`, `presentation`, `time_series`, `research_summary` | Ordered views, display choices and scoped diagnostics | Mutating raw evidence or certifying missing real-world facts |
+| Distribution | `storage.dataset`, `asset_bundle`, `lineage`, `proof` | Portable assets, checksums, contributor/cell lineage and proof | Cryptographic authenticity or factual truth |
+
+## Web research
+
+1. Normalize the schema, identity, source scope and saved display preferences.
+2. Reserve and journal permitted discovery/provider attempts. Search results locate
+   sources; they do not independently support exported values.
+3. Persist the frontier, navigate under declared scope and capture observed sources.
+4. Obtain bounded proposals. Verify the schema, citations, transformations and entity
+   scope before semantic review can admit a candidate.
+5. Persist accepted identity and evidence, evaluate the research contract, then prepare
+   an output generation. Public row IDs are assigned after grouping and ordering.
+
+Source text is untrusted data. Prompt instructions are not a complete injection
+barrier. Network controls, process isolation and authorization remain independent
+requirements. Browser scope checks and a dataset downloader's DNS pinning are
+separate mechanisms; neither is a universal browser/network sandbox.
+
+## Bounded local and HTTP datasets
+
+A declaration selects a format and source. Local files require explicit directory
+grants. HTTP sources use permitted origins, bounded redirects/downloads and
+origin-scoped credential headers. Secrets are excluded from public capture metadata.
+An external file name cannot redirect storage outside the controlled asset boundary.
+
+Parsing is deterministic. CSV/TSV preserve strings and reject ambiguous widths;
+JSON/JSONL preserve types and reject duplicate keys/non-finite values. Text preserves
+physical line locations. Office adapters reject unsafe archive/XML structures and
+formulas under their declared subset. Arbitrary asset mode captures/indexes bytes.
+It does not interpret those bytes as a supported document or image.
+
+Source bytes, hashes and locators remain separate from projected values. Explicit
+projection plans bind units, descriptors and temporal context to observed source
+cells. A transformed value must be replayable; changing display preferences cannot
+rewrite the original capture. Completed capture can support resume after the original
+source disappears, subject to the adapter's saved integrity and authorization contract.
+
+## Large local preparation
+
+The ordinary research API returns a materialized record list. The `stream` API is a
+separate contract returning counts and status with bounded paging through `StreamLedger`.
+Its ledger must not be substituted for `ResearchStore`.
+
+| Stored entity | Purpose | Recovery boundary |
+| --- | --- | --- |
+| Job contract | Fixed source, format, schema, projection and limits | Resume cannot silently replace the contract |
+| Source chunks | Bounded immutable bytes with chunk and aggregate hashes | Partial capture admits no rows; completed capture is verified before use |
+| Row batch | Source/output values, ordinals and physical locators | Rows and committed progress advance in the same SQLite transaction |
+| Export generation | Output, evidence JSONL, exact source and manifest | Stage and verify before replacing the manifest last |
+
+CSV, TSV, JSONL, text and opaque asset capture are supported. Memory-mapped access
+is disabled and batch buffers have row and byte ceilings. Database, input, record
+and row ceilings are saved independently. SQLite rollback journals and export files
+require additional disk space. Keyset pages are bounded; no `fetchall` of all rows
+is required. Resume may reparse preceding source rows, so repeated tiny invocations
+are not a constant-time seek contract.
+
+A hard termination can leave a stale status label or a rollback journal. The committed
+checkpoint is authoritative. Opening the writer can recover SQLite before read-only
+inspection. No incomplete export manifest should certify a mixed generation. This
+path does not implement large HTTP streams, semantic deduplication, sorting or aggregation.
+
+## Requirements and proposals
+
+Range conflicts and broader research suggestions use the same saved change boundary.
+Every affected field and goal requires checked evidence. Offers are bounded and
+explicit: the baseline, replacement goal/schema/task and evidence are persisted.
+
+Ordinary resume declines the offer and continues the previous contract. Accepting
+resume applies the exact pending replacement after baseline validation. Equivalent
+declined requirements remain declined when optional task fields are added by a software
+upgrade. Automatic alternatives cannot remove protected identity, field or time-series
+contracts. No proposal implicitly authorizes a new credential, source grant or spending cap.
+
+## Time-series and display semantics
+
+A time-series task declares its timestamp, grouping keys, optional timezone assumption
+and optional fixed cadence. Declared identity must distinguish the timestamp and series.
+Chronology compares actual instants before public IDs and display formatting. Printed
+offsets remain source values. Ambiguous/nonexistent local clocks are diagnosed, not guessed.
+
+Duplicate, invalid, off-grid and gap counts concern accepted observations. Missing counts
+are arithmetic between observed endpoints; no missing rows are allocated or interpolated.
+Calendar dates and fixed elapsed seconds have different contracts. A report is not an
+endpoint-coverage or global-completeness certificate. All-null notices use the same scope.
+
+Display defaults are kg/metres/dmy. Supported conversions require observed unit context;
+ISO dates can be formatted without guessing a source locale. Accepted values, stable
+identity and raw evidence remain separate from the displayed output.
+
+## Portable lineage
+
+Ordinary manifests bind each public row to its internal evidence identity or grouped
+contributors. Cell lineage explains supported scalar conversions and grouped derivations.
+Relevant events and preserved source assets travel with the generation. Proof headings
+refer to public outputs and contributors rather than inventing extra exported rows.
+
+Streaming uses its own `stream-1` bundle, with per-row evidence JSONL and exact source
+bytes. The ordinary portable-asset reader does not consume that bundle version. In
+both cases, checksums prove consistency with the supplied manifest, not independent
+signature authenticity or external factual correctness. Export publication is per
+destination; multiple destinations are not one filesystem transaction.
+
+## Python and C++
+
+Python owns product policy, evidence, persistence, providers and public interfaces.
+Optional C++17 quote matching/batching and Unicode-boundary helpers have Python references,
+differential tests and standalone native tests. Build tooling records binary provenance.
+Normal installation requires no compiler; unavailable native execution must preserve
+the supported Python path. A language percentage is not a reason to move policy into C++.
+
+## Verification and release
+
+Behavioral tests exercise negative controls, requests, recovery, projections, lineage
+and schema integrity. Full statement/branch coverage is an engineering requirement,
+not product acceptance. Repository checks cover authored module documentation, local
+links, metadata and publication guard configuration. Runtime platform/browser/native,
+security, package and live research results must be recorded for the release commit.
+
+The release matrix retains unrun human-reviewed and beta requirements explicitly.
+Source changes, dependency changes or different model profiles can require renewed
+qualification. No commit count, file count, badge or successful build supersedes those gates.

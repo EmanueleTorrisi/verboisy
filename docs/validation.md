@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
+
 # Validation gates
 
 Use Python >=3.11,<3.15. Run from the repository root in its Poetry environment.
