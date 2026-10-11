@@ -25,8 +25,11 @@ def office_package(content: bytes) -> Iterator[zipfile.ZipFile]:
             if len({item.filename for item in entries}) != len(entries):
                 raise DatasetParseError("Duplicate office archive member")
             for item in entries:
+                # Reject names changed by ZipInfo normalization as well as unsafe
+                # paths. Windows turns archive backslashes into forward slashes.
                 if (
-                    item.filename.startswith("/")
+                    item.orig_filename != item.filename
+                    or item.filename.startswith("/")
                     or "\\" in item.filename
                     or ":" in item.filename
                     or ".." in PurePosixPath(item.filename).parts
