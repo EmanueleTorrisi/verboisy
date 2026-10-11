@@ -92,7 +92,7 @@ async def test_grounded_completion_portable_descriptors_and_offline_resume(
     assert result.completed
     assert [row["population"] for row in result.records] == [2000 if unit else 2] * 2
     manifest_path = output.with_suffix(".json.manifest.json")
-    manifest = json.loads(manifest_path.read_text())
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     cells = [cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/population"]
     assets = load_portable_assets(manifest_path)
     assert assets[0].download.dataset.original_bytes == body
@@ -161,7 +161,7 @@ async def test_grouped_cells_keep_each_contributor_descriptor_chain(site, tmp_pa
         config=config,
     )
     assert result.completed and len(result.records) == 1
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     cell = next(cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/population")
     assert cell["status"] == "resolved" and len(cell["contributors"]) == 2
     assert [
@@ -280,7 +280,7 @@ async def test_cli_approved_descriptors_enter_new_run_without_changing_original(
     supplied, report, approved = (
         tmp_path / name for name in ("supplied.json", "review.json", "approved.json")
     )
-    supplied.write_text(json.dumps(plan(unit=unit)))
+    supplied.write_text(json.dumps(plan(unit=unit)), encoding="utf-8")
     review = CliRunner().invoke(
         app,
         [
@@ -300,11 +300,11 @@ async def test_cli_approved_descriptors_enter_new_run_without_changing_original(
         ],
     )
     assert review.exit_code == 0, review.output
-    assert json.loads(report.read_text())["suggestion"]["unmapped_profile_pointers"] == (
-        [] if unit else ["/unit"]
-    )
+    assert json.loads(report.read_text(encoding="utf-8"))["suggestion"][
+        "unmapped_profile_pointers"
+    ] == ([] if unit else ["/unit"])
     assert (
-        json.loads(approved.read_text())["fields"][1]["descriptors"]
+        json.loads(approved.read_text(encoding="utf-8"))["fields"][1]["descriptors"]
         == plan()["fields"][1]["descriptors"]
     )
     accepted = await arun(
