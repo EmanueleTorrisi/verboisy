@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 """Real Chromium DOM and pagination checks; no model credential is used."""
 
 import hashlib
@@ -124,7 +127,14 @@ async def test_real_browser_resume_and_json_csv_exports(tmp_path, monkeypatch):
         assert first.status == "PAUSED" and not first.records
         second = await arun(resume=first.run_id, config=config)
         assert second.completed
-        assert second.records == [{"person": "Anaïs", "years": 31}, {"person": "李雷", "years": 22}]
+        assert [record["id"] for record in second.records] == [1, 2]
+        assert [
+            {key: value for key, value in record.items() if key != "id"}
+            for record in second.records
+        ] == [
+            {"person": "Anaïs", "years": 31},
+            {"person": "李雷", "years": 22},
+        ]
         assert json.loads(second.manifest_path.read_text())["pages"] == {"done": 2}
         evidence = json.loads((tmp_path / "data.json.evidence.json").read_text())
         assert all(r["snapshot"]["url"] == origin + "/people.html" for r in evidence)
