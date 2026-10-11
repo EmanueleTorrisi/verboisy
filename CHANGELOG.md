@@ -1,50 +1,50 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# 0.2.0rc1 — evidence engine candidate
-
-- Replace model-directed FINISH and unverified extraction with persisted crawling and evidence checks.
-- Preserve user schemas and add provenance/manifest sidecars and partial exports.
-- Quarantine identity conflicts; keep legacy databases unchanged.
-- Provision Chromium on first use; retain explicit setup and offline control.
-- Add independent semantic review, shared request accounting and cross-schema evaluations.
-- Breaking internal API and database change; release validation remains mandatory.
-
 # Changelog
 
-All notable changes to this project are documented in this file.
+This file records notable product and compatibility changes. Entries marked
+**Unreleased** describe current development and do not identify a published stable
+release. Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## Unreleased
 
-## [Unreleased]
+### Research and data preparation
 
-### Consolidated implementation candidate
-- Add explicit provider profiles and granted local/origin-authenticated HTTP source modes.
-- Add declared file capabilities, immutable assets and bounded Office adapters.
-- Add separate local streaming preparation, measured scale evidence and durable checkpoints.
-- Add explicit time-series diagnostics, scoped coverage notices and preserved proposal decisions.
-- Align architecture, localized introductions, security and release evidence with implemented contracts.
-- Add read-only repository consistency checks and a reviewed per-file commit plan.
-- Retain pending human-reviewed acceptance, live provider, independent beta and commercial/legal gates.
+- Add explicit provider profiles, model-role routing and durable request accounting.
+- Add granted local inputs and declared HTTP datasets with origin-scoped credentials.
+- Add strict deterministic CSV, TSV, JSON, JSONL, text, DOCX and XLSX adapters.
+- Add immutable binary asset capture, portable bundles and grounded projections.
+- Add separate disk-backed local streaming, paging and interruption recovery.
+- Add observed units, descriptors, reference periods, ranges and time-series policies.
+- Add reviewable requirement proposals with distinct accept and decline resume paths.
+- Preserve row and cell lineage through grouping, sorting and display changes.
 
-### Fixed
-- Implemented shared run/arun API and the documented run subcommand with resume.
-- Added durable checkpoints, record deduplication, safe legacy migration and run locking.
-- Corrected false completion on budget exhaustion and nonzero failure/export exits.
-- Enforced JSON Schema constraints and explicit format dependencies without type coercion.
-- Replaced blocking model calls with async requests, bounded retries and explicit key routing.
-- Added URL policy, default browser sandboxing, resource cleanup and atomic exports.
-- Reconciled examples, configuration, Docker environment and release gates.
-- Updated pytest for GHSA-6w46-j5rx-g56g and expanded regression/integration checks.
+### Reliability and developer interfaces
 
-### Acceptance still required
-- Real Chromium/live-model demo and deployment validation; see docs/validation.md.
+- Provide CLI and synchronous/asynchronous Python APIs with saved-run diagnostics.
+- Preserve budgets, evidence ownership and strict JSON replay across resume.
+- Enforce redirect scope before fetching excluded browser destinations.
+- Add Python/OS CI, real browser integration and optional C++ equivalence checks.
+- Reject office archive names altered by platform normalization.
+- Cover strict timestamp clock/offset boundaries across Python versions.
+- Improve Windows text-encoding fixtures and bounded process-termination recovery.
 
+### Documentation and distribution
 
-### Added
-- Core agent loop (plan → act → extract state machine).
-- Playwright-based browser layer with stealth evasions.
-- LiteLLM-backed planner supporting OpenAI, Anthropic, and Ollama.
-- Pydantic schema builder for structured JSON extraction.
-- SQLite storage backend with CSV/JSON export.
-- Typer + Rich CLI.
+- Expand the product README and seven translations with supported workflow examples.
+- Document security reporting, enterprise deployment and commercial enquiries.
+- Introduce source-inspection terms for this version and align package metadata.
+- Preserve independent third-party licenses and earlier grants for historic versions.
+
+Real-task quality, provider compatibility, support scope and deployment suitability
+remain evaluated for each release and configuration. See the
+[roadmap](docs/development-roadmap.md) and [release checklist](docs/release-checklist.md).
+
+## 0.2.0rc1 — Evidence engine candidate
+
+- Replace unverified extraction and model-directed completion with persistent
+  crawling, evidence checks and independently reviewed candidate acceptance.
+- Preserve user schemas and introduce proof, provenance and manifest sidecars.
+- Quarantine identity conflicts and retain legacy databases without silent rewriting.
+- Add browser provisioning, independent semantic review and shared request accounting.
+- Introduce breaking internal API and ledger changes; see [migration](docs/migration.md).
