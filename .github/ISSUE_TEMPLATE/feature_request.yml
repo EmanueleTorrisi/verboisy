@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 name: "Feature Request"
 description: "Suggest an idea or improvement for Verboisy."
 title: "[FEATURE] "
@@ -65,3 +68,25 @@ body:
         Additional information...
     validations:
       required: false
+
+  - type: dropdown
+    id: workflow
+    attributes:
+      label: Affected workflow
+      options:
+        - Web research
+        - Bounded local or HTTP dataset
+        - Large local streaming dataset
+        - Time-series or presentation
+        - Provider configuration or request accounting
+        - Installation, native execution or release tooling
+    validations:
+      required: true
+
+  - type: textarea
+    id: contract-evidence
+    attributes:
+      label: Contract and evidence
+      description: Include a minimal schema/task, expected outcome and supported fixture. Redact credentials, personal data and private source contents.
+    validations:
+      required: true
