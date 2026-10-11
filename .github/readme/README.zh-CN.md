@@ -139,8 +139,13 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 
 如需演示、评估、内部或企业许可、投资、合作及潜在有偿工程协作，请联系 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**。说明工作流、来源、规模和环境，不要发送凭据或机密数据。价格、支持和权利逐项商定。请参阅[许可](../../docs/licensing.md)和[商业联系](../../docs/commercial.md)。
 
-## 反馈与未来版本
+## 反馈与合作
 
 **Emanuele Torrisi** 创建并维护 Verboisy，目前是项目唯一开发者。欢迎通过 [GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues) 提交缺陷和功能请求。漏洞请按照[安全政策](../SECURITY.md)私下报告。
 
-目前不接受未经邀请的代码贡献。未来可商定有偿合作，工作前需明确范围、报酬、保密和知识产权。后续版本计划改进质量、来源覆盖、规模及易用性。[路线图](../../docs/development-roadmap.md) 区分当前能力与未来方向。项目不承诺完美准确或通用兼容。另请参阅[参与指南](../CONTRIBUTING.md)和[版权](../../COPYRIGHT.md)。
+目前不接受未经邀请的代码贡献。有偿合作需事先约定范围、报酬、保密和知识产权。版本变化记录在[更新日志](../../CHANGELOG.md)中；[版本历史](../../docs/development-roadmap.md)说明从 0.1.0 到 1.0.0 的架构演进。请参阅[参与政策](../CONTRIBUTING.md)和[版权](../../COPYRIGHT.md)。
+## 应用工作流示例
+
+[Research catalogue](../../examples/research_catalog/README.md) ·
+[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
+[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
