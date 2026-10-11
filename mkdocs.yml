@@ -2,11 +2,13 @@
 # See LICENSE for applicable terms.
 
 site_name: Verboisy
-site_description: Evidence-backed autonomous web research to structured datasets.
+site_description: Evidence-backed research and data extraction with portable provenance.
 theme:
   name: material
 nav:
   - Home: index.md
+  - Licensing: licensing.md
+  - Demos and enterprise: commercial.md
   - CLI: cli.md
   - Model providers: providers.md
   - Display preferences: presentation.md
@@ -15,9 +17,9 @@ nav:
   - Dataset ingestion: ingestion.md
   - File capabilities: formats.md
   - Large local datasets: streaming.md
-  - Development roadmap: development-roadmap.md
+  - Product roadmap: development-roadmap.md
   - Production acceptance: production-acceptance.md
-  - Engineering history: engineering-history.md
+  - Engineering notes: engineering-history.md
   - SmartID: smartid.md
   - Proof and provenance: proof.md
   - API: api.md
@@ -30,5 +32,6 @@ nav:
   - Migration: migration.md
   - Release operations: release.md
   - Release evidence: release-checklist.md
-  - Distribution review: distribution.md
-  - Commit policy: commit-policy.md
+  - Distribution: distribution.md
+  - Repository profile: repository-profile.md
+  - Engineering workflow: commit-policy.md
