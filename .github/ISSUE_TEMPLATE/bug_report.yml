@@ -17,8 +17,9 @@ body:
         Please provide as much detail as possible. Clear reproduction steps and
         environment information help us investigate and resolve issues faster.
 
-        Before submitting, please search the existing issues to make sure this
-        problem has not already been reported.
+        Search existing issues first. Report security vulnerabilities privately through
+        SECURITY.md. Use only authorized, shareable reproductions; remove credentials
+        and confidential data. Issue reporting does not grant software execution rights.
 
   - type: checkboxes
     id: existing-issues
