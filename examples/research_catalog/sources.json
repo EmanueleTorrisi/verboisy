@@ -1,0 +1,14 @@
+{
+  "source_selection_date": "2026-10-11",
+  "seed_urls": [
+    "https://www.energy.gov/science/office-science-user-facilities",
+    "https://www.energy.gov/cmei/systems/national-laboratory-facilities-and-capabilities",
+    "https://www.bnl.gov/science/facilities.php"
+  ],
+  "allowed_hosts": [
+    "www.energy.gov",
+    "energy.gov",
+    "www.bnl.gov",
+    "bnl.gov"
+  ]
+}
