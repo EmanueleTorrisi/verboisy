@@ -139,8 +139,13 @@ Verboisy è software proprietario, **non open source**. La licenza inglese è il
 
 Contatta **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** per demo, valutazioni, licenze interne o enterprise, investimenti, partnership o eventuale collaborazione retribuita. Indica flusso, fonti, volume e ambiente; non inviare credenziali o dati riservati. Prezzi, supporto e diritti vengono concordati individualmente. Vedi [licenze](../../docs/licensing.md) e [opportunità commerciali](../../docs/commercial.md).
 
-## Feedback e prossime versioni
+## Feedback e collaborazione
 
 Verboisy è creato e mantenuto da **Emanuele Torrisi**, attualmente unico sviluppatore. [Segnalazioni di bug e richieste di funzionalità](https://github.com/EmanueleTorrisi/verboisy/issues) sono benvenute. Le vulnerabilità vanno segnalate privatamente secondo la [politica di sicurezza](../SECURITY.md).
 
-Non si accettano contributi di codice non richiesti. Collaborazioni retribuite potranno essere concordate in futuro: definire prima ambito, compenso, riservatezza e proprietà intellettuale. Sono previste nuove versioni per migliorare qualità, fonti, scala e usabilità. La [roadmap](../../docs/development-roadmap.md) distingue capacità attuali e direzioni future. Non sono promesse accuratezza perfetta o compatibilità universale. Vedi [partecipazione](../CONTRIBUTING.md) e [copyright](../../COPYRIGHT.md).
+Non si accettano contributi di codice non richiesti. Le collaborazioni retribuite richiedono accordi preventivi su ambito, compenso, riservatezza e proprietà intellettuale. Le modifiche delle versioni sono documentate nel [changelog](../../CHANGELOG.md); la [cronologia](../../docs/development-roadmap.md) descrive il percorso da 0.1.0 a 1.0.0. Vedi [partecipazione](../CONTRIBUTING.md) e [copyright](../../COPYRIGHT.md).
+## Esempi applicativi
+
+[Research catalogue](../../examples/research_catalog/README.md) ·
+[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
+[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
