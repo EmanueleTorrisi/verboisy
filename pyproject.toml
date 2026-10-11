@@ -4,9 +4,9 @@
 [project]
 name = "verboisy"
 version = "1.0.0"
-description = "Autonomous web research and structured scrape-to-JSON agent."
+description = "Evidence-backed research and data extraction with portable provenance."
 readme = "README.md"
-license = "BSD-2-Clause"
+license = "LicenseRef-Verboisy-Source-Inspection-1.0"
 requires-python = ">=3.11,<3.15"
 authors = [
     { name = "Emanuele Torrisi", email = "emanueletorrisi98@gmail.com" },
@@ -38,7 +38,7 @@ verboisy = "verboisy.cli.main:app"
 [tool.poetry]
 packages = [{ include = "verboisy", from = "src" }]
 include = ["src/verboisy/py.typed"]
-classifiers = ["Typing :: Typed"]
+classifiers = ["Typing :: Typed", "License :: Other/Proprietary License"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
