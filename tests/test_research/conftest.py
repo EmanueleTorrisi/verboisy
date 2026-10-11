@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
