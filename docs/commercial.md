@@ -1,70 +1,102 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Demos, enterprise licensing and partnerships
+# Commercial solutions and partnerships
 
-Verboisy combines evidence-backed research with deterministic dataset preparation
-and a separate large-file workflow. Commercial enquiries are handled directly by
-its creator, **Emanuele Torrisi**, at
+Verboisy brings evidence-backed research and structured data preparation to people
+and organisations whose decisions depend on reliable information. Commercial
+engagements can begin with one research workflow and grow into an integrated data
+operation. Enquiries are handled directly by its creator, **Emanuele Torrisi**, at
 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**.
 
-## Choose a conversation
+## Who it is for
 
-| Enquiry | Useful information to include |
+| Audience | Evaluation focus |
 | --- | --- |
-| Product demo | The question or dataset workflow you want to demonstrate |
-| Evaluation or pilot | Source types, expected outputs, success criteria and intended duration |
-| Internal or enterprise use | Approximate volume, users, deployment environment and data sensitivity |
-| Product integration | Existing system, interface expectations and redistribution or hosting needs |
-| Investment or partnership | Organisation, proposed relationship and relevant business context |
-| Paid engineering collaboration | Experience, specialist skills and a proposed area of work |
+| Independent professionals and researchers | Repeatable research, traceable results and less manual preparation |
+| Startups and small businesses | Data workflows that fit a small team, a defined budget and existing tools |
+| Developers and technical teams | Python integration, structured contracts, reproducible processing and operational visibility |
+| Agencies and consultancies | Repeatable client delivery, reviewable evidence and agreed usage rights |
+| Enterprises and institutions | Internal sources, deployment requirements, governance and long-term maintenance |
+
+## Commercial engagement
+
+Contact the maintainer to discuss demonstrations, scoped evaluations, commercial
+usage rights, integration projects or a deployment assessment. An engagement starts
+with representative inputs, target outputs and measurable success criteria.
+Licensing, engineering work, delivery dates and any support commitments are defined
+in a written agreement; a repository listing is not a purchased service entitlement.
+
+A useful proposal describes source types, approximate volume, expected users,
+deployment preferences and the business outcome. Small projects and individual
+users are welcome; an enterprise procurement process is not a prerequisite for an
+enquiry. Pricing is agreed for the scope rather than implied by this page.
+
+## Paid product direction
+
+The commercial roadmap extends beyond permission to execute the software. Its
+focus is reducing the work required to operate, integrate and maintain research
+and data pipelines. The following priorities guide product development and scoped
+commercial discussions; availability and delivery are confirmed in each proposal.
+
+| Product area | Intended customer benefit |
+| --- | --- |
+| Hosted research and managed execution | Submit work without operating research infrastructure |
+| Scheduled workflows and monitoring | Refresh datasets, follow job progress and receive actionable failure notifications |
+| Team workspaces | Share workflows and review results with access controls and audit history |
+| Internal-source integrations | Connect approved databases, APIs, business applications and document repositories |
+| Private deployments | Align execution with customer infrastructure, network and data-handling requirements |
+| High-volume processing | Plan resource limits, workload capacity, recovery and operating costs |
+| Integration interfaces | Embed workflows through APIs, SDKs and application-specific adapters |
+| Quality and provenance tooling | Review source evidence, transformations, coverage and dataset changes |
+| Onboarding and specialist engineering | Adapt schemas, connectors and workflows to a defined use case |
+| Support and maintenance agreements | Establish accountable assistance, upgrade planning and agreed response commitments |
+
+These priorities serve individuals, small teams and larger organisations. Product
+editions, hosting options and service packages will be described as they are
+introduced. No fixed delivery date or universal connector support is implied.
+
+## Public repository and version policy
+
+The public repository is intended to remain a maintained technical reference,
+with documented capabilities, examples and versioned changes. Public updates and
+commercial development will proceed alongside one another. Enterprise-specific
+integrations, managed-service infrastructure or contracted extensions may be
+distributed separately under the applicable agreement.
+
+Repository visibility does not alter execution rights. The current
+[source inspection license](licensing.md) remains authoritative. Any future public
+edition, evaluation permission or paid edition will carry explicit terms rather
+than relying on an assumed right to use downloadable code.
+
+## Evaluation and deployment
+
+Evaluate representative inputs and permitted sources against the same schema and
+review criteria. Measure correctness, evidence coverage, completion within the
+declared scope, latency, request usage and billed cost. Include failed and empty
+runs. See [evaluation](evaluation.md) and [workflow examples](examples.md).
+
+Local source access and model execution are separate choices. Deterministic local
+preparation can run without a model provider; using a remote model may send
+observations outside the deployment. Ledgers and exports can contain sensitive
+material. Agree filesystem access, network egress, retention, storage limits and
+operational responsibilities before deployment. Review the [security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
 
 Initial enquiries should contain a short description and shareable examples, not
-credentials, confidential datasets or contractual documents requiring an NDA.
-Sensitive information can be exchanged after suitable arrangements are agreed.
-No public pricing, guaranteed savings, funding round or investment terms are
-announced by this page.
+credentials or confidential datasets. Sensitive material can be exchanged after
+appropriate confidentiality and data-handling arrangements are agreed.
 
-## A useful evaluation
+## Partnerships and paid collaboration
 
-Define representative inputs, permitted sources, a target schema and review criteria.
-Record output quality, evidence coverage, completeness within the declared scope,
-latency, request usage and billed cost. Include failed and empty runs. Compare
-alternatives using the same sources and requirements; one attractive demonstration
-is not a general performance guarantee.
+Investment, product partnerships and paid engineering enquiries are welcome.
+Verboisy is currently created and maintained by Emanuele Torrisi as its sole
+developer. Any future contracted work requires agreement on scope, compensation,
+confidentiality and intellectual-property ownership before implementation begins.
+Unsolicited code contributions are not currently accepted.
 
-A written evaluation agreement should establish software permissions, deployment,
-source rights, spending limits, data handling, duration and support scope. See
-[licensing](licensing.md), [evaluation](evaluation.md) and [workflow examples](examples.md).
-
-## Local and enterprise deployment
-
-Deterministic local preparation can run without a browser or model provider. Directory
-grants control which local files are admitted. Large supported local inputs use the
-separate streaming ledger. Explicit HTTP GET datasets can connect to approved origins;
-service-specific authentication flows, database drivers and application connectors
-require their own integration design.
-
-Source location and model execution are independent choices. Remote model calls may
-send observations outside the deployment; an approved local endpoint may keep model
-execution inside your infrastructure, subject to its actual configuration. Confirm
-provider compatibility before an evaluation. Review telemetry, logs, access controls,
-network egress and data retention.
-
-Ledgers and exports can contain sensitive source material. Operators provide encryption,
-identity management, tenancy isolation, backups and storage quotas. This project does
-not claim SOC 2/ISO certification, a hosted service, or universal enterprise connectivity.
-Any support SLA, managed deployment or connector work must be agreed explicitly.
-
-## Collaboration and product direction
-
-Verboisy currently has one developer. Paid work or employment may be considered where
-it advances the roadmap. Scope, compensation, confidentiality and IP ownership must
-be agreed before work begins; unsolicited implementation submissions are not accepted.
-
-Further versions are planned to improve research quality, adapters, scale, recovery
-and usability. The ambition is a trusted standard for evidence-backed data extraction.
-Specific milestones, integrations and delivery dates remain subject to validated
-requirements and available resources. Read the [roadmap](development-roadmap.md).
+The long-term ambition is to establish Verboisy as a trusted standard for
+evidence-backed research and data extraction: useful to an individual analyst and
+extensible to a larger data operation. Progress is documented through versioned
+changes and demonstrated outcomes.
 
 ---
 
