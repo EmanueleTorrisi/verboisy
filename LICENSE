@@ -1,24 +1,83 @@
-Copyright (c) 2026, Emanuele Torrisi <emanueletorrisi98@gmail.com>
+VERBOISY SOURCE INSPECTION LICENSE 1.0
+SPDX-License-Identifier: LicenseRef-Verboisy-Source-Inspection-1.0
 
-All rights reserved.
+Copyright (c) 2026 Emanuele Torrisi <emanueletorrisi98@gmail.com>
+All rights reserved except as expressly granted below.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+1. Scope and ownership
 
-* Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
+These terms apply to Verboisy project-authored source code, documentation and
+other material accompanying this license (the "Material"). Emanuele Torrisi is
+the licensor. The Material is proprietary. Source visibility does not make it
+open-source software or grant a general right to use the software.
 
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
+2. Limited permission for source inspection
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+You may view and read the Material and retain a local, unmodified copy solely
+for private source inspection, including technical and commercial due diligence.
+Retain this license and all copyright, attribution and third-party notices.
+You may quote limited relevant excerpts in a private report to the licensor.
+These permissions do not authorize executing the software or supplying it to
+another person. No fee is charged for these source-inspection permissions.
+
+Where the Material is made public on GitHub, viewing and forking within that
+service are also permitted to the extent required by GitHub's applicable terms.
+Such hosting permissions do not grant execution, modification, redistribution
+outside those service permissions, deployment or commercial exploitation rights.
+
+3. Separate written permission
+
+A separate written license from the licensor is required to run, test, modify,
+integrate, deploy, host, redistribute, sublicense or commercially exploit
+Verboisy or a derivative of its project-authored Material. This includes
+internal enterprise use, production use, offering a hosted service, and
+embedding the software in another product. A demo, trial or evaluation may be
+provided under separately agreed terms; none is granted by this notice.
+
+Request licenses, demonstrations or a paid collaboration agreement at:
+    emanueletorrisi98@gmail.com
+
+An enquiry, issue report, feature suggestion, public fork or receipt of source
+code does not itself establish a license or a commercial agreement.
+
+4. Reserved rights and applicable law
+
+No patent license, trademark license, ownership transfer or right to use the
+Verboisy name or branding to imply endorsement is granted. All permissions not
+expressly granted are reserved. These terms do not restrict rights that cannot
+lawfully be restricted, statutory exceptions, or rights already granted under
+an applicable separate agreement. Earlier copies licensed under other terms
+remain subject to those terms; this license does not retroactively revoke them.
+
+5. Third-party components
+
+Third-party software, dependency packages, adapted material and assets retain
+their own licenses and notices. These terms do not replace or limit those
+licenses or claim ownership of third-party material. See COPYRIGHT.md and
+component-specific notices, including docker/LICENSE-APACHE-2.0.txt and
+docker/SECCOMP-NOTICE.md. An independent dependency is not restricted merely
+because Verboisy uses it.
+
+6. No warranty or support promise
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE MATERIAL IS PROVIDED
+"AS IS", WITHOUT WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, ACCURACY OR NON-INFRINGEMENT. NO WARRANTY OF DATA COMPLETENESS,
+FACTUAL CORRECTNESS, SECURITY OR UNINTERRUPTED OPERATION IS GIVEN.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR IS NOT LIABLE
+FOR INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES OR LOSS OF DATA,
+PROFITS OR BUSINESS ARISING FROM THE MATERIAL. THIS LIMITATION DOES NOT
+EXCLUDE LIABILITY THAT APPLICABLE LAW DOES NOT PERMIT TO BE EXCLUDED.
+
+Support, service levels, fees and permitted usage are established only by a
+separate written agreement. No employment, partnership or investment agreement
+is created by these source-inspection terms.
+
+7. Breach and continuing obligations
+
+If you exceed these permissions, the permissions granted by this license end.
+Cease the unauthorized activity and remove copies held solely under this
+license, except where retention is required by law or authorized separately.
+Ownership, reserved rights, third-party notices and the warranty and liability
+provisions continue to apply to the extent permitted by law.
