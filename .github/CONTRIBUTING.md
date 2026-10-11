@@ -54,7 +54,7 @@ make repo-check
 
 Browser and optional native checks require their documented runtimes. Model-based
 evaluation is separate and requires authorized sources, credentials and a spending
-limit. See [validation](../docs/validation.md) and [engineering workflow](../docs/commit-policy.md).
+limit. See [engineering validation](../docs/validation.md) and [architecture](../ARCHITECTURE.md).
 
 Participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Feedback and issue
 reporting do not grant execution or reuse rights; [LICENSE](../LICENSE) and the
