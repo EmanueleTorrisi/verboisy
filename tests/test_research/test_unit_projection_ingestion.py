@@ -88,7 +88,7 @@ async def test_unit_plan_canonical_completion_lineage_and_offline_resume(site, t
         {"id": 2, "name": "李雷", "population": 2500},
     ]
     manifest_path = output.with_suffix(".json.manifest.json")
-    manifest = json.loads(manifest_path.read_text())
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     cells = [cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/population"]
     assert [cell["unit_derivation"]["row_index"] for cell in cells] == [1, 2]
     assert cells[0]["unit_derivation"]["unit_pointer"] == "/unit"
