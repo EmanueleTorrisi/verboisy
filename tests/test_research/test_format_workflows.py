@@ -150,7 +150,7 @@ async def test_worksheet_projection_keeps_part_and_cell_derivation(tmp_path):
     assert result.completed and result.records == [{"id": 1, "name": "Anaïs"}]
     import json
 
-    manifest = json.loads((tmp_path / "rows.json.manifest.json").read_text())
+    manifest = json.loads((tmp_path / "rows.json.manifest.json").read_text(encoding="utf-8"))
     lineage = next(cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/name")
     assert lineage["source_pointer"] == "/values/name"
     assert lineage["source_value"] == "Anaïs" and lineage["status"] == "resolved"
@@ -182,7 +182,7 @@ def test_cli_accepts_new_format_declarations(tmp_path, monkeypatch, fmt, raw, pr
         },
     }
     schema_file = tmp_path / "schema.json"
-    schema_file.write_text(json.dumps(schema))
+    schema_file.write_text(json.dumps(schema), encoding="utf-8")
     result = CliRunner().invoke(
         app,
         [
