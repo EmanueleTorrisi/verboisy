@@ -530,35 +530,32 @@ def research_changes(
 ) -> None:
     """Inspect a pending proposal, or submit one and pause research."""
     import json
+    from contextlib import closing
 
     from verboisy.storage.changes import pending_change, propose_change
     from verboisy.storage.research import ResearchStore
 
-    store = None
     try:
         if not run_id.strip():
             raise VerboisyError("Choose a nonempty run ID")
         value = json.loads(proposal.read_text(encoding="utf-8")) if proposal is not None else None
         path = str(database) if database is not None else Settings().sqlite_db_path
-        store = ResearchStore(path, read_only=proposal is None)
-        change = (
-            propose_change(store, run_id, value)
-            if proposal is not None
-            else pending_change(store, run_id)
-        )
-        if change is None:
-            typer.echo("* No pending proposal. Use --resume to continue this run.")
-        else:
-            typer.echo("* Proposed changes: " + change.request.description)
-            typer.echo(change.model_dump_json(indent=2, by_alias=True))
-            typer.echo(f"* Keep current requirements: verboisy run --resume {run_id}")
-            typer.echo(f"* Accept these changes: verboisy run --okresume {run_id}")
+        with closing(ResearchStore(path, read_only=proposal is None)) as store:
+            change = (
+                propose_change(store, run_id, value)
+                if proposal is not None
+                else pending_change(store, run_id)
+            )
+            if change is None:
+                typer.echo("* No pending proposal. Use --resume to continue this run.")
+            else:
+                typer.echo("* Proposed changes: " + change.request.description)
+                typer.echo(change.model_dump_json(indent=2, by_alias=True))
+                typer.echo(f"* Keep current requirements: verboisy run --resume {run_id}")
+                typer.echo(f"* Accept these changes: verboisy run --okresume {run_id}")
     except (VerboisyError, OSError, ValueError):
         CLIUserInterface.print_error("Cannot inspect or save the proposed requirements")
         raise typer.Exit(1) from None
-    finally:
-        if store is not None:
-            store.close()
 
 
 @app.command("assets")
