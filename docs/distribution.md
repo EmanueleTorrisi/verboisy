@@ -1,35 +1,47 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Distribution and commercial readiness
+# Distribution and publication
 
-This project is privately maintained by Emanuele Torrisi. External code contributions
-are not currently accepted. Issue reporting, permitted evaluation, investment discussions
-and software distribution are different activities with different prerequisites.
+Verboisy's current distribution terms allow source inspection and reserve software
+execution and reuse for separately licensed use. A public source repository is not
+a free software offering. See [licensing](licensing.md) and the authoritative LICENSE.
 
-The current repository licence is BSD-2-Clause. That file and its package metadata remain
-unchanged. Short copyright headers identify authored material; they do not create new
-restrictions on software use. Private repository visibility does not replace the terms
-of a licence that accompanies a later distribution.
+## Source visibility and license history
 
-The maintainer intends to review commercial distribution terms before publication.
-That outcome is pending. No restrictive source-available agreement, contributor assignment,
-trademark registration, ownership audit or professional legal opinion is supplied by this
-engineering batch. Keep visibility, documentation publication and package publication
-disabled until the selected terms and third-party obligations have been reviewed.
+Repository visibility, source inspection, binary distribution and execution rights
+are separate decisions. Earlier commits carried BSD-2-Clause terms. Changing the
+current LICENSE does not revoke rights already granted under those versions.
+Publishing the complete existing history would make those versions accessible as
+well as the current source.
 
-## Review packet before public distribution
+Before an initial public source release, review authorship, prior distribution and
+third-party obligations. Decide explicitly which history and artifacts are included.
+A clean public snapshot under current terms may be appropriate; preserve the private
+engineering history and its notices. Do not silently rewrite history or assert that
+older permissions have disappeared. Obtain professional legal review for the chosen
+license and publication scope before relying on them commercially.
 
-| Decision | Required record | Current boundary |
-| --- | --- | --- |
-| Distribution terms | Reviewed licence text, package metadata and intended permissions | Current BSD terms remain in force for this repository |
-| Ownership and provenance | Authorship/history review, third-party notices and any invited contributions | Sole-maintainer policy is not an ownership audit |
-| Product identity | Name/mark review and an explicit decision on registration/use | No trademark status is asserted |
-| Dependency obligations | Distribution inventory, notices and applicable component licences | An audit for known vulnerabilities is a separate check |
-| Commercial claims | Measured acceptance, cost and latency, supported scope and limits | No universal accuracy, savings or compatibility guarantee |
-| Funding | Maintainer-controlled channels and a clear offer/relationship | A funding link does not establish an investment agreement |
+GitHub's terms permit viewing and forking public repositories within its service.
+The inspection license accommodates those service permissions. It does not grant
+a general right to run or redistribute Verboisy outside the stated terms.
 
-Investor demonstrations should identify which evidence is synthetic/offline and which
-comes from reviewed real tasks. Retain unsuccessful cases and controls. Do not present
-one benchmark, coverage percentage or an unpublished development version as completed
-production qualification. The existing funding configuration is maintained separately;
-this batch does not open accounts, contact investors or publish a campaign.
+## Distribution records
+
+| Record | Purpose |
+| --- | --- |
+| Version, commit and artifact hashes | Identify the exact supplied material |
+| Current license and written customer agreement | Establish inspection and execution rights |
+| Authorship and component notices | Preserve ownership and third-party attribution |
+| Dependency and package inventory | Review distribution obligations and reproducibility |
+| Verified capabilities and known limitations | Support accurate product and commercial claims |
+| Support and security policy | State maintenance and reporting channels |
+
+Packages must include the correct LICENSE and notices. Public package publication,
+release assets and documentation hosting should be enabled deliberately; see
+[release operations](release.md). Public visibility does not establish product
+acceptance or a support commitment. Contact
+[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com) for licensed distribution.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
