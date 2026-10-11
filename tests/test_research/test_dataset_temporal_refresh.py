@@ -71,7 +71,7 @@ async def test_latest_refresh_preserves_stable_identity_and_entity_target(
         summary = store.summary(result.run_id)
     finally:
         store.close()
-    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     cell = next(cell for cell in manifest["cell_lineage"] if cell["pointer"] == "/population")
     assert cell["temporal_derivation"]["reference_year"] == 2025
     assert cell["temporal_derivation"]["row_index"] == (2 if second > first else 1)
