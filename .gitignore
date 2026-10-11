@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -67,3 +70,6 @@ site/
 
 demo-runs/
 pytest-of-*/
+
+# Reproducible benchmark reports and profiles
+benchmark-results/
