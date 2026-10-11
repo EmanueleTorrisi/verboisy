@@ -139,8 +139,13 @@ Verboisy は独自ライセンスのソフトウェアで、**オープンソー
 
 デモ、評価、社内・企業ライセンス、投資、提携、将来の有償協力については **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** へ連絡してください。用途、情報源、量、実行環境を説明し、資格情報や機密データは送らないでください。料金、サポート、権利は個別に合意します。[ライセンス](../../docs/licensing.md)と[商談](../../docs/commercial.md)を参照してください。
 
-## フィードバックと今後の版
+## フィードバックと協力
 
 **Emanuele Torrisi** が Verboisy を制作・保守し、現在は唯一の開発者です。[不具合報告と機能要望](https://github.com/EmanueleTorrisi/verboisy/issues)を歓迎します。脆弱性は[セキュリティ方針](../SECURITY.md)に従い非公開で報告してください。
 
-依頼していないコードの提供は受け付けません。有償協力は将来合意できる場合があります。作業前に範囲、報酬、守秘義務、知的財産権を取り決めてください。品質、対応情報源、規模、使いやすさを改善する次期版を計画しています。[ロードマップ](../../docs/development-roadmap.md)は現在の機能と将来の方向を区別します。完全な正確性や万能な互換性は保証しません。[参加方針](../CONTRIBUTING.md)と[著作権](../../COPYRIGHT.md)も参照してください。
+依頼していないコード提供は受け付けません。有償協力には、範囲、報酬、守秘義務、知的財産権について事前の合意が必要です。版ごとの変更は[変更履歴](../../CHANGELOG.md)、0.1.0 から 1.0.0 への構成の変遷は[バージョン履歴](../../docs/development-roadmap.md)に記録しています。[参加方針](../CONTRIBUTING.md)と[著作権](../../COPYRIGHT.md)も参照してください。
+## 実践的なワークフロー
+
+[Research catalogue](../../examples/research_catalog/README.md) ·
+[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
+[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
