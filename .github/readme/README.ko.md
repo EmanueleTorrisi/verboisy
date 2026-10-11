@@ -139,8 +139,13 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 
 데모, 평가, 사내·기업 라이선스, 투자, 제휴 및 향후 유급 협업은 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** 으로 문의하세요. 작업 흐름, 출처, 규모, 환경을 설명하고 자격 증명이나 기밀 자료는 보내지 마세요. 가격, 지원 및 권리는 개별 합의합니다. [라이선스](../../docs/licensing.md)와 [상업 문의](../../docs/commercial.md)를 참조하세요.
 
-## 피드백과 향후 버전
+## 피드백과 협업
 
 **Emanuele Torrisi**가 Verboisy를 만들고 유지하며 현재 유일한 개발자입니다. [버그 보고와 기능 요청](https://github.com/EmanueleTorrisi/verboisy/issues)을 환영합니다. 취약점은 [보안 정책](../SECURITY.md)에 따라 비공개로 보고하세요.
 
-요청하지 않은 코드 기여는 받지 않습니다. 향후 유급 협업을 합의할 수 있으며 작업 전에 범위, 보수, 기밀성 및 지식재산권을 정해야 합니다. 품질, 출처, 확장성 및 사용성을 개선하는 후속 버전을 계획합니다. [로드맵](../../docs/development-roadmap.md)은 현재 기능과 향후 방향을 구분합니다. 완벽한 정확성이나 범용 호환성을 약속하지 않습니다. [참여 지침](../CONTRIBUTING.md)과 [저작권](../../COPYRIGHT.md)도 참조하세요.
+요청하지 않은 코드 기여는 받지 않습니다. 유료 협업은 범위, 보수, 기밀 유지와 지식재산권에 대한 사전 합의가 필요합니다. 버전 변경은 [변경 기록](../../CHANGELOG.md), 0.1.0에서 1.0.0까지의 발전은 [버전 역사](../../docs/development-roadmap.md)에 기록합니다. [참여 정책](../CONTRIBUTING.md)과 [저작권](../../COPYRIGHT.md)을 확인하세요.
+## 실제 워크플로 예제
+
+[Research catalogue](../../examples/research_catalog/README.md) ·
+[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
+[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
