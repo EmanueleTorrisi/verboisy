@@ -145,14 +145,14 @@ differential tests and standalone native tests. Build tooling records binary pro
 Normal installation requires no compiler; unavailable native execution must preserve
 the supported Python path. Native components are selected for measured workloads and semantic equivalence.
 
-## Verification and release
+## Verification scope
 
-Behavioral tests exercise negative controls, requests, recovery, projections, lineage
-and schema integrity. Full statement/branch coverage is an engineering requirement,
-not product acceptance. Repository checks cover authored module documentation, local
-links, metadata and publication guard configuration. Runtime platform/browser/native,
-security, package and live research results must be recorded for the release commit.
+Behavioral tests exercise request boundaries, recovery, projections, lineage and
+schema integrity. Full statement/branch coverage measures execution of tested code.
+Browser tests verify rendered acquisition and redirect policy; optional native paths
+have differential and standalone suites. Repository checks cover documentation,
+metadata and publication guards.
 
-The release matrix retains unrun human-reviewed and beta requirements explicitly.
-Source changes, dependency changes or different model profiles can require renewed
-qualification. Release claims remain scoped to the recorded validation and acceptance results.
+Task quality is assessed separately against annotated sources. Measurements identify
+the tested implementation, source set, model profile and runtime conditions; they
+do not establish web-wide completeness or universal throughput.
