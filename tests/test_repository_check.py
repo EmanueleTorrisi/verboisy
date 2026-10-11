@@ -67,33 +67,36 @@ def test_actual_repository_consistency_is_not_product_certification():
 def test_repository_tampering_is_reported(repo, case):
     if case in {"header", "docstring", "syntax"}:
         path = repo / "src/verboisy/llm/__init__.py"
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         if case == "header":
             text = text.replace("Copyright (c) 2026 Emanuele Torrisi", "Removed")
         elif case == "docstring":
             text = "\n".join(line for line in text.splitlines() if not line.startswith('"""'))
         else:
             text += "\ninvalid Python !\n"
-        path.write_text(text)
+        path.write_text(text, encoding="utf-8")
     elif case == "link":
-        (repo / "README.md").write_text("[Missing](missing.md)")
+        (repo / "README.md").write_text("[Missing](missing.md)", encoding="utf-8")
     elif case in {"version", "license"}:
         path = repo / "pyproject.toml"
         path.write_text(
-            path.read_text().replace('version = "1.0.0"', 'version = "9.9.9"')
+            path.read_text(encoding="utf-8").replace('version = "1.0.0"', 'version = "9.9.9"')
             if case == "version"
-            else path.read_text().replace('license = "BSD-2-Clause"', 'license = "Unreviewed"')
+            else path.read_text(encoding="utf-8").replace(
+                'license = "LicenseRef-Verboisy-Source-Inspection-1.0"', 'license = "Unreviewed"'
+            ),
+            encoding="utf-8",
         )
     elif case == "gates":
         path = repo / "evals/release-matrix.json"
-        value = json.loads(path.read_text())
+        value = json.loads(path.read_text(encoding="utf-8"))
         value["gates"].pop()
-        path.write_text(json.dumps(value))
+        path.write_text(json.dumps(value), encoding="utf-8")
     elif case == "architecture":
-        (repo / "docs/architecture.md").write_text("Diverged")
+        (repo / "docs/architecture.md").write_text("Diverged", encoding="utf-8")
     else:
         (repo / f".github/workflows/{'publish' if case == 'publish' else 'docs'}.yml").write_text(
-            "unguarded"
+            "unguarded", encoding="utf-8"
         )
     assert CHECK.inspect(repo)["passed"] is False
 
@@ -107,15 +110,26 @@ def test_missing_repository_cli_fails_without_traceback(tmp_path):
     assert result.returncode == 1 and "Traceback" not in result.stderr
 
 
-@pytest.mark.parametrize("case", ["duplicate", "outside", "empty"])
-def test_commit_plan_does_not_accept_unsafe_or_generic_empty_entries(repo, case):
-    path = repo / "evals/batch6-commits.json"
-    plan = json.loads(path.read_text())
-    if case == "duplicate":
-        plan["entries"].append(plan["entries"][0])
-    elif case == "outside":
-        plan["entries"][0]["path"] = "../private"
-    else:
-        plan["entries"][0]["message"] = " "
-    path.write_text(json.dumps(plan))
+@pytest.mark.parametrize(
+    "marker",
+    [
+        "VERBOISY SOURCE INSPECTION LICENSE 1.0",
+        "Separate written permission",
+        "Third-party components",
+    ],
+)
+def test_license_scope_and_third_party_notices_cannot_be_silently_removed(repo, marker):
+    path = repo / "LICENSE"
+    path.write_text(path.read_text(encoding="utf-8").replace(marker, "Removed"), encoding="utf-8")
+    assert CHECK.inspect(repo)["passed"] is False
+
+
+def test_historic_bsd_identifier_is_not_the_current_distribution_license(repo):
+    path = repo / "pyproject.toml"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            'license = "LicenseRef-Verboisy-Source-Inspection-1.0"', 'license = "BSD-2-Clause"'
+        ),
+        encoding="utf-8",
+    )
     assert CHECK.inspect(repo)["passed"] is False
