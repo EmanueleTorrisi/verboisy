@@ -1,58 +1,59 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Product roadmap
+# Version evolution: 0.1.0 to 1.0.0
 
-Verboisy aims to become a trusted standard for evidence-backed data extraction:
-structured information that can be inspected, reproduced and integrated into
-real workflows. Future versions will build on validated capabilities rather than
-trade evidence quality for broader unsupported claims.
+Verboisy evolved from goal-driven browser extraction into an evidence-backed research
+and data preparation system. The milestones below describe architectural changes;
+they do not invent releases between documented versions.
 
-## Implemented foundations
+| Milestone | Product architecture | Data contract |
+| --- | --- | --- |
+| 0.1.0 — Initial research interface | Model/browser orchestration, requested fields and structured export | Goal and schema drive extraction |
+| 0.2.0rc1 — Evidence engine | Persistent crawling, snapshots, independent candidate admission and identity conflict handling | Records require inspectable source bindings; completion is evaluated independently |
+| 1.0.0 — Integrated workflows | Scoped web research, deterministic local/HTTP adapters, separate large-file streaming, proposals, provider profiles and optional C++ | Saved contracts, durable budgets, strict replay and portable row/cell provenance |
 
-| Area | Current capability |
-| --- | --- |
-| Research | Declared source scope, observed snapshots, grounded candidates and saved progress |
-| Data preparation | Bounded local/HTTP adapters, immutable assets, profiles and explicit projections |
-| Scale | Separate disk-backed local streaming, cursor paging and durable checkpoints |
-| Semantics | Grounded units, descriptors, reference periods, ranges and explicit time-series policies |
-| User decisions | Reviewable requirement proposals and distinct accept/decline resume paths |
-| Engineering | CLI/API, provider profiles, request journals, browser tests and optional C++ acceleration |
+## Research and acquisition
 
-These foundations do not imply universal provider, source or format compatibility.
-Technical contracts and limitations are documented in the corresponding references.
+The current research engine owns source scope, page capture, candidate admission,
+comparability and saved-run recovery. Model profiles configure execution independently
+from source permissions. Initial discovery, repair search and extraction share durable
+accounting without treating conservative request units as billed tokens.
 
-## Near-term priorities
+## Data preparation and scale
 
-1. **Real-task acceptance.** Evaluate representative research and internal-data
-   workflows against independently reviewed expected results.
-2. **Quality and cost.** Measure useful output, false acceptance, completion, latency
-   and billed cost; address demonstrated defects before expanding scope.
-3. **User experience.** Improve onboarding, useful diagnostics, proposal review,
-   recovery and the route from schema to a usable export.
-4. **Deployment reliability.** Maintain platform, browser, package and native
-   qualification and exercise interruption, storage and security boundaries.
-5. **Commercial readiness.** Deliver suitable evaluation agreements, support scope,
-   distribution records and accurate enterprise demonstrations.
+Local and HTTP dataset adapters preserve source bytes, hashes, physical locations
+and explicit projections. CSV, TSV, JSON, JSONL, text and bounded Office inputs have
+format-specific contracts; arbitrary files can be captured and indexed as assets.
 
-## Future directions
+Large local processing uses a separate ledger, chunk capture, bounded buffers and
+cursor paging. It does not reinterpret ordinary browser research as a streaming
+interface or infer database/API connectors from an HTTP declaration. See
+[file capabilities](formats.md) and [large local datasets](streaming.md).
 
-Broader source adapters, service-specific integrations, better workflow ergonomics
-and additional scale scenarios are candidates for later versions. They are not
-announced features or committed delivery dates. Connector design must preserve
-source permissions, credential isolation, provenance and durable accounting.
+## Semantics and output
 
-Paid engineering collaboration may be arranged where it supports these priorities.
-Bug reports and feature requests help identify practical requirements. See
-[commercial enquiries](commercial.md) and [participation guidelines](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md).
+Ranges, units, reference periods and time series require grounded values and explicit
+policies. Requirement proposals expose the exact offered change before acceptance.
+Sorting, grouping and presentation retain contributor and per-cell lineage.
+Original evidence remains distinct from formatted output.
 
-## How release quality is assessed
+## Engineering foundations
 
-The evaluation framework covers seven areas: product contracts, real acceptance,
-user experience and economics, reliability, repository/legal readiness, independent
-beta and distribution. [Acceptance methodology](production-acceptance.md) defines
-the measurements; the [release checklist](release-checklist.md) defines evidence
-needed for a specific release. Results are scoped to the tested version, sources
-and settings. A successful build is not a guarantee of factual accuracy.
+Python owns policy, interfaces, adapters and persistence. Optional C++17 components
+serve measured evidence-matching workloads with reference equivalence and native
+tests. Installation retains the Python path without requiring a compiler.
+
+[Architecture](architecture.md) describes responsibilities and trust boundaries.
+[Changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)
+records subsystem changes. [Evaluation](evaluation.md) explains the meaning and
+limits of engineering tests and workload measurements.
+
+## Product direction
+
+The long-term objective is a trusted standard for evidence-backed extraction:
+structured data with inspectable origins, controlled execution and reproducible
+transformations. Subsequent version changes are recorded in release notes. Feature
+requests are welcome through the project's issue tracker.
 
 ---
 
