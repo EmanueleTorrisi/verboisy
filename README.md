@@ -77,6 +77,18 @@ See [file capabilities](docs/formats.md) for precise contracts. Binary capture i
 not OCR, image understanding or universal document extraction. Service-specific
 connectors, OAuth flows and API pagination require explicit integrations.
 
+## Workflows in practice
+
+- [Multi-source research catalogue](examples/research_catalog/README.md): define
+  permitted sources, a compound identity and a target of 100 grounded facility records.
+- [Large local observation pipeline](examples/streaming_observations/README.md):
+  generate multi-gigabyte synthetic input, pause and resume preparation, then page
+  through committed records without loading the dataset into memory.
+
+These are executable workflows, not prerecorded results. Research uses the selected
+model and actual sources; the scale example labels its generated data as synthetic.
+See [evaluation](docs/evaluation.md) for the meaning of workload measurements.
+
 ## Getting started
 
 ### Requirements
@@ -227,7 +239,7 @@ boundaries. [Validation](docs/validation.md) describes reproducible engineering 
 | [CLI reference](docs/cli.md) · [Python API](docs/api.md) | [Contracts](docs/contracts.md) · [Identity and SmartID](docs/smartid.md) |
 | [Source ingestion](docs/ingestion.md) · [File capabilities](docs/formats.md) | [Projection and source evidence](docs/proof.md) · [Search and recovery](docs/search-and-recovery.md) |
 | [Presentation](docs/presentation.md) · [Research semantics](docs/research-semantics.md) | [Providers](docs/providers.md) · [Large local datasets](docs/streaming.md) |
-| [Security policy](.github/SECURITY.md) · [Reporting and collaboration](.github/CONTRIBUTING.md) | [Release notes](CHANGELOG.md) · [Roadmap](docs/development-roadmap.md) |
+| [Security policy](.github/SECURITY.md) · [Reporting and collaboration](.github/CONTRIBUTING.md) | [Release notes](CHANGELOG.md) · [Version evolution](docs/development-roadmap.md) |
 | [Licensing](docs/licensing.md) · [Commercial enquiries](docs/commercial.md) | [Copyright and third-party notices](COPYRIGHT.md) |
 
 ## Licensing, demos and commercial enquiries
@@ -249,7 +261,7 @@ Describe the workflow, source types, expected volume and deployment environment.
 Do not send confidential datasets or credentials in an initial enquiry. Pricing,
 support, delivery dates and usage rights are agreed individually.
 
-## Feedback and future releases
+## Feedback and collaboration
 
 Verboisy is created and maintained by **Emanuele Torrisi**, currently the project's
 sole developer. Bug reports and feature requests are welcome through
@@ -260,9 +272,7 @@ Unsolicited code contributions are not currently accepted. Future paid collabora
 may be arranged where it fits the product roadmap; discuss scope, compensation and
 intellectual-property terms before beginning work. See [participation guidelines](.github/CONTRIBUTING.md).
 
-Further versions are planned to improve extraction quality, source coverage,
-scalability and usability. The [roadmap](docs/development-roadmap.md) separates
-implemented capabilities from future directions. The project does not promise
-perfect accuracy, universal provider compatibility or a replacement for every data
-platform. Source permissions, independent review and measured task outcomes remain
-essential to responsible use.
+Subsequent versions are recorded in the [changelog](CHANGELOG.md). The
+[version roadmap](docs/development-roadmap.md) documents the progression from 0.1.0
+to the current architecture. Source permissions, independent review and measured
+task outcomes define the scope of a research result.
