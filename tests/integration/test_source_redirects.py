@@ -3,6 +3,7 @@
 
 """Real Chromium source-scope redirects; loopback fixture and no model requests."""
 
+import os
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest.mock import AsyncMock, patch
@@ -81,6 +82,7 @@ async def test_redirect_scope_before_destination_fetch(tmp_path, case, status):
             allow_private_network=True,
             search_provider="disabled",
             browser_auto_install=False,
+            browser_sandbox=os.environ.get("TEST_BROWSER_SANDBOX", "true") == "true",
         ),
     )
     try:
