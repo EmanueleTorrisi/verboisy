@@ -14,9 +14,9 @@
 </p>
 
 <h1 align="center">Verboisy</h1>
-**Von einer Forschungsfrage zu einem Datensatz mit nachvollziehbaren Quellen.**
+<p align="center"><strong>Von einer Forschungsfrage zu einem Datensatz mit nachvollziehbaren Quellen.</strong></p>
+<p align="center">Beleggestützte Recherche · Strukturierte Extraktion · Lokale Daten · Portable Provenienz</p>
 
-Beleggestützte Recherche · Strukturierte Extraktion · Lokale Daten · Portable Provenienz
 
 ## Das Produkt
 
