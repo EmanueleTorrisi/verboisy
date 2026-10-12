@@ -76,8 +76,8 @@ poetry run verboisy model-config
 ```bash
 poetry run verboisy run \
   --goal "Encuentra instituciones de investigación y sus sitios web oficiales publicados explícitamente" \
-  --schema '[name,website,country]' \
-  --export institutions.json
+  --schema '[nombre,sitio_web,pais]' \
+  --export instituciones.json
 ```
 
 El descubrimiento automático requiere un proveedor de búsqueda; un task puede declarar URL iniciales. JSON Schema permite tipos y restricciones precisos. Los datos ausentes pueden permanecer `null`; los valores sin respaldo se rechazan. Aceptar resultados no certifica cobertura exhaustiva de la web.
@@ -85,12 +85,12 @@ El descubrimiento automático requiere un proveedor de búsqueda; un task puede 
 ```python
 from verboisy import run
 
-result = run(
+resultado = run(
     goal="Encuentra instituciones de investigación y sus sitios web oficiales publicados",
-    schema=["name", "website", "country"],
-    export="institutions.json",
+    schema=["nombre", "sitio_web", "pais"],
+    export="instituciones.json",
 )
-print(result.run_id, result.status, result.records)
+print(resultado.run_id, resultado.status, resultado.records)
 ```
 
 Las aplicaciones asíncronas usan `arun`. La API habitual materializa los registros aceptados; las entradas locales grandes usan streaming.
@@ -98,11 +98,11 @@ Las aplicaciones asíncronas usan `arun`. La API habitual materializa los regist
 ## Datos locales e internos
 
 ```bash
-export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+export DATASET_LOCAL_ROOTS='["/srv/datos-verboisy"]'
 poetry run verboisy run \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.json
+  --dataset-file 'jsonl=/srv/datos-verboisy/observaciones.jsonl' \
+  --schema esquema-observaciones.json \
+  --export observaciones.json
 ```
 
 El directorio y el esquema deben existir. Las credenciales de un modelo no conceden acceso al sistema de archivos. Las fuentes HTTP declaradas usan descargas limitadas, control de redirecciones, DNS fijado y secretos asociados al origen. La ubicación de fuentes y la ejecución del modelo son independientes: un modelo remoto puede recibir observaciones. Revisar transferencias, registros, red y retención antes de usar datos confidenciales.
@@ -111,22 +111,22 @@ El directorio y el esquema deben existir. Las credenciales de un modelo no conce
 
 ```bash
 poetry run verboisy stream \
-  --database observations-stream.db \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.jsonl
+  --database observaciones-flujo.db \
+  --dataset-file 'jsonl=/srv/datos-verboisy/observaciones.jsonl' \
+  --schema esquema-observaciones.json \
+  --export observaciones.jsonl
 ```
 
-El registro streaming conserva bloques inmutables y progreso transaccional. `stream-status` lista trabajos; `stream --resume JOB_ID` reanuda uno guardado. `StreamLedger` ofrece lectura por páginas.
+El registro streaming conserva bloques inmutables y progreso transaccional. `stream-status` lista trabajos; `stream --resume ID_TAREA` reanuda uno guardado. `StreamLedger` ofrece lectura por páginas.
 
 Una carga JSONL medida en Linux/Python 3.12 preparó y exportó **1.000.000 de filas** desde **1.105.888.890 bytes**, con **89,15 MiB** de RSS máximo y **130,81 s** de duración. Se verificaron integridad del export y recuperación tras borrar la fuente original. Es una medición concreta, no una garantía general. Véanse [streaming](../../docs/streaming.md) y [benchmarks](../../docs/benchmarks.md).
 
 ## Propuestas, reanudación y evidencias
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+poetry run verboisy changes --run-id ID_EJECUCION
+poetry run verboisy status --run-id ID_EJECUCION
+poetry run verboisy run --resume ID_EJECUCION
 ```
 
 `--resume` conserva los requisitos y rechaza la propuesta; `--okresume` acepta exactamente los cambios guardados. Las propuestas pueden cambiar tipos, columnas o alcance de búsqueda. Reanudar no reinicia el gasto ni autoriza otras fuentes implícitamente.
