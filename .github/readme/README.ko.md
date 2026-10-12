@@ -75,7 +75,7 @@ poetry run verboisy model-config
 
 ```bash
 poetry run verboisy run \
-  --goal "Find research institutions and their explicitly published homepages" \
+  --goal "연구 기관과 명시적으로 공개된 공식 웹사이트를 찾아 주세요" \
   --schema '[name,website,country]' \
   --export institutions.json
 ```
@@ -86,7 +86,7 @@ poetry run verboisy run \
 from verboisy import run
 
 result = run(
-    goal="Find research institutions and their published homepages",
+    goal="연구 기관과 공개된 공식 웹사이트를 찾아 주세요",
     schema=["name", "website", "country"],
     export="institutions.json",
 )
@@ -154,6 +154,6 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 요청하지 않은 코드 기여는 받지 않습니다. 유료 협업은 범위, 보수, 기밀 유지와 지식재산권에 대한 사전 합의가 필요합니다. 버전 변경은 [변경 기록](../../CHANGELOG.md), 0.1.0에서 1.0.0까지의 발전은 [버전 역사](../../docs/development-roadmap.md)에 기록합니다. [참여 정책](../CONTRIBUTING.md)과 [저작권](../../COPYRIGHT.md)을 확인하세요.
 ## 실제 워크플로 예제
 
-[Research catalogue](../../examples/research_catalog/README.md) ·
-[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
-[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+[연구 기관 목록](../../examples/research_catalog/README.md) ·
+[대규모 로컬 관측 데이터 처리](../../examples/streaming_observations/README.md) ·
+[버전 이력: 0.1.0–1.0.0](../../docs/development-roadmap.md)
