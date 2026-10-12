@@ -75,7 +75,7 @@ poetry run verboisy model-config
 
 ```bash
 poetry run verboisy run \
-  --goal "Find research institutions and their explicitly published homepages" \
+  --goal "查找研究机构及其明确公开的官方网站" \
   --schema '[name,website,country]' \
   --export institutions.json
 ```
@@ -86,7 +86,7 @@ poetry run verboisy run \
 from verboisy import run
 
 result = run(
-    goal="Find research institutions and their published homepages",
+    goal="查找研究机构及其公开的官方网站",
     schema=["name", "website", "country"],
     export="institutions.json",
 )
@@ -154,6 +154,6 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 目前不接受未经邀请的代码贡献。有偿合作需事先约定范围、报酬、保密和知识产权。版本变化记录在[更新日志](../../CHANGELOG.md)中；[版本历史](../../docs/development-roadmap.md)说明从 0.1.0 到 1.0.0 的架构演进。请参阅[参与政策](../CONTRIBUTING.md)和[版权](../../COPYRIGHT.md)。
 ## 应用工作流示例
 
-[Research catalogue](../../examples/research_catalog/README.md) ·
-[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
-[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+[研究机构目录](../../examples/research_catalog/README.md) ·
+[大型本地观测数据处理流程](../../examples/streaming_observations/README.md) ·
+[版本历史：0.1.0–1.0.0](../../docs/development-roadmap.md)
