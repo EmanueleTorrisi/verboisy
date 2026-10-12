@@ -75,7 +75,7 @@ poetry run verboisy model-config
 
 ```bash
 poetry run verboisy run \
-  --goal "Find research institutions and their explicitly published homepages" \
+  --goal "研究機関と、明示的に公開されている公式ウェブサイトを探してください" \
   --schema '[name,website,country]' \
   --export institutions.json
 ```
@@ -86,7 +86,7 @@ poetry run verboisy run \
 from verboisy import run
 
 result = run(
-    goal="Find research institutions and their published homepages",
+    goal="研究機関と、公開されている公式ウェブサイトを探してください",
     schema=["name", "website", "country"],
     export="institutions.json",
 )
@@ -154,6 +154,6 @@ Verboisy は独自ライセンスのソフトウェアで、**オープンソー
 依頼していないコード提供は受け付けません。有償協力には、範囲、報酬、守秘義務、知的財産権について事前の合意が必要です。版ごとの変更は[変更履歴](../../CHANGELOG.md)、0.1.0 から 1.0.0 への構成の変遷は[バージョン履歴](../../docs/development-roadmap.md)に記録しています。[参加方針](../CONTRIBUTING.md)と[著作権](../../COPYRIGHT.md)も参照してください。
 ## 実践的なワークフロー
 
-[Research catalogue](../../examples/research_catalog/README.md) ·
-[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
-[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+[研究機関のカタログ](../../examples/research_catalog/README.md) ·
+[大規模なローカル観測データの処理](../../examples/streaming_observations/README.md) ·
+[バージョン履歴：0.1.0–1.0.0](../../docs/development-roadmap.md)
