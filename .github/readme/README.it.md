@@ -14,9 +14,9 @@
 </p>
 
 <h1 align="center">Verboisy</h1>
-**Dalla domanda di ricerca a un dataset di cui puoi verificare le fonti.**
+<p align="center"><strong>Dalla domanda di ricerca a un dataset di cui puoi verificare le fonti.</strong></p>
+<p align="center">Ricerca con prove · Estrazione strutturata · Dati locali · Provenienza portabile</p>
 
-Ricerca con prove · Estrazione strutturata · Dati locali · Provenienza portabile
 
 ## Il prodotto
 
