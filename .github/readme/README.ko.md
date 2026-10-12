@@ -2,10 +2,18 @@
 
 <p align="center"><img src="../../logo.png" alt="Verboisy" width="220" /></p>
 
-[English](../../README.md) · [Italiano](README.it.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [简体中文](README.zh-CN.md)
+<p align="center">
+  <a href="../../README.md">English</a> ·
+  <a href="README.it.md">Italiano</a> ·
+  <a href="README.de.md">Deutsch</a> ·
+  <a href="README.fr.md">Français</a> ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
 
-# Verboisy
-
+<h1 align="center">Verboisy</h1>
 **연구 질문에서 출처를 확인할 수 있는 데이터셋까지.**
 
 근거 기반 조사 · 구조화 추출 · 로컬 데이터 · 이동 가능한 출처 기록
