@@ -76,7 +76,7 @@ poetry run verboisy model-config
 ```bash
 poetry run verboisy run \
   --goal "Trouve des établissements de recherche et leurs sites web officiels explicitement publiés" \
-  --schema '[name,website,country]' \
+  --schema '[nom,site_web,pays]' \
   --export institutions.json
 ```
 
@@ -85,12 +85,12 @@ La découverte automatique demande un fournisseur de recherche ; un task peut d�
 ```python
 from verboisy import run
 
-result = run(
+resultat = run(
     goal="Trouve des établissements de recherche et leurs sites web officiels publiés",
-    schema=["name", "website", "country"],
+    schema=["nom", "site_web", "pays"],
     export="institutions.json",
 )
-print(result.run_id, result.status, result.records)
+print(resultat.run_id, resultat.status, resultat.records)
 ```
 
 Les applications asynchrones utilisent `arun`. L'API habituelle matérialise les enregistrements acceptés ; les grands fichiers locaux utilisent le parcours streaming.
@@ -98,10 +98,10 @@ Les applications asynchrones utilisent `arun`. L'API habituelle matérialise les
 ## Données locales et internes
 
 ```bash
-export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+export DATASET_LOCAL_ROOTS='["/srv/donnees-verboisy"]'
 poetry run verboisy run \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
+  --dataset-file 'jsonl=/srv/donnees-verboisy/observations.jsonl' \
+  --schema schema-observations.json \
   --export observations.json
 ```
 
@@ -111,22 +111,22 @@ Le répertoire et le schéma doivent exister. Les identifiants d'un modèle n'ac
 
 ```bash
 poetry run verboisy stream \
-  --database observations-stream.db \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
+  --database observations-flux.db \
+  --dataset-file 'jsonl=/srv/donnees-verboisy/observations.jsonl' \
+  --schema schema-observations.json \
   --export observations.jsonl
 ```
 
-Le registre streaming conserve les blocs immuables et l'avancement transactionnel. `stream-status` liste les tâches ; `stream --resume JOB_ID` reprend une tâche enregistrée. `StreamLedger` donne accès aux enregistrements par pages.
+Le registre streaming conserve les blocs immuables et l'avancement transactionnel. `stream-status` liste les tâches ; `stream --resume ID_TACHE` reprend une tâche enregistrée. `StreamLedger` donne accès aux enregistrements par pages.
 
 Un scénario JSONL mesuré sous Linux/Python 3.12 a préparé et exporté **1 000 000 de lignes** à partir de **1 105 888 890 octets**, avec **89,15 MiB** de RSS maximal et **130,81 s** de durée. Reprise après suppression de la source originale et intégrité des exports ont été vérifiées. Ce résultat concerne un scénario, pas toutes les machines ou données. Voir [streaming](../../docs/streaming.md) et [mesures](../../docs/benchmarks.md).
 
 ## Propositions, reprise et preuves
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+poetry run verboisy changes --run-id ID_EXECUTION
+poetry run verboisy status --run-id ID_EXECUTION
+poetry run verboisy run --resume ID_EXECUTION
 ```
 
 `--resume` conserve les exigences et refuse la proposition ; `--okresume` accepte exactement les changements enregistrés. Une proposition peut modifier types, colonnes ou périmètre de recherche. La reprise ne remet pas la dépense à zéro et n'élargit pas implicitement les sources autorisées.
