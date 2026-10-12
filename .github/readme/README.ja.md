@@ -76,8 +76,8 @@ poetry run verboisy model-config
 ```bash
 poetry run verboisy run \
   --goal "研究機関と、明示的に公開されている公式ウェブサイトを探してください" \
-  --schema '[name,website,country]' \
-  --export institutions.json
+  --schema '[名称,ウェブサイト,国]' \
+  --export 研究機関.json
 ```
 
 自動発見には検索プロバイダーが必要です。タスクに開始 URL を明示する方法もあります。JSON Schema で型と制約を定義できます。欠けた情報は `null` のままとなり、裏付けのない値は拒否されます。採用された出力は Web 全体の網羅性を保証しません。
@@ -85,12 +85,12 @@ poetry run verboisy run \
 ```python
 from verboisy import run
 
-result = run(
+結果 = run(
     goal="研究機関と、公開されている公式ウェブサイトを探してください",
-    schema=["name", "website", "country"],
-    export="institutions.json",
+    schema=["名称", "ウェブサイト", "国"],
+    export="研究機関.json",
 )
-print(result.run_id, result.status, result.records)
+print(結果.run_id, 結果.status, 結果.records)
 ```
 
 非同期アプリは `arun` を使います。通常の API は採用レコードをメモリー上にまとめます。大容量のローカル入力にはストリーミング経路を使ってください。
@@ -98,11 +98,11 @@ print(result.run_id, result.status, result.records)
 ## ローカル・社内データ
 
 ```bash
-export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+export DATASET_LOCAL_ROOTS='["/srv/verboisy入力"]'
 poetry run verboisy run \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.json
+  --dataset-file 'jsonl=/srv/verboisy入力/観測データ.jsonl' \
+  --schema 観測スキーマ.json \
+  --export 観測データ.json
 ```
 
 ディレクトリーとスキーマファイルはあらかじめ必要です。モデル資格情報はファイルシステムへのアクセス権を与えません。宣言済み HTTP 情報源では、取得量制限、リダイレクト規則、DNS 固定、オリジン別の資格情報を使います。情報源の場所とモデルの実行場所は別です。リモートモデルには観測内容が送られることがあります。機密情報を扱う前に、転送、ログ、ネットワーク、保存方針を確認してください。
@@ -111,22 +111,22 @@ poetry run verboisy run \
 
 ```bash
 poetry run verboisy stream \
-  --database observations-stream.db \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.jsonl
+  --database 観測ストリーム.db \
+  --dataset-file 'jsonl=/srv/verboisy入力/観測データ.jsonl' \
+  --schema 観測スキーマ.json \
+  --export 観測データ.jsonl
 ```
 
-台帳は不変の取得ブロックとトランザクション単位の進捗を保存します。`stream-status` でジョブを一覧し、`stream --resume JOB_ID` で保存済みジョブを再開できます。`StreamLedger` はページ単位のアクセスを提供します。
+台帳は不変の取得ブロックとトランザクション単位の進捗を保存します。`stream-status` でジョブを一覧し、`stream --resume ジョブID` で保存済みジョブを再開できます。`StreamLedger` はページ単位のアクセスを提供します。
 
 Linux/Python 3.12 の JSONL 測定では、**1,000,000 行**、**1,105,888,890 バイト**を準備・出力し、最大 RSS は **89.15 MiB**、経過時間は **130.81 秒**でした。元ファイル削除後の復旧と出力の整合性も確認しました。これは一つの負荷の測定で、一般的な速度や容量の保証ではありません。[ストリーミング](../../docs/streaming.md)と[ベンチマーク](../../docs/benchmarks.md)を参照してください。
 
 ## 提案、再開、証拠
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+poetry run verboisy changes --run-id 実行ID
+poetry run verboisy status --run-id 実行ID
+poetry run verboisy run --resume 実行ID
 ```
 
 `--resume` は現在の要件を維持して提案を辞退します。`--okresume` は保存された変更だけを承認します。提案は型、列、調査範囲を変更できます。再開は消費量をリセットせず、情報源への権限も暗黙に増やしません。
