@@ -75,7 +75,7 @@ poetry run verboisy model-config
 
 ```bash
 poetry run verboisy run \
-  --goal "Find research institutions and their explicitly published homepages" \
+  --goal "Trouve des établissements de recherche et leurs sites web officiels explicitement publiés" \
   --schema '[name,website,country]' \
   --export institutions.json
 ```
@@ -86,7 +86,7 @@ La découverte automatique demande un fournisseur de recherche ; un task peut d�
 from verboisy import run
 
 result = run(
-    goal="Find research institutions and their published homepages",
+    goal="Trouve des établissements de recherche et leurs sites web officiels publiés",
     schema=["name", "website", "country"],
     export="institutions.json",
 )
@@ -154,6 +154,6 @@ Contacter **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** 
 Les contributions de code non sollicitées ne sont pas acceptées. Une collaboration rémunérée nécessite un accord préalable sur le périmètre, la rémunération, la confidentialité et la propriété intellectuelle. Les changements figurent dans le [changelog](../../CHANGELOG.md) ; l’[historique](../../docs/development-roadmap.md) décrit le parcours de 0.1.0 à 1.0.0. Voir [participation](../CONTRIBUTING.md) et [droits](../../COPYRIGHT.md).
 ## Exemples de workflows
 
-[Research catalogue](../../examples/research_catalog/README.md) ·
-[Large local observation pipeline](../../examples/streaming_observations/README.md) ·
-[Version history: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+[Catalogue des établissements de recherche](../../examples/research_catalog/README.md) ·
+[Traitement de grands jeux de données locaux d’observations](../../examples/streaming_observations/README.md) ·
+[Historique des versions : 0.1.0–1.0.0](../../docs/development-roadmap.md)
