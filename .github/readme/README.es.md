@@ -14,9 +14,9 @@
 </p>
 
 <h1 align="center">Verboisy</h1>
-**De una pregunta de investigación a un conjunto de datos con fuentes verificables.**
+<p align="center"><strong>De una pregunta de investigación a un conjunto de datos con fuentes verificables.</strong></p>
+<p align="center">Investigación con evidencias · Extracción estructurada · Datos locales · Procedencia portable</p>
 
-Investigación con evidencias · Extracción estructurada · Datos locales · Procedencia portable
 
 ## El producto
 
