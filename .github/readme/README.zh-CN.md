@@ -76,8 +76,8 @@ poetry run verboisy model-config
 ```bash
 poetry run verboisy run \
   --goal "查找研究机构及其明确公开的官方网站" \
-  --schema '[name,website,country]' \
-  --export institutions.json
+  --schema '[名称,网站,国家]' \
+  --export 研究机构.json
 ```
 
 自动发现需要搜索提供商，也可在任务中声明起始 URL。JSON Schema 可精确定义类型与约束。缺失信息可能保持为 `null`；无证据支持的值会被拒绝。接受输出不代表已穷尽整个网页范围。
@@ -85,12 +85,12 @@ poetry run verboisy run \
 ```python
 from verboisy import run
 
-result = run(
+结果 = run(
     goal="查找研究机构及其公开的官方网站",
-    schema=["name", "website", "country"],
-    export="institutions.json",
+    schema=["名称", "网站", "国家"],
+    export="研究机构.json",
 )
-print(result.run_id, result.status, result.records)
+print(结果.run_id, 结果.status, 结果.records)
 ```
 
 异步应用使用 `arun`。普通 API 会将接受的记录物化到内存；大型本地输入应使用流式流程。
@@ -98,11 +98,11 @@ print(result.run_id, result.status, result.records)
 ## 本地与内部数据
 
 ```bash
-export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+export DATASET_LOCAL_ROOTS='["/srv/verboisy输入"]'
 poetry run verboisy run \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.json
+  --dataset-file 'jsonl=/srv/verboisy输入/观测数据.jsonl' \
+  --schema 观测模式.json \
+  --export 观测数据.json
 ```
 
 目录和模式文件必须存在。模型凭据不会授予文件系统权限。声明的 HTTP 来源采用受限下载、重定向策略、DNS 固定以及按来源绑定的凭据。来源位置与模型运行位置是独立选择：远程模型可能接收观察内容。处理机密数据前应检查传输、日志、网络和保留策略。
@@ -111,22 +111,22 @@ poetry run verboisy run \
 
 ```bash
 poetry run verboisy stream \
-  --database observations-stream.db \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.jsonl
+  --database 观测流.db \
+  --dataset-file 'jsonl=/srv/verboisy输入/观测数据.jsonl' \
+  --schema 观测模式.json \
+  --export 观测数据.jsonl
 ```
 
-流式台账保存不可变来源块及事务提交的进度。`stream-status` 列出任务，`stream --resume JOB_ID` 恢复已保存任务。`StreamLedger` 提供分页读取。
+流式台账保存不可变来源块及事务提交的进度。`stream-status` 列出任务，`stream --resume 任务ID` 恢复已保存任务。`StreamLedger` 提供分页读取。
 
 在 Linux/Python 3.12 的 JSONL 测量中，处理并导出了 **1,000,000 行**、**1,105,888,890 字节**，峰值 RSS 为 **89.15 MiB**，耗时 **130.81 秒**。删除原始来源后的恢复和导出完整性也经过验证。这是一项特定负载的测量，不是普遍速度或内存保证。请参阅[流式处理](../../docs/streaming.md)和[基准测试](../../docs/benchmarks.md)。
 
 ## 建议、恢复与证据
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+poetry run verboisy changes --run-id 运行ID
+poetry run verboisy status --run-id 运行ID
+poetry run verboisy run --resume 运行ID
 ```
 
 `--resume` 保留原要求并拒绝建议；`--okresume` 只接受已保存的确切变更。建议可改变类型、列或搜索范围。恢复不会重置消耗，也不会隐式扩大来源权限。
