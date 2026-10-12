@@ -76,8 +76,8 @@ poetry run verboisy model-config
 ```bash
 poetry run verboisy run \
   --goal "연구 기관과 명시적으로 공개된 공식 웹사이트를 찾아 주세요" \
-  --schema '[name,website,country]' \
-  --export institutions.json
+  --schema '[이름,웹사이트,국가]' \
+  --export 연구기관.json
 ```
 
 자동 발견에는 검색 공급자가 필요하며 작업에서 시작 URL을 명시할 수도 있습니다. JSON Schema로 타입과 제약을 구체화합니다. 없는 정보는 `null`로 남을 수 있고 근거 없는 값은 거부됩니다. 채택된 결과가 웹 전체의 완전성을 보증하지는 않습니다.
@@ -85,12 +85,12 @@ poetry run verboisy run \
 ```python
 from verboisy import run
 
-result = run(
+결과 = run(
     goal="연구 기관과 공개된 공식 웹사이트를 찾아 주세요",
-    schema=["name", "website", "country"],
-    export="institutions.json",
+    schema=["이름", "웹사이트", "국가"],
+    export="연구기관.json",
 )
-print(result.run_id, result.status, result.records)
+print(결과.run_id, 결과.status, 결과.records)
 ```
 
 비동기 앱은 `arun`을 사용합니다. 일반 API는 채택된 레코드를 메모리에 구성하며, 큰 로컬 입력에는 스트리밍 흐름을 사용해야 합니다.
@@ -98,11 +98,11 @@ print(result.run_id, result.status, result.records)
 ## 로컬 및 내부 데이터
 
 ```bash
-export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+export DATASET_LOCAL_ROOTS='["/srv/verboisy입력"]'
 poetry run verboisy run \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.json
+  --dataset-file 'jsonl=/srv/verboisy입력/관측데이터.jsonl' \
+  --schema 관측스키마.json \
+  --export 관측데이터.json
 ```
 
 디렉터리와 스키마 파일이 있어야 합니다. 모델 자격 증명은 파일 시스템 접근 권한을 주지 않습니다. 선언된 HTTP 출처는 제한된 다운로드, 리디렉션 정책, DNS 고정 및 출처별 비밀 값을 사용합니다. 출처의 위치와 모델 실행 위치는 독립적입니다. 원격 모델로 관찰 내용이 전송될 수 있으므로 기밀 자료를 처리하기 전에 전송, 로그, 네트워크 및 보관 정책을 확인하세요.
@@ -111,22 +111,22 @@ poetry run verboisy run \
 
 ```bash
 poetry run verboisy stream \
-  --database observations-stream.db \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.jsonl
+  --database 관측스트림.db \
+  --dataset-file 'jsonl=/srv/verboisy입력/관측데이터.jsonl' \
+  --schema 관측스키마.json \
+  --export 관측데이터.jsonl
 ```
 
-스트리밍 원장은 불변 원본 청크와 트랜잭션 진행 상황을 보존합니다. `stream-status`로 작업을 확인하고 `stream --resume JOB_ID`로 저장된 작업을 재개합니다. `StreamLedger`는 페이지 단위 읽기를 제공합니다.
+스트리밍 원장은 불변 원본 청크와 트랜잭션 진행 상황을 보존합니다. `stream-status`로 작업을 확인하고 `stream --resume 작업ID`로 저장된 작업을 재개합니다. `StreamLedger`는 페이지 단위 읽기를 제공합니다.
 
 Linux/Python 3.12의 JSONL 측정에서는 **1,000,000행**, **1,105,888,890바이트**를 준비·출력했고 최대 RSS는 **89.15 MiB**, 경과 시간은 **130.81초**였습니다. 원본 삭제 후 복구와 출력 무결성도 검증했습니다. 이는 특정 작업의 측정이며 보편적인 속도나 메모리 보장은 아닙니다. [스트리밍](../../docs/streaming.md)과 [벤치마크](../../docs/benchmarks.md)를 참조하세요.
 
 ## 제안, 재개와 근거
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+poetry run verboisy changes --run-id 실행ID
+poetry run verboisy status --run-id 실행ID
+poetry run verboisy run --resume 실행ID
 ```
 
 `--resume`은 기존 요구를 유지하고 제안을 거절합니다. `--okresume`은 저장된 변경만 승인합니다. 제안은 타입, 열 또는 검색 범위를 바꿀 수 있습니다. 재개는 사용량을 초기화하거나 출처 권한을 암묵적으로 확대하지 않습니다.
