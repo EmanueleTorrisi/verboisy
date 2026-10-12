@@ -76,8 +76,8 @@ poetry run verboisy model-config
 ```bash
 poetry run verboisy run \
   --goal "Finde Forschungseinrichtungen und ihre ausdrücklich veröffentlichten offiziellen Websites" \
-  --schema '[name,website,country]' \
-  --export institutions.json
+  --schema '[name,webseite,land]' \
+  --export forschungseinrichtungen.json
 ```
 
 Automatische Entdeckung benötigt einen Suchanbieter; explizite Start-URLs können in einem Task deklariert werden. JSON Schema ermöglicht präzise Typen und Regeln. Fehlende Angaben können `null` bleiben; unbelegte Werte werden zurückgewiesen. Angenommene Ergebnisse bedeuten keine vollständige Webabdeckung.
@@ -85,12 +85,12 @@ Automatische Entdeckung benötigt einen Suchanbieter; explizite Start-URLs könn
 ```python
 from verboisy import run
 
-result = run(
+ergebnis = run(
     goal="Finde Forschungseinrichtungen und ihre veröffentlichten offiziellen Websites",
-    schema=["name", "website", "country"],
-    export="institutions.json",
+    schema=["name", "webseite", "land"],
+    export="forschungseinrichtungen.json",
 )
-print(result.run_id, result.status, result.records)
+print(ergebnis.run_id, ergebnis.status, ergebnis.records)
 ```
 
 Asynchrone Anwendungen verwenden `arun`. Die normale API materialisiert angenommene Datensätze; große lokale Eingaben benötigen den Streaming-Ablauf.
@@ -98,11 +98,11 @@ Asynchrone Anwendungen verwenden `arun`. Die normale API materialisiert angenomm
 ## Lokale und interne Daten
 
 ```bash
-export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+export DATASET_LOCAL_ROOTS='["/srv/verboisy-eingaben"]'
 poetry run verboisy run \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.json
+  --dataset-file 'jsonl=/srv/verboisy-eingaben/beobachtungen.jsonl' \
+  --schema beobachtungsschema.json \
+  --export beobachtungen.json
 ```
 
 Verzeichnis und Schema müssen vorhanden sein. Modellzugangsdaten gewähren keinen Dateisystemzugriff. Deklarierte HTTP-Quellen verwenden begrenzte Downloads, Redirect-Prüfung, DNS-Pinning und ursprungsgebundene Geheimnisse. Quellort und Modellausführung sind unabhängig: Ein entferntes Modell kann Beobachtungen erhalten. Vor vertraulichen Daten sind Datenübertragung, Protokolle, Netzwerk und Aufbewahrung zu prüfen.
@@ -111,22 +111,22 @@ Verzeichnis und Schema müssen vorhanden sein. Modellzugangsdaten gewähren kein
 
 ```bash
 poetry run verboisy stream \
-  --database observations-stream.db \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.jsonl
+  --database beobachtungen-stream.db \
+  --dataset-file 'jsonl=/srv/verboisy-eingaben/beobachtungen.jsonl' \
+  --schema beobachtungsschema.json \
+  --export beobachtungen.jsonl
 ```
 
-Der Streaming-Speicher bewahrt unveränderliche Quellblöcke und transaktionalen Fortschritt. `stream-status` listet Aufträge; `stream --resume JOB_ID` setzt einen gespeicherten Auftrag fort. `StreamLedger` bietet seitenweisen Zugriff.
+Der Streaming-Speicher bewahrt unveränderliche Quellblöcke und transaktionalen Fortschritt. `stream-status` listet Aufträge; `stream --resume AUFTRAG_ID` setzt einen gespeicherten Auftrag fort. `StreamLedger` bietet seitenweisen Zugriff.
 
 Ein gemessener Linux/Python-3.12-JSONL-Workload verarbeitete und exportierte **1.000.000 Zeilen** aus **1.105.888.890 Bytes**, bei **89,15 MiB** maximalem RSS und **130,81 s** Laufzeit. Wiederaufnahme nach Entfernung der Originalquelle und Exportintegrität wurden geprüft. Das beschreibt einen Workload, keine allgemeine Zusicherung. Siehe [Streaming](../../docs/streaming.md) und [Benchmarks](../../docs/benchmarks.md).
 
 ## Vorschläge, Wiederaufnahme und Belege
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+poetry run verboisy changes --run-id LAUF_ID
+poetry run verboisy status --run-id LAUF_ID
+poetry run verboisy run --resume LAUF_ID
 ```
 
 `--resume` behält Anforderungen bei und lehnt das Angebot ab; `--okresume` akzeptiert genau die gespeicherten Änderungen. Angebote können Typen, Spalten oder Suchumfang ändern. Wiederaufnahme setzt Verbrauch nicht zurück und erweitert Quellrechte nicht stillschweigend.
