@@ -11,10 +11,15 @@
 </p>
 <p align="center"><a href="#what-verboisy-does">Overview</a> · <a href="#getting-started">Getting started</a> · <a href="#documentation">Documentation</a> · <a href="#licensing-demos-and-commercial-enquiries">Demos & licensing</a></p>
 
-[Italiano](.github/readme/README.it.md) · [Deutsch](.github/readme/README.de.md) ·
-[Français](.github/readme/README.fr.md) · [Español](.github/readme/README.es.md) ·
-[日本語](.github/readme/README.ja.md) · [한국어](.github/readme/README.ko.md) ·
-[简体中文](.github/readme/README.zh-CN.md)
+<p align="center">
+  <a href=".github/readme/README.it.md">Italiano</a> ·
+  <a href=".github/readme/README.de.md">Deutsch</a> ·
+  <a href=".github/readme/README.fr.md">Français</a> ·
+  <a href=".github/readme/README.es.md">Español</a> ·
+  <a href=".github/readme/README.ja.md">日本語</a> ·
+  <a href=".github/readme/README.ko.md">한국어</a> ·
+  <a href=".github/readme/README.zh-CN.md">简体中文</a>
+</p>
 
 ## What Verboisy does
 
