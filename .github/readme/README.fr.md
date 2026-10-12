@@ -14,9 +14,9 @@
 </p>
 
 <h1 align="center">Verboisy</h1>
-**D'une question de recherche à un jeu de données dont les sources sont vérifiables.**
+<p align="center"><strong>D'une question de recherche à un jeu de données dont les sources sont vérifiables.</strong></p>
+<p align="center">Recherche fondée sur des preuves · Extraction structurée · Données locales · Provenance portable</p>
 
-Recherche fondée sur des preuves · Extraction structurée · Données locales · Provenance portable
 
 ## Le produit
 
