@@ -76,8 +76,8 @@ poetry run verboisy model-config
 ```bash
 poetry run verboisy run \
   --goal "Trova istituti di ricerca e i loro siti web ufficiali esplicitamente pubblicati" \
-  --schema '[name,website,country]' \
-  --export institutions.json
+  --schema '[nome,sito_web,paese]' \
+  --export istituzioni.json
 ```
 
 La scoperta automatica richiede un provider di ricerca; un task può invece dichiarare URL iniziali espliciti. JSON Schema permette tipi e vincoli precisi. Informazioni assenti possono restare `null`; valori non supportati vengono rifiutati. L'accettazione non certifica una copertura esaustiva del web.
@@ -85,12 +85,12 @@ La scoperta automatica richiede un provider di ricerca; un task può invece dich
 ```python
 from verboisy import run
 
-result = run(
+risultato = run(
     goal="Trova istituti di ricerca e i loro siti web ufficiali pubblicati",
-    schema=["name", "website", "country"],
-    export="institutions.json",
+    schema=["nome", "sito_web", "paese"],
+    export="istituzioni.json",
 )
-print(result.run_id, result.status, result.records)
+print(risultato.run_id, risultato.status, risultato.records)
 ```
 
 Le applicazioni asincrone usano `arun`. L'API ordinaria materializza i record accettati; per grandi input locali usa il percorso streaming.
@@ -98,11 +98,11 @@ Le applicazioni asincrone usano `arun`. L'API ordinaria materializza i record ac
 ## Dati locali e sistemi interni
 
 ```bash
-export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
+export DATASET_LOCAL_ROOTS='["/srv/dati-verboisy"]'
 poetry run verboisy run \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.json
+  --dataset-file 'jsonl=/srv/dati-verboisy/osservazioni.jsonl' \
+  --schema schema-osservazioni.json \
+  --export osservazioni.json
 ```
 
 Directory e schema devono esistere. Le credenziali di un modello non autorizzano l'accesso al filesystem. Gli input HTTP dichiarati usano download limitati, controlli sui redirect, DNS vincolato e credenziali associate all'origine. La posizione delle fonti è indipendente dall'esecuzione del modello: un modello remoto può ricevere le osservazioni. Valuta trattamento dei dati, log, rete e conservazione prima di usare informazioni riservate.
@@ -111,22 +111,22 @@ Directory e schema devono esistere. Le credenziali di un modello non autorizzano
 
 ```bash
 poetry run verboisy stream \
-  --database observations-stream.db \
-  --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
-  --schema observation-schema.json \
-  --export observations.jsonl
+  --database osservazioni-stream.db \
+  --dataset-file 'jsonl=/srv/dati-verboisy/osservazioni.jsonl' \
+  --schema schema-osservazioni.json \
+  --export osservazioni.jsonl
 ```
 
-Il registro streaming conserva blocchi immutabili e progressi transazionali. `stream-status` elenca i lavori; `stream --resume JOB_ID` riprende un lavoro salvato. `StreamLedger` permette accesso per pagine.
+Il registro streaming conserva blocchi immutabili e progressi transazionali. `stream-status` elenca i lavori; `stream --resume ID_LAVORO` riprende un lavoro salvato. `StreamLedger` permette accesso per pagine.
 
 Un carico JSONL misurato su Linux/Python 3.12 ha preparato ed esportato **1.000.000 di righe**, da **1.105.888.890 byte**, con **89,15 MiB** di RSS massimo e **130,81 s** di durata. Sono stati verificati integrità dell'export e recupero dopo la cancellazione della fonte originale. È una misura di quel carico, non una garanzia generale. Vedi [streaming](../../docs/streaming.md) e [benchmark](../../docs/benchmarks.md).
 
 ## Proposte, ripresa e prove
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+poetry run verboisy changes --run-id ID_ESECUZIONE
+poetry run verboisy status --run-id ID_ESECUZIONE
+poetry run verboisy run --resume ID_ESECUZIONE
 ```
 
 `--resume` conserva i requisiti e rifiuta la proposta; `--okresume` accetta esattamente le modifiche salvate. Le proposte possono cambiare tipi, colonne o ambito della ricerca. La ripresa non azzera la spesa e non autorizza altre fonti implicitamente.
