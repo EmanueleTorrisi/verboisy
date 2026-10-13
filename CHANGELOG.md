@@ -6,6 +6,19 @@ Changes are grouped by product version and technical subsystem. Version identifi
 refer to the corresponding implementation; publication dates are recorded with
 release tags rather than inferred from documentation edits.
 
+## Unreleased
+
+### Export integrity and ingestion performance
+
+- Reject output and provenance aliases of source, configuration, ledger and SmartID
+  inputs, including symlinks and hardlinks. Retain known input paths on resume and
+  recheck destinations before publication.
+- Protect formula-capable streaming CSV headers and cells by default. Add a saved
+  JSON-encoded CSV mode while preserving original values in evidence sidecars.
+- Replace per-row collection recounting with committed admission deltas. Preserve
+  duplicate, preferred-replacement and conflict behavior without changing public
+  disposition strings. Add a reproducible complete-ingestion benchmark.
+
 ## 1.0.0
 
 ### Acquisition and provider execution
