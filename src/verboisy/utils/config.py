@@ -3,9 +3,11 @@
 
 """Validated configuration loaded at run time, without import side effects."""
 
+import inspect
+from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, PrivateAttr, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from verboisy.presentation_config import (
@@ -18,8 +20,29 @@ from verboisy.presentation_config import (
 from verboisy.provider_config import ProviderProfile, ResponseMode
 from verboisy.source_config import validate_http_headers
 
+_SETTINGS_PARAMETERS = inspect.signature(BaseSettings.__init__)
+
 
 class Settings(BaseSettings):
+    _input_files: tuple[Path, ...] = PrivateAttr(default=())
+
+    def __init__(self, *args: Any, **values: Any) -> None:
+        # BaseSettings does not retain the dotenv filename. Keep only its path,
+        # never credential contents, so exports cannot replace configuration.
+        # Bind the upstream signature rather than fixing a positional index that
+        # can change between supported pydantic-settings versions.
+        bound = _SETTINGS_PARAMETERS.bind(self, *args, **values)
+        env_files = bound.arguments.get("_env_file", self.model_config.get("env_file"))
+        if env_files == _SETTINGS_PARAMETERS.parameters["_env_file"].default:
+            env_files = self.model_config.get("env_file")
+        super().__init__(*args, **values)
+        paths = env_files if isinstance(env_files, list | tuple) else (env_files,)
+        self._input_files = tuple(Path(path).resolve() for path in paths if path is not None)
+
+    def input_files(self) -> tuple[Path, ...]:
+        """Return dotenv paths read by this instance, independently of later chdir."""
+        return self._input_files
+
     openai_api_key: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None
     litellm_api_key: SecretStr | None = None
