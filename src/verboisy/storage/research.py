@@ -248,7 +248,7 @@ class ResearchStore:
 
         def candidates(status: str) -> list[Any]:
             rows = self.db.execute(
-                "SELECT * FROM pages " "WHERE run_id=? AND status=? " "ORDER BY depth,id",
+                "SELECT * FROM pages WHERE run_id=? AND status=? ORDER BY depth,id",
                 (rid, status),
             ).fetchall()
 
@@ -269,7 +269,7 @@ class ResearchStore:
                 return None
 
             self.db.execute(
-                "UPDATE pages " "SET status='active',reason=? " "WHERE id=?",
+                "UPDATE pages SET status='active',reason=? WHERE id=?",
                 (
                     ("dataset_repair" if row["status"] == "repair" else None),
                     row["id"],
@@ -286,7 +286,7 @@ class ResearchStore:
         """Demote legacy queued overflow without discarding work."""
 
         rows = self.db.execute(
-            "SELECT id FROM pages " "WHERE run_id=? AND status='queued' " "ORDER BY depth,id",
+            "SELECT id FROM pages WHERE run_id=? AND status='queued' ORDER BY depth,id",
             (rid,),
         ).fetchall()
 
@@ -298,7 +298,7 @@ class ResearchStore:
 
         with self.db:
             self.db.executemany(
-                "UPDATE pages SET status='deferred' " "WHERE id=?",
+                "UPDATE pages SET status='deferred' WHERE id=?",
                 [(row["id"],) for row in overflow],
             )
 
@@ -431,8 +431,16 @@ class ResearchStore:
         task: TaskSpec,
         *,
         preference: str | None = None,
+        record_delta: list[int] | None = None,
     ) -> str:
-        return admit_candidate(
+        """Admit normally and optionally report the committed record-count change.
+
+        The caller receives the delta only after the admission transaction commits.
+        Inserts, duplicates, replacements and conflict deletions retain their usual
+        disposition strings. No record payloads are decoded just to count rows.
+        """
+        delta = [0]
+        outcome = admit_candidate(
             self.db,
             rid,
             page,
@@ -443,7 +451,11 @@ class ResearchStore:
             encode=encode,
             lookup=lookup,
             stable_row_id=_stable_row_id,
+            record_delta=delta,
         )
+        if record_delta is not None:
+            record_delta[:] = delta
+        return outcome
 
     def records(self, rid: str) -> list[dict[str, Any]]:
         """Return a grounded effective view without modifying source evidence."""
