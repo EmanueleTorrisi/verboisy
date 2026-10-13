@@ -54,8 +54,8 @@ which implementation changed. Stable output digests omit generated ledger identi
 while retaining values, derivation steps and status; contributor identities are checked
 against the ledger on every invocation.
 
-Use `--rows` for parsing, verification, grouping and sorting (1–100,000); use
-`--lineage-rows` for lineage (1–2,000). `--repeats` accepts 1–100. Repeat `--case` to
+Use `--rows` for parsing, verification, grouping and sorting (1-100,000); use
+`--lineage-rows` for lineage (1-2,000). `--repeats` accepts 1-100. Repeat `--case` to
 select work. These caps bound fixture counts, not execution time or total memory.
 Verification and ledger setup can take substantially longer than parsing.
 
@@ -63,6 +63,29 @@ Synthetic results describe these fixtures, not live research latency or every da
 Use representative, appropriately sanitized production inputs in a separate assessment
 before selecting an optimization. There is no CI speed threshold: correctness gates
 must not depend on noisy machine timings.
+
+## Ordinary ingestion workflow
+
+Measure the complete local JSON workflow, including immutable capture, candidate
+admission, result shaping, portable export and text proof:
+
+```bash
+poetry run python scripts/benchmark_ingestion.py --counts 50 100 200 400 --repeats 3 > benchmark-results/ingestion.json
+```
+
+Each repetition uses a fresh ledger. Fixture creation and final expected-value
+checks are untimed. Reports retain imported source hashes, workload hashes, runtime
+and dependency versions, wall/CPU samples, median throughput and process lifetime
+high-water RSS. RSS includes imports and all cases; it is not incremental memory
+per record. Three repetitions do not support reliable tail-latency estimates.
+Use the same driver and dependency environment for baseline and patched runs.
+
+Ordinary ingestion validates the accepted collection once at invocation entry.
+Admission then reports its committed record-count delta. Inserts increment the
+count, conflicts decrement it, and duplicates/replacements preserve it. This avoids
+repeatedly decoding the growing collection just to decide whether a target is met.
+Final evidence validation and publication retain their existing checks. Other
+collection scans and portable serialization still contribute to workflow cost.
 
 ## Selecting native work
 
