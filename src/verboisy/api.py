@@ -44,6 +44,12 @@ from verboisy.product import (
     parse_simple_schema,
 )
 from verboisy.storage.changes import SavedChange, decide_change, pending_change
+from verboisy.storage.path_safety import (
+    dataset_output_paths,
+    export_input_paths,
+    local_source_paths,
+    validate_output_paths,
+)
 from verboisy.storage.product_options import saved_export_destinations, saved_product_options
 from verboisy.storage.research import ResearchStore
 from verboisy.time_series import validate_time_series
@@ -136,6 +142,8 @@ def _export_paths(
     protected = {Path(db_path + suffix).resolve() for suffix in ("", "-wal", "-shm", ".lock")}
     occupied: set[Path] = set()
     for raw in values:
+        if Path(raw).is_symlink():
+            raise VerboisyError("Export destination cannot be a symlink")
         path = Path(raw).resolve()
         if path.suffix.lower() not in (".json", ".csv"):
             raise VerboisyError("Export paths must end in .json or .csv")
@@ -156,7 +164,25 @@ def _export_paths(
             raise VerboisyError("Export destinations have overlapping output files")
         occupied.update(distinct_outputs)
         result.append(path)
+    try:
+        validate_output_paths(
+            {output for path in result for output in dataset_output_paths(path)},
+            (Path(db_path + suffix) for suffix in ("", "-wal", "-shm", ".lock")),
+        )
+    except (OSError, ValueError) as error:
+        raise VerboisyError("Export failed: " + str(error)) from None
     return tuple(result)
+
+
+def _protect_exports(destinations: tuple[Path, ...], inputs: set[Path]) -> None:
+    """Validate the full bundle before run creation or any resume decision."""
+    try:
+        validate_output_paths(
+            {path for destination in destinations for path in dataset_output_paths(destination)},
+            inputs,
+        )
+    except (OSError, ValueError) as error:
+        raise VerboisyError(str(error)) from None
 
 
 def _export_path(value: str | Path | None, db_path: str) -> Path | None:
@@ -291,7 +317,7 @@ async def arun(
     preferences(display_overrides)  # Validate before opening or mutating the ledger.
     config = (config or Settings()).model_copy()
     display_defaults = config.presentation_defaults()
-    if not isinstance(okresume, bool | str) or isinstance(okresume, str) and not okresume.strip():
+    if not isinstance(okresume, bool | str) or (isinstance(okresume, str) and not okresume.strip()):
         raise VerboisyError("okresume must be True, False, or a nonempty run id")
     if resume and okresume:
         raise VerboisyError("Choose --resume or --okresume, not both")
@@ -303,7 +329,7 @@ async def arun(
     steps = max_steps if max_steps is not None else config.max_steps
     if not isinstance(steps, int) or isinstance(steps, bool) or steps <= 0:
         raise VerboisyError("max_steps must be a positive integer")
-    if not isinstance(resume, bool | str) or isinstance(resume, str) and not resume:
+    if not isinstance(resume, bool | str) or (isinstance(resume, str) and not resume):
         raise VerboisyError("resume must be True, False, or a nonempty run id")
     if maxrows is not None and (isinstance(maxrows, bool) or maxrows <= 0):
         raise VerboisyError("--maxrows must be a positive integer")
@@ -312,10 +338,16 @@ async def arun(
     destinations = _export_paths(export, config.sqlite_db_path)
     input_paths = {
         Path(value).resolve()
-        for value in (schema, task, dataset_projection)
+        for value in (task, dataset_projection)
         if isinstance(value, str | Path)
-        and not (isinstance(value, str) and value.strip().startswith("["))
     }
+    # Only schemas support bracketed inline declarations and trimmed filenames.
+    # Task/projection filenames remain literal, even when they start with '['.
+    schema_input = schema.strip() if isinstance(schema, str) else schema
+    if isinstance(schema_input, str | Path) and not (
+        isinstance(schema_input, str) and schema_input.startswith("[")
+    ):
+        input_paths.add(Path(schema_input).resolve())
     output_files = {
         path
         for destination in destinations
@@ -328,8 +360,16 @@ async def arun(
             destination.with_name(destination.stem + ".proof.txt"),
         )
     }
-    if input_paths & output_files:
-        raise VerboisyError("Export files must differ from schema/task inputs")
+    input_paths.add(Path(".env").resolve())
+    input_paths.update(config.input_files())
+    if smartid is not None:
+        input_paths.add(Path(smartid).resolve())
+    try:
+        validate_output_paths(output_files, input_paths)
+    except (OSError, ValueError):
+        raise VerboisyError(
+            "Export files must differ from schema/task inputs and references"
+        ) from None
 
     if research and any((maxrows, sort_keys, groupby, smartid)):
         raise VerboisyError(
@@ -375,6 +415,15 @@ async def arun(
                 destinations = _export_paths(
                     saved_export_destinations(state["export_path"]), config.sqlite_db_path
                 )
+            saved_inputs = store.events(rid, "export_inputs")
+            for entry in saved_inputs:
+                input_paths.update(export_input_paths([entry]))
+            pending_change(store, rid)
+            saved_task = TaskSpec.model_validate_json(state["task_json"])
+            input_paths.update(local_source_paths(s.url for s in saved_task.dataset_sources))
+            if options.get("smartid"):
+                input_paths.add(Path(options["smartid"]).resolve())
+            _protect_exports(destinations, input_paths)
             policy = SourcePolicy(**options["source_policy"])
             if store.events(rid, "initial_discovery") and not store.events(rid, "seed_frontier"):
                 preflight_initial_discovery(store, rid, policy)
@@ -482,6 +531,8 @@ async def arun(
                 maximum = target_schema.get("maxItems", 100000)
                 if not minimum <= spec.target_records <= maximum:
                     raise VerboisyError("Target conflicts with schema collection limits")
+            input_paths.update(local_source_paths(s.url for s in spec.dataset_sources))
+            _protect_exports(destinations, input_paths)
             stored_exports = (
                 json.dumps([str(path) for path in destinations]) if destinations else None
             )
@@ -492,6 +543,7 @@ async def arun(
                 stored_exports,
             )
 
+            store.event(rid, "export_inputs", {"paths": sorted(str(path) for path in input_paths)})
             store.event(
                 rid,
                 "research_plan",
