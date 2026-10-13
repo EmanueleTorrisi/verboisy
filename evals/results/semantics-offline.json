@@ -26,5 +26,8 @@
     "src/verboisy/research_summary.py": "822a7910690cb46d3c86c5b51ba4b95cd41c2aaba75a41ca275a369cf1b75462",
     "tests/test_time_series.py": "ba04c25e2b9e5b78a9aeb19df450802e5ac1a8d142ce16dceb95086faf720414",
     "tests/test_semantics_contract.py": "d235d3a231777681845567eac7daafba3983335e7aa25e90655c083d3afbe2f8"
-  }
+  },
+  "evidence_status": "historical_report_not_current_patch_qualification",
+  "qualification_applies_to_current_source": false,
+  "current_evidence": "export-integrity-offline.json"
 }
