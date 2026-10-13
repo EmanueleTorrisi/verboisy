@@ -175,13 +175,22 @@ async def run_dataset_sources(runner: ResearchRunner, max_steps: int) -> tuple[s
                         if not reasons and runner.task.identity_fields
                         else None
                     )
+                    record_delta: list[int] = []
                     outcome = store.accept(
-                        rid, page, candidate, reasons, runner.task, preference=preference
+                        rid,
+                        page,
+                        candidate,
+                        reasons,
+                        runner.task,
+                        preference=preference,
+                        record_delta=record_delta,
                     )
                     _record_row(runner, asset, row, page, outcome, reasons)
                     processed.add(page.id)
-                    if outcome == "accepted" or outcome == "rejected" and not reasons:
-                        count = len(store.records(rid))
+                    # Admission reports the committed insert/delete delta, including
+                    # preferred replacements and identity conflicts. Keep the initial
+                    # integrity scan, but never decode the growing collection per row.
+                    count += record_delta[0]
                     if _dataset_target_reached(runner, count):
                         break
                 store.db.execute(
