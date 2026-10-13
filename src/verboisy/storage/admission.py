@@ -34,6 +34,7 @@ def admit_candidate(
     encode: Callable[[Any], str],
     lookup: Callable[[dict[str, Any], str], Any],
     stable_row_id: Callable[[str, str], str],
+    record_delta: list[int],
 ) -> str:
     """Commit a complete admission decision or roll back every related mutation."""
     payload = encode(candidate.record)
@@ -225,7 +226,7 @@ def admit_candidate(
                 ),
             )
 
-            db.execute(
+            removed = db.execute(
                 """
                     DELETE FROM records
                     WHERE run_id=?
@@ -234,6 +235,7 @@ def admit_candidate(
                 (rid, key),
             )
 
+            record_delta[0] -= removed.rowcount
             reasons = ["identity_conflict"]
 
         cur = db.execute(
@@ -259,7 +261,7 @@ def admit_candidate(
         if reasons:
             return "rejected"
 
-        db.execute(
+        inserted = db.execute(
             """
                 INSERT OR IGNORE INTO records(
                     run_id,
@@ -279,4 +281,5 @@ def admit_candidate(
             ),
         )
 
+        record_delta[0] += inserted.rowcount
         return "duplicate" if previous else "accepted"
