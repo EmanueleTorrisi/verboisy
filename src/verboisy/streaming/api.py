@@ -13,7 +13,7 @@ from collections.abc import Generator
 from contextlib import closing
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
@@ -63,6 +63,8 @@ def stream_dataset(
     limits: StreamLimits | None = None,
     rows_per_invocation: int | None = None,
     export: Path | None = None,
+    csv_mode: Literal["spreadsheet", "json"] | None = None,
+    protected_inputs: tuple[Path, ...] | None = None,
 ) -> StreamResult:
     """Prepare rows under a fixed contract; resume replays verified saved bytes.
 
@@ -71,6 +73,8 @@ def stream_dataset(
     observations or create duplicates. Identity is the physical source row, not an
     inferred entity key. Sorting, grouping and semantic research remain in run().
     """
+    if csv_mode not in (None, "spreadsheet", "json"):
+        raise StreamError("CSV mode must be spreadsheet or json")
     if rows_per_invocation is not None and (
         isinstance(rows_per_invocation, bool)
         or not isinstance(rows_per_invocation, int)
@@ -78,7 +82,18 @@ def stream_dataset(
     ):
         raise StreamError("Invocation row budget must be a positive integer")
     if resume is not None:
-        if any(value is not None for value in (source, dataset_format, schema, projection, limits)):
+        if any(
+            value is not None
+            for value in (
+                source,
+                dataset_format,
+                schema,
+                projection,
+                limits,
+                csv_mode,
+                protected_inputs,
+            )
+        ):
             raise StreamError("Resume uses the saved streaming contract")
     elif source is None or dataset_format not in FORMATS:
         raise StreamError("Choose a local source and csv, tsv, jsonl, text or asset format")
@@ -87,6 +102,7 @@ def stream_dataset(
         or (source.exists() and database.exists() and source.samefile(database))
     ):
         raise StreamError("Source cannot be the streaming ledger")
+    execution_config = config or Settings()
     normalized = SchemaBuilder.normalize(schema or {}) if resume is None else None
     chosen = limits or StreamLimits()
     with closing(StreamLedger(database, max_storage_bytes=chosen.max_storage_bytes)) as ledger:
@@ -96,6 +112,11 @@ def stream_dataset(
             job_id = uuid.uuid4().hex
             contract: dict[str, Any] = {
                 "version": "1",
+                "csv_mode": csv_mode or "spreadsheet",
+                "protected_inputs": sorted(
+                    str(p.resolve())
+                    for p in (*(protected_inputs or ()), *execution_config.input_files())
+                ),
                 "source_uri": source.absolute().as_uri(),
                 "format": dataset_format,
                 "schema": normalized,
@@ -133,7 +154,7 @@ def stream_dataset(
                     ledger,
                     job_id,
                     Path(url2pathname(urlsplit(contract["source_uri"]).path)),
-                    config or Settings(),
+                    execution_config,
                     chosen,
                 )
                 job = ledger.job(job_id)
@@ -160,7 +181,7 @@ def stream_dataset(
         if export is not None and job["status"] == "COMPLETED":
             from verboisy.streaming.export import export_stream
 
-            export_stream(ledger, job, export)
+            export_stream(ledger, job, export, protected_inputs=execution_config.input_files())
         return _result(job, job["status"], job["reason"])
 
 
