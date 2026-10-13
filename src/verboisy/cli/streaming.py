@@ -7,11 +7,12 @@ import json
 from contextlib import closing
 from dataclasses import asdict
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 import typer
 
 from verboisy.evidence.models import ProjectionPlan
+from verboisy.storage.path_safety import validate_output_paths
 from verboisy.streaming import StreamLedger, StreamLimits, stream_dataset
 from verboisy.streaming.export import bundle_paths
 from verboisy.utils.config import Settings
@@ -25,6 +26,7 @@ def stream_command(
     projection: Annotated[Path | None, typer.Option("--projection")] = None,
     resume: Annotated[str | None, typer.Option("--resume")] = None,
     export: Annotated[Path | None, typer.Option("--export")] = None,
+    csv_mode: Annotated[Literal["spreadsheet", "json"] | None, typer.Option("--csv-mode")] = None,
     rows_per_invocation: Annotated[int | None, typer.Option("--rows-per-invocation")] = None,
     max_input_bytes: Annotated[int | None, typer.Option("--max-input-bytes")] = None,
     max_rows: Annotated[int | None, typer.Option("--max-rows")] = None,
@@ -45,6 +47,7 @@ def stream_command(
                 max_input_bytes,
                 max_rows,
                 max_storage_bytes,
+                csv_mode,
             )
         ):
             raise VerboisyError("Resume uses the saved streaming contract")
@@ -58,11 +61,9 @@ def stream_command(
             if projection is not None
             else None
         )
-        if export is not None and any(
-            target.resolve() in {p.resolve() for p in (schema, projection) if p is not None}
-            for target in bundle_paths(export)
-        ):
-            raise VerboisyError("Streaming export would overwrite its schema or projection")
+        input_paths = tuple(p for p in (schema, projection, Path(".env")) if p is not None)
+        if export is not None:
+            validate_output_paths(bundle_paths(export), input_paths)
         limits = (
             None
             if resume is not None
@@ -89,6 +90,8 @@ def stream_command(
             limits=limits,
             rows_per_invocation=rows_per_invocation,
             export=export,
+            csv_mode=csv_mode,
+            protected_inputs=input_paths if resume is None else None,
         )
         typer.echo(json.dumps(asdict(result), ensure_ascii=False, indent=2))
         if result.status == "FAILED":
