@@ -27,6 +27,12 @@ from verboisy.product import (
 from verboisy.research_summary import summarize_fields
 from verboisy.storage.dataset import export_dataset
 from verboisy.storage.numeric_presentation import output_numeric_units
+from verboisy.storage.path_safety import (
+    dataset_output_paths,
+    local_source_paths,
+    protected_run_paths,
+    validate_output_paths,
+)
 from verboisy.storage.proof import export_proof
 from verboisy.storage.research import ResearchStore
 from verboisy.time_series import inspect_time_series, validate_time_series
@@ -187,6 +193,19 @@ def write_output(
     Multiple destinations are not one filesystem transaction. A later failure can
     leave an earlier valid generation; the saved ledger permits a complete retry.
     """
+    protected = protected_run_paths(
+        store.path,
+        store.load(rid)["task_json"],
+        store.events(rid, "export_inputs") + store.events(rid, "product_options"),
+    )
+    protected.update(local_source_paths(source.url for source in spec.dataset_sources))
+    try:
+        validate_output_paths(
+            {path for destination in destinations for path in dataset_output_paths(destination)},
+            protected,
+        )
+    except (OSError, ValueError) as error:
+        raise VerboisyError(str(error)) from None
     manifests: list[Path] = []
     proof_path: Path | None = None
     for destination in destinations:
