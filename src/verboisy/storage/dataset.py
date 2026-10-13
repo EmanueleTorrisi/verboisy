@@ -18,6 +18,12 @@ from verboisy.storage.asset_bundle import asset_bundle
 from verboisy.storage.event_journal import reserved_attempt_ids
 from verboisy.storage.exporters import _atomic_write, _csv_value
 from verboisy.storage.lineage import build_cell_lineage
+from verboisy.storage.path_safety import (
+    dataset_output_paths,
+    local_source_paths,
+    protected_run_paths,
+    validate_output_paths,
+)
 from verboisy.storage.research import ResearchStore
 
 
@@ -35,6 +41,14 @@ def export_dataset(
     presentation: PresentationPreferences | None = None,
 ) -> Path:
     """Write a generation atomically and commit it by writing the manifest last."""
+
+    protected = protected_run_paths(
+        store.path,
+        store.load(rid)["task_json"],
+        store.events(rid, "export_inputs") + store.events(rid, "product_options"),
+    )
+    protected.update(local_source_paths(source.url for source in task.dataset_sources))
+    validate_output_paths(dataset_output_paths(destination), protected)
 
     # Validate the proof chain before removing the old manifest or replacing data,
     # including exports whose public rows were supplied by the caller.
