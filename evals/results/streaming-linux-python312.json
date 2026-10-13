@@ -39,5 +39,8 @@
     "max_record_bytes": 1048576,
     "max_storage_bytes": 17179869184
   },
-  "qualification_passed": true
+  "qualification_passed": true,
+  "evidence_status": "historical_report_not_current_patch_qualification",
+  "qualification_applies_to_current_source": false,
+  "current_evidence": "export-integrity-offline.json"
 }
