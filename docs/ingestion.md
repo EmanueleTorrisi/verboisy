@@ -346,7 +346,7 @@ executed.
 Pointers use RFC 6901 escaping (`~0`, `~1`). Sources support object keys and
 canonical array indexes; destinations create objects only. Root pointers,
 malformed escapes, missing values, duplicate or overlapping destinations and
-paths deeper than 32 components are rejected. A plan declares 1–100 fields;
+paths deeper than 32 components are rejected. A plan declares 1-100 fields;
 unmapped source fields are omitted explicitly. Each result retains its source
 row index, JSON array locator or physical CSV/JSONL line range. Result values are
 independent copies; original bytes and parsed source rows remain unchanged.
@@ -372,7 +372,14 @@ The Python API accepts `dataset_projection=plan` (a plan model, object or JSON f
 for all sources, or individual `projection` objects inside `dataset_sources`.
 Conflicting common and per-source plans are rejected. Plans require declared
 sources and cannot be supplied again on resume. Projection files are protected
-from being overwritten by exports or their sidecars.
+from being overwritten by exports or their sidecars. The same protection covers
+local source files, schema/task files, SmartID references and dotenv paths read by
+`Settings`. Checks reject identical paths, symlink targets, parent-directory aliases
+and hardlinks before run creation and again before publication. New runs save
+input paths so those checks also apply on resume. Older runs cannot recover paths
+that were never recorded, although declared sources and SmartID references remain
+protected. Writers must exclusively control their output directories; these checks
+do not defend against concurrent hostile filesystem mutation.
 
 Original captured rows and bytes are preserved. Each projected snapshot contains
 its declared plan, raw row JSON, immutable asset ID and source row index. Proofs
@@ -538,7 +545,7 @@ Projection fields support three additional, explicit conversion modes:
 | `date_mdy` | `MM/DD/YYYY` | `03/04/2025` | `2025-03-04` |
 
 These modes require ASCII digits, exact zero padding and separators, and a valid
-Gregorian calendar date with year 0001–9999. Nulls remain null. Invalid calendar
+Gregorian calendar date with year 0001-9999. Nulls remain null. Invalid calendar
 values, whitespace, timestamps, numbers and other notations fail explicitly;
 the original row and bytes remain captured. Schema validation still applies to
 the result, including a declared JSON Schema `format: date`.
@@ -973,7 +980,7 @@ external truth, or global collection completeness.
 
 Run `poetry run verboisy runs` to list up to 100 recent runs from the existing
 configured `SQLITE_DB_PATH` (default `verboisy.db`). Use `--database` to select
-another ledger and `--limit` (1–1000) to bound the list. The JSON report includes
+another ledger and `--limit` (1-1000) to bound the list. The JSON report includes
 the actual database path, run IDs, goals, statuses, stop reasons, declared dataset
 source counts and whether more runs were omitted. Runs are ordered by creation,
 most recent first.
