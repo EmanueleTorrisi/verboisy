@@ -150,9 +150,18 @@ to measured workloads, not every possible schema, format or machine.
 ## Portable streaming exports
 
 Export formats are JSONL, JSON arrays and flat CSV. JSONL/JSON retain decoded types;
-CSV requires stable flat columns. CSV empty and null cells both appear empty, while
-the evidence sidecar retains their distinct source values. Nested or changing CSV
-columns fail explicitly. No sort or aggregate operation is silently introduced.
+CSV requires stable flat columns. The default `spreadsheet` mode prefixes an
+apostrophe to formula-capable string headers and cells, including leading
+whitespace and control characters. Numeric values retain their numeric rendering.
+CSV empty and null cells both appear empty; the evidence sidecar retains their
+distinct source values and the original, unescaped formula text. Nested or changing
+CSV columns fail explicitly. No sort or aggregate operation is silently introduced.
+
+For lossless machine-readable CSV, choose `--csv-mode json` on a new job, or pass
+`csv_mode="json"` to `stream_dataset`. Every header and cell contains a JSON value;
+decode each parsed CSV field with a JSON parser. This preserves nulls, strings and
+numbers without exposing formula-leading strings. The mode is part of the saved
+contract and cannot change on resume. JSONL and JSON exports remain unchanged.
 
 The bundle contains output rows, an evidence JSONL sidecar, exact source bytes in
 `.source.bin`, and a `stream-1` manifest. Evidence maps each output ordinal to a
@@ -165,7 +174,18 @@ Export reparses captured source rows and checks every saved output/source value
 and locator before publication. It stages the files, hashes them, then replaces
 the manifest last. If replacement fails, a stale manifest is removed so it cannot
 certify mixed files. An existing bundle remains untouched during validation/staging.
-Source/ledger/configuration collisions and symlink output targets are rejected.
+Source, ledger, configuration and sidecar collisions are rejected, including
+symlink targets, aliases through parent directories and hardlinks. The CLI saves
+schema/projection paths for resume; Python callers can declare additional input
+paths with `protected_inputs=(Path("configuration.json"),)`. Dotenv paths read by
+`Settings` are retained automatically. Older jobs retain their known source and
+ledger protections, but cannot reconstruct configuration paths absent from their
+saved contracts.
+
+The writer requires exclusive control of its output directory. Path and inode
+checks do not prevent a hostile process from changing directory entries between
+validation and publication. Use private directories with operating-system access
+controls for separate writers.
 Checksums establish integrity relative to the supplied manifest, not authenticity
 or factual truth. Completion means the fixed local preparation contract reached
 EOF; it makes no global research completeness claim.
