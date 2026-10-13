@@ -17,6 +17,12 @@ Synthetic fixtures isolate known inputs and expected behavior. They are small by
 design and are not product demonstrations. Streaming workloads generate large inputs
 outside the source tree; raw gigabyte files are not committed as fixtures.
 
+Saved reports under `evals/results` retain their original measurements. Reports
+marked `historical_report_not_current_patch_qualification` do not qualify the
+current source, even when their original tests passed. The export-integrity report
+records the current source hashes, executed gates and explicit limitations.
+Verification applies only to the source and environment named by each report.
+
 ## Research quality
 
 Evaluate a declared question against independently annotated sources. Preserve the
