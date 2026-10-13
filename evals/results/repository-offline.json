@@ -132,5 +132,8 @@
     "preserved_uncovered_files": 409,
     "paid_provider_calls": 0,
     "git_commits_created": 0
-  }
+  },
+  "evidence_status": "historical_report_not_current_patch_qualification",
+  "qualification_applies_to_current_source": false,
+  "current_evidence": "export-integrity-offline.json"
 }
