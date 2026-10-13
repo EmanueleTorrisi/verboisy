@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from verboisy.storage.exporters import _atomic_write
+from verboisy.storage.path_safety import protected_run_paths, validate_output_paths
 from verboisy.storage.research import ResearchStore
 
 
@@ -29,6 +30,9 @@ def export_proof(
     evidence = store.evidence(rid)
     events = store.events(rid)
     proof_path = destination.with_name(destination.stem + ".proof.txt")
+    validate_output_paths(
+        (proof_path,), protected_run_paths(store.path, state["task_json"], events)
+    )
 
     def write(stream: Any) -> None:
         stream.write("Verboisy proof report\n")
