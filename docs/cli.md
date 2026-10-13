@@ -284,7 +284,8 @@ require a separate migration/revalidation workflow and are rejected. A proposal
 whose baseline requirements have since changed is rejected as stale. No database
 version migration is needed. The manual submission command does not itself detect feasibility conflicts.
 The observed-range detector below uses this same decision boundary. Preferred
-units and date presentation remain subsequent features.
+units and date presentation are available through the display options and apply
+after evidence acceptance.
 
 ## Observed ranges in numeric columns
 
