@@ -133,3 +133,111 @@ def test_historic_bsd_identifier_is_not_the_current_distribution_license(repo):
         encoding="utf-8",
     )
     assert CHECK.inspect(repo)["passed"] is False
+
+
+@pytest.mark.parametrize(
+    "case", ["example_link", "anchor", "html", "comment_guard", "action", "fingerprint"]
+)
+def test_expanded_consistency_surfaces(repo, case):
+    if case in {"example_link", "anchor", "html"}:
+        path = repo / "examples/README.md"
+        text = (
+            "\n[Missing](absent.md)\n"
+            if case == "example_link"
+            else "\n[Missing](#not-a-heading)\n"
+            if case == "anchor"
+            else '\n<a href="absent.md">missing</a>\n'
+        )
+        path.write_text(path.read_text() + text)
+    elif case == "comment_guard":
+        path = repo / ".github/workflows/publish.yml"
+        text = path.read_text().replace(
+            "    if: vars.RELEASE_ENABLED == 'true' && github.event.repository.private == false",
+            "    # if: vars.RELEASE_ENABLED == 'true' && github.event.repository.private == false",
+        )
+        path.write_text(text)
+    elif case == "action":
+        path = repo / ".github/workflows/docs.yml"
+        path.write_text(
+            path.read_text().replace(
+                "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803", "actions/checkout@v6"
+            )
+        )
+    else:
+        path = repo / "evals/results/offline-validation.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "qualification_applies_to_current_source": True,
+                    "source_fingerprints": {"README.md": "0" * 64},
+                }
+            )
+        )
+    report = CHECK.inspect(repo)
+    assert not report["passed"] and report["documents"] == 43
+
+
+def test_unicode_duplicate_anchors_and_fenced_examples():
+    anchors = CHECK.anchors(
+        '# Títle\n# Títle\n<a id="explicit"></a>\n```python\n# not a heading\n```\n'
+    )
+    assert {"títle", "títle-1", "explicit"} <= anchors
+    assert "not-a-heading" not in anchors
+
+
+def test_source_line_ending_attributes():
+    result = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(ROOT),
+            "check-attr",
+            "text",
+            "eol",
+            "--",
+            "docker/entrypoint.sh",
+            "logo.png",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "docker/entrypoint.sh: eol: lf" in result.stdout
+    assert "logo.png: text: unset" in result.stdout
+
+
+def test_release_disjunction_cannot_weaken_reviewed_guard(repo):
+    path = repo / ".github/workflows/publish.yml"
+    text = path.read_text().replace(
+        "if: vars.RELEASE_ENABLED == 'true' && github.event.repository.private == false",
+        "if: vars.RELEASE_ENABLED == 'true' && github.event.repository.private == false || true",
+    )
+    path.write_text(text)
+    assert not CHECK.inspect(repo)["passed"]
+
+
+def test_code_and_comments_do_not_become_navigation(repo):
+    path = repo / "examples/README.md"
+    path.write_text(
+        path.read_text()
+        + "\n`[example](absent.md)`\n<!-- [comment](absent.md) -->\n"
+        + '```python\nprint("[sample](absent.md)")\n```\n'
+    )
+    assert not any("absent.md" in issue for issue in CHECK.inspect(repo)["issues"])
+
+
+def test_git_inventory_includes_unstaged_patch_additions(tmp_path):
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / ".gitignore").write_text("build/\n")
+    (tmp_path / "README.md").write_text("# Product\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "--", "README.md", ".gitignore"], check=True)
+    added = tmp_path / "new.py"
+    added.write_text("value = 1\n")
+    generated = tmp_path / "build"
+    generated.mkdir()
+    (generated / "artifact.py").write_text("generated = True\n")
+    assert set(CHECK.public_files(tmp_path)) == {
+        tmp_path / ".gitignore",
+        tmp_path / "README.md",
+        added,
+    }
