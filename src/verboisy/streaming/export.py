@@ -7,6 +7,7 @@ import csv
 import hashlib
 import io
 import json
+import os
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -14,11 +15,14 @@ from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
 from verboisy.evidence.models import ProjectionPlan
-from verboisy.storage.exporters import _csv_value
+from verboisy.storage.exporters import _csv_value, sync_directory
 from verboisy.storage.path_safety import validate_output_paths
-from verboisy.streaming.api import captured_rows, output_value
 from verboisy.streaming.capture import verify_capture
 from verboisy.streaming.contract import CHUNK_BYTES, StreamError
+from verboisy.streaming.integrity import (
+    validated_job,
+    verified_export_rows,
+)
 from verboisy.streaming.ledger import ChunkReader, StreamLedger
 
 
@@ -42,7 +46,8 @@ def export_stream(
         raise StreamError("Only completed streaming jobs can publish an export")
     if output.suffix.lower() not in {".jsonl", ".json", ".csv"}:
         raise StreamError("Streaming export requires .jsonl, .json or .csv")
-    contract = json.loads(job["contract"])
+    job = validated_job(ledger, job["id"])
+    contract = job["_contract"]
     plan = (
         ProjectionPlan.model_validate(contract["projection"])
         if contract["projection"] is not None
@@ -103,10 +108,16 @@ def export_stream(
         stage[3].write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
+        for staged in stage:
+            with staged.open("rb") as stream:
+                os.fsync(stream.fileno())
+        sync_directory(Path(temp))
         # A failed replacement must leave no stale manifest certifying mixed files.
         targets[3].unlink(missing_ok=True)
+        sync_directory(output.parent)
         for saved, target in zip(stage, targets, strict=True):
             saved.replace(target)
+            sync_directory(output.parent)
     return targets[3]
 
 
@@ -119,9 +130,7 @@ def _write_rows(
     ceiling: int,
     csv_mode: str = "spreadsheet",
 ) -> None:
-    cursor = ledger.connection.execute(
-        "SELECT * FROM stream_rows WHERE job_id=? ORDER BY ordinal", (job["id"],)
-    )
+    _ = plan, ceiling
     headers: list[str] | None = None
     count = 0
     with (
@@ -131,20 +140,9 @@ def _write_rows(
         writer = csv.writer(data)
         if output.suffix.lower() == ".json":
             data.write("[")
-        rows = captured_rows(ledger, job)
+        rows = verified_export_rows(ledger, job)
         try:
-            for source in rows:
-                saved = cursor.fetchone()
-                value = output_value(source, plan, ceiling)
-                if (
-                    saved is None
-                    or saved["ordinal"] != source.row_index
-                    or saved["source_json"] != source.values_json
-                    or saved["first_line"] != source.line_start
-                    or saved["last_line"] != source.line_end
-                    or (saved["output_json"] or saved["source_json"]) != value
-                ):
-                    raise StreamError("Streaming row evidence differs from captured source")
+            for source, value in rows:
                 record = json.loads(value)
                 if output.suffix.lower() == ".csv":
                     if headers is None:
@@ -188,8 +186,6 @@ def _write_rows(
                 if value != source.values_json:
                     proof["output_values"] = record
                 proofs.write(json.dumps(proof, ensure_ascii=False, separators=(",", ":")) + "\n")
-            if cursor.fetchone() is not None or count != job["processed"]:
-                raise StreamError("Streaming row count differs from its checkpoint")
             if output.suffix.lower() == ".json":
                 data.write("]\n")
         finally:
