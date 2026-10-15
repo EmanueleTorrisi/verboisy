@@ -2484,3 +2484,11 @@ def test_dataset_units_ignore_invalid_pointer():
         )
         == ()
     )
+
+
+@pytest.mark.parametrize("items", [True, False, None])
+def test_valid_generic_array_subschemas_have_no_invented_policy(items):
+    schema = {"type": "object", "properties": {"rows": {"type": "array"}}}
+    if items is not None:
+        schema["properties"]["rows"]["items"] = items
+    assert scalar_field_schemas(schema) == {}
