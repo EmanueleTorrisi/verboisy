@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import io
 import json
 import sqlite3
 import uuid
@@ -19,36 +18,27 @@ from urllib.request import url2pathname
 
 from verboisy.evidence.models import ProjectionPlan
 from verboisy.extractor.dataset import SourceRow
-from verboisy.extractor.projection import project_row
 from verboisy.extractor.schema_builder import SchemaBuilder
-from verboisy.streaming.capture import capture_file, verify_capture
-from verboisy.streaming.contract import BATCH_ROWS, FORMATS, StreamError, StreamLimits, StreamResult
-from verboisy.streaming.ledger import ChunkReader, StreamLedger
-from verboisy.streaming.parser import source_rows
+from verboisy.streaming.capture import capture_file
+from verboisy.streaming.contract import (
+    BATCH_ROWS,
+    FORMATS,
+    StreamError,
+    StreamLimits,
+    StreamResult,
+    validate_stream_schema,
+)
+from verboisy.streaming.integrity import captured_rows as captured_rows
+from verboisy.streaming.integrity import output_value as output_value
+from verboisy.streaming.integrity import (
+    validate_checkpoint_shape,
+    validated_job,
+    verified_resume_rows,
+)
+from verboisy.streaming.ledger import StreamLedger
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
-
-
-def captured_rows(ledger: StreamLedger, job: dict[str, Any]) -> Generator[SourceRow, None, None]:
-    contract = json.loads(job["contract"])
-    if contract["format"] == "asset":
-        encoded = json.dumps(
-            {"sha256": job["sha256"], "byte_count": job["byte_count"]}, separators=(",", ":")
-        )
-        yield SourceRow(1, "/", None, None, encoded)
-    else:
-        yield from source_rows(
-            io.BufferedReader(ChunkReader(ledger, job)),
-            contract["format"],
-            contract["limits"]["max_record_bytes"],
-        )
-
-
-def output_value(row: SourceRow, plan: ProjectionPlan | None, ceiling: int) -> str:
-    value = row.values_json if plan is None else project_row(row, plan).values_json
-    if len(value.encode("utf-8")) > ceiling:
-        raise StreamError("Streaming projected record byte limit exceeded")
-    return value
+from verboisy.utils.json_payload import decode_json
 
 
 def stream_dataset(
@@ -73,6 +63,8 @@ def stream_dataset(
     observations or create duplicates. Identity is the physical source row, not an
     inferred entity key. Sorting, grouping and semantic research remain in run().
     """
+    if schema is not None and not isinstance(schema, dict):
+        raise StreamError("Streaming schema must be a JSON object")
     if csv_mode not in (None, "spreadsheet", "json"):
         raise StreamError("CSV mode must be spreadsheet or json")
     if rows_per_invocation is not None and (
@@ -103,8 +95,17 @@ def stream_dataset(
     ):
         raise StreamError("Source cannot be the streaming ledger")
     execution_config = config or Settings()
+    if resume is None:
+        validate_stream_schema(schema or {})
     normalized = SchemaBuilder.normalize(schema or {}) if resume is None else None
+    if normalized is not None:
+        validate_stream_schema(normalized)
     chosen = limits or StreamLimits()
+    if resume is not None:
+        with closing(StreamLedger(database, read_only=True)) as inspection:
+            saved = validated_job(inspection, resume)
+            validate_checkpoint_shape(inspection, saved)
+            chosen = StreamLimits(**saved["_contract"]["limits"])
     with closing(StreamLedger(database, max_storage_bytes=chosen.max_storage_bytes)) as ledger:
         db = ledger.connection
         if resume is None:
@@ -130,23 +131,39 @@ def stream_dataset(
                 )
         else:
             job_id = resume
-            contract = json.loads(ledger.job(job_id)["contract"])
+            saved = validated_job(ledger, job_id)
+            contract = saved["_contract"]
             chosen = StreamLimits(**contract["limits"])
             projection = (
                 ProjectionPlan.model_validate(contract["projection"])
                 if contract["projection"] is not None
                 else None
             )
-            page_size = db.execute("PRAGMA page_size").fetchone()[0]
-            if db.execute("PRAGMA page_count").fetchone()[0] * page_size > chosen.max_storage_bytes:
-                raise StreamError("Streaming ledger exceeds its saved storage limit")
-            db.execute(f"PRAGMA max_page_count={chosen.max_storage_bytes // page_size}")
         root_validator = SchemaBuilder.validator(contract["schema"])
         validator = (
             root_validator.evolve(schema=contract["schema"]["items"])
             if contract["schema"]["type"] == "array"
             else root_validator
         )
+        job = validated_job(ledger, job_id)
+        validate_checkpoint_shape(ledger, job)
+        positioned = None
+        if export is not None:
+            from verboisy.storage.path_safety import validate_output_paths
+            from verboisy.streaming.export import bundle_paths
+
+            protected = [
+                database,
+                Path(url2pathname(urlsplit(contract["source_uri"]).path)),
+                *(Path(p) for p in contract.get("protected_inputs", [])),
+            ]
+            try:
+                validate_output_paths(bundle_paths(export), protected)
+            except (OSError, ValueError):
+                raise StreamError(
+                    "Streaming output would overwrite a protected or unsafe path"
+                ) from None
+        positioned = verified_resume_rows(ledger, job) if job["captured"] else None
         try:
             job = ledger.job(job_id)
             if not job["captured"]:
@@ -158,8 +175,11 @@ def stream_dataset(
                     chosen,
                 )
                 job = ledger.job(job_id)
-            verify_capture(ledger, job)
-            _ingest(ledger, job, projection, validator, chosen, rows_per_invocation)
+            if positioned is None:
+                positioned = verified_resume_rows(ledger, job)
+            _ingest(
+                ledger, job, projection, validator, chosen, rows_per_invocation, rows=positioned
+            )
         except KeyboardInterrupt:
             with db:
                 db.execute(
@@ -177,6 +197,9 @@ def stream_dataset(
             # their checkpoint remain authoritative; return a resumable outcome.
             job = ledger.job(job_id)
             return _result(job, "PAUSED", "storage_error")
+        finally:
+            if positioned is not None:
+                positioned.close()
         job = ledger.job(job_id)
         if export is not None and job["status"] == "COMPLETED":
             from verboisy.streaming.export import export_stream
@@ -192,19 +215,19 @@ def _ingest(
     validator: Any,
     limits: StreamLimits,
     budget: int | None,
+    *,
+    rows: Generator[SourceRow, None, None] | None = None,
 ) -> None:
     db = ledger.connection
-    checkpoint, admitted = job["processed"], 0
+    admitted = 0
     batch: list[tuple[Any, ...]] = []
     batch_bytes = 0
-    with closing(captured_rows(ledger, job)) as rows:
+    with closing(rows if rows is not None else verified_resume_rows(ledger, job)) as rows:
         for row in rows:
-            if row.row_index <= checkpoint:
-                continue
             if row.row_index > limits.max_rows:
                 raise StreamError("Streaming row limit exceeded")
             value = output_value(row, plan, limits.max_record_bytes)
-            if not validator.is_valid(json.loads(value)):
+            if not validator.is_valid(decode_json(value)):
                 raise StreamError(f"Streaming schema rejected source row {row.row_index}")
             batch.append(
                 (
