@@ -59,3 +59,20 @@ limit. See [engineering validation](../docs/validation.md) and [architecture](..
 Participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Feedback and issue
 reporting do not grant execution or reuse rights; [LICENSE](../LICENSE) and the
 applicable written agreement govern those rights.
+
+
+## Authorized verification
+
+Provision Chromium before browser verification with `poetry run verboisy setup`;
+Linux OS dependencies may require `poetry run python -m playwright install --with-deps chromium`
+and administrator rights. Keep sandbox requirements visible.
+
+Use `make test-native` for both optional builders and the no-skip direct-test gate.
+Ordinary `make test` supports Python-only installations. After `poetry build`, run
+`poetry run python scripts/check_distribution.py --dist-dir dist --from-sdist --install-smoke`.
+`make release-verify` adds native and package gates to validation. Dependency-index
+access or a prepared cache is needed for isolated builds/installation.
+
+Record exact commands, source hashes and actual pass/failure/blocker outcomes. Current
+fingerprints exclude `evals/results/` to avoid recursive evidence hashes. Configuration
+of a CI job is not execution evidence. Keep keys and private ledgers out of reports.
