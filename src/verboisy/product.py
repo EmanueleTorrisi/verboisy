@@ -5,12 +5,13 @@
 
 from __future__ import annotations
 
-import csv
 import hashlib
 import json
+import math
 import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from fractions import Fraction
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import urlsplit
@@ -29,7 +30,7 @@ class SortKey:
     direction: SortDirection = "asc"
 
     def __post_init__(self) -> None:
-        if not self.field.strip():
+        if not isinstance(self.field, str) or not self.field.strip():
             raise VerboisyError("Sort field cannot be empty")
         if self.direction not in ("asc", "desc"):
             raise VerboisyError("Sort direction must be asc or desc")
@@ -217,61 +218,9 @@ def parse_simple_schema(
 def load_rows(path: str | Path, *, max_bytes: int = 50_000_000) -> list[dict[str, Any]]:
     """Load an untrusted CSV/JSON dataset with basic shape and size validation."""
 
-    source = Path(path)
-    try:
-        size = source.stat().st_size
-    except OSError as exc:
-        raise VerboisyError(f"Cannot read dataset: {source}") from exc
-    if size > max_bytes:
-        raise VerboisyError(f"Dataset exceeds {max_bytes} bytes: {source}")
-    suffix = source.suffix.lower()
-    try:
-        if suffix == ".json":
-            payload = json.loads(source.read_text(encoding="utf-8"))
-            if not isinstance(payload, list) or not all(isinstance(row, dict) for row in payload):
-                raise VerboisyError("JSON dataset must be an array of objects")
-            rows = payload
-        elif suffix == ".csv":
-            with source.open(encoding="utf-8-sig", newline="") as stream:
-                reader = csv.DictReader(stream)
-                if not reader.fieldnames or any(not name for name in reader.fieldnames):
-                    raise VerboisyError("CSV dataset must have a nonempty header row")
-                if len(reader.fieldnames) != len(set(reader.fieldnames)):
-                    raise VerboisyError("CSV dataset contains duplicate column names")
-                rows = [dict(row) for row in reader]
-        else:
-            raise VerboisyError("Dataset must be CSV or JSON")
-    except UnicodeError as exc:
-        raise VerboisyError("Dataset is not valid UTF-8") from exc
-    except json.JSONDecodeError as exc:
-        raise VerboisyError("Dataset contains invalid JSON") from exc
-    for index, row in enumerate(rows):
-        value = row.get("id")
+    from verboisy.reference_dataset import load_reference_dataset
 
-        if isinstance(value, bool) or value is None:
-            raise VerboisyError(f"Dataset row {index + 1} is missing a row id")
-
-        if isinstance(value, int):
-            if value < 1:
-                raise VerboisyError(f"Dataset row {index + 1} has an invalid row id")
-            continue
-
-        if isinstance(value, str) and value.strip():
-            normalized = value.strip()
-
-            if normalized.isdecimal():
-                row["id"] = int(normalized)
-            else:
-                row["id"] = normalized
-
-            continue
-
-        raise VerboisyError(f"Dataset row {index + 1} is missing a row id")
-
-    ids = [row["id"] for row in rows]
-    if len(ids) != len(set(ids)):
-        raise VerboisyError("Dataset contains duplicate ids")
-    return rows
+    return load_reference_dataset(path, max_bytes=max_bytes).rows
 
 
 def assign_row_ids(
@@ -457,6 +406,8 @@ def transform_rows(
     group_plan: GroupPlan | None = None
     contributors: dict[str, list[str]] = {}
     if groupby is not None:
+        if groupby not in schema_fields and not any(groupby in row for row in normalized):
+            raise VerboisyError("Cannot group by unknown field")
         normalized, group_plan, contributors = _group_rows(normalized, groupby)
         notices.append(f"Grouping by {groupby}.")
         if group_plan.removed_fields:
@@ -464,7 +415,11 @@ def transform_rows(
                 "Removed non-aggregable columns: " + ", ".join(group_plan.removed_fields)
             )
     applied: list[SortKey] = []
-    available = set(normalized[0]) if normalized else ({groupby} if groupby else set(schema_fields))
+    available = (
+        set().union(*(row.keys() for row in normalized))
+        if normalized
+        else ({groupby} if groupby else set(schema_fields))
+    )
     for key in sort_keys or []:
         if key.field in available:
             applied.append(key)
@@ -486,7 +441,9 @@ def transform_rows(
 def _normalize_row(row: dict[str, Any], fields: list[str], *, strings: bool) -> dict[str, Any]:
     result: dict[str, Any] = {"id": row.get("id")}
     for field_name in fields:
-        value = row.get(field_name)
+        if field_name not in row:
+            continue
+        value = row[field_name]
         if strings and value is not None:
             if isinstance(value, bool):
                 value = "true" if value else "false"
@@ -505,78 +462,99 @@ def _group_rows(
     rows: list[dict[str, Any]],
     groupby: str,
 ) -> tuple[list[dict[str, Any]], GroupPlan, dict[str, list[str]]]:
-    if rows and groupby not in rows[0]:
-        raise VerboisyError(f"Cannot group by unknown field: {groupby}")
-
-    fields = [
-        field_name for field_name in (rows[0] if rows else {}) if field_name not in {"id", groupby}
-    ]
+    fields = list(dict.fromkeys(key for row in rows for key in row if key not in {"id", groupby}))
     aggregations: dict[str, str] = {}
     removed: list[str] = []
-
-    for field_name in fields:
-        observed_values = [row.get(field_name) for row in rows if row.get(field_name) is not None]
-
-        if not observed_values:
-            removed.append(field_name)
-        elif all(
-            isinstance(value, int | float) and not isinstance(value, bool)
-            for value in observed_values
+    for name in fields:
+        observed = [row[name] for row in rows if name in row and row[name] is not None]
+        if all(
+            isinstance(value, int | float) and not isinstance(value, bool) for value in observed
         ):
-            sum_fields = {"count", "quantity", "employees", "revenue", "funding"}
-            aggregations[field_name] = (
-                "sum" if field_name in sum_fields or field_name.endswith("_count") else "average"
+            aggregations[name] = (
+                "sum"
+                if name in {"count", "quantity", "employees", "revenue", "funding"}
+                or name.endswith("_count")
+                else "average"
             )
         else:
-            removed.append(field_name)
-
-    groups: dict[Any, list[dict[str, Any]]] = {}
+            removed.append(name)
+    groups: dict[str, list[dict[str, Any]]] = {}
     for row in rows:
-        groups.setdefault(row.get(groupby), []).append(row)
-
+        groups.setdefault(group_key(row, groupby), []).append(row)
     result: list[dict[str, Any]] = []
-
     contributors: dict[str, list[str]] = {}
     for key, members in groups.items():
         digest = hashlib.sha256(
-            json.dumps(
-                [groupby, key],
-                ensure_ascii=False,
-                sort_keys=True,
-            ).encode()
+            json.dumps([groupby, key], ensure_ascii=False).encode()
         ).hexdigest()[:24]
-
-        output: dict[str, Any] = {
-            "id": f"group_{digest}",
-            groupby: key,
-        }
-
-        for field_name, operation in aggregations.items():
-            numeric_values: list[int | float] = []
-
-            for member in members:
-                value = member.get(field_name)
-                if isinstance(value, int | float) and not isinstance(value, bool):
-                    numeric_values.append(value)
-
-            output[field_name] = (
-                sum(numeric_values)
-                if operation == "sum"
-                else (sum(numeric_values) / len(numeric_values) if numeric_values else None)
-            )
-
+        output: dict[str, Any] = {"id": f"group_{digest}"}
+        if groupby in members[0]:
+            output[groupby] = members[0][groupby]
+        for name, operation in aggregations.items():
+            output[name] = finite_aggregate([member.get(name) for member in members], operation)
         contributors[output["id"]] = [str(member["id"]) for member in members]
         result.append(output)
-
     return result, GroupPlan(groupby, aggregations, tuple(removed)), contributors
 
 
+def group_key(row: dict[str, Any], field_name: str) -> str:
+    """Canonical typed/presence key: Python bool/int equality must not merge entities."""
+    if field_name not in row:
+        return '["missing"]'
+    value = row[field_name]
+    if value is None:
+        tag = "null"
+    elif isinstance(value, bool):
+        tag = "boolean"
+    elif isinstance(value, int):
+        tag = "integer"
+    elif isinstance(value, float) and math.isfinite(value):
+        tag = "float"
+    elif isinstance(value, str):
+        tag = "string"
+    else:
+        raise VerboisyError("Grouping requires finite scalar keys")
+    return json.dumps([tag, value], ensure_ascii=False, allow_nan=False)
+
+
+def finite_aggregate(values: list[Any], operation: str) -> int | float | None:
+    """Exclude unknowns; exact sums and rational averages avoid intermediate overflow."""
+    numbers = [v for v in values if isinstance(v, int | float) and not isinstance(v, bool)]
+    if not numbers:
+        return None
+    if any(isinstance(v, float) and not math.isfinite(v) for v in numbers):
+        raise VerboisyError("Aggregate requires finite numeric inputs")
+    if operation == "sum" and all(isinstance(v, int) for v in numbers):
+        return sum(numbers)
+    total = sum((Fraction(str(value)) for value in numbers), Fraction())
+    if operation == "average":
+        total /= len(numbers)
+    # Fraction conversion raises on overflow rather than returning infinity.
+    try:
+        result = float(total)
+    except OverflowError:
+        raise VerboisyError("Aggregate cannot be represented as finite JSON") from None
+    return result
+
+
 def _sort_value(value: Any) -> tuple[int, Any]:
-    # Callers partition nulls before sorting so they stay last in both directions.
+    # Callers partition nulls; stable ties preserve reverse-priority key ordering.
     if isinstance(value, bool):
-        return (0, int(value))
+        return (1, int(value))
     if isinstance(value, int | float):
+        if isinstance(value, float) and not math.isfinite(value):
+            raise VerboisyError("Ordering requires finite values")
         return (0, value)
+    if isinstance(value, str):
+        return (2, value.casefold())
     if isinstance(value, datetime):
-        return (0, value.isoformat())
-    return (0, str(value).casefold())
+        return (3, value.isoformat())
+    if isinstance(value, list | dict):
+        try:
+            return (
+                4 if isinstance(value, list) else 5,
+                json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False),
+            )
+        except (ValueError, TypeError):
+            raise VerboisyError("Ordering requires finite JSON containers") from None
+    raise VerboisyError("Ordering received an unsupported value")
