@@ -13,6 +13,27 @@ from pathlib import Path
 from typing import Any, TextIO
 
 
+def sync_directory(path: Path) -> bool:
+    """Sync POSIX directory entries; return False only for unsupported operations.
+
+    Windows and filesystems rejecting directory fsync provide atomic replacement
+    but no asserted power-loss durability. Real storage errors propagate.
+    """
+    if os.name != "posix":
+        return False
+    try:
+        fd = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+    except OSError as error:
+        if error.errno in {errno.EINVAL, errno.ENOTSUP, errno.EOPNOTSUPP}:
+            return False
+        raise
+    return True
+
+
 def _atomic_write(filepath: str | Path, write: Callable[[TextIO], None]) -> None:
     path = Path(filepath)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -40,6 +61,7 @@ def _atomic_write(filepath: str | Path, write: Callable[[TextIO], None]) -> None
         # The temporary file lives beside its destination so replacement stays on
         # one filesystem; readers see a complete old or new file, never partial output.
         Path(temporary).replace(path)
+        sync_directory(path.parent)
 
     finally:
         Path(temporary).unlink(missing_ok=True)
