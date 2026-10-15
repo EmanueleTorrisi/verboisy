@@ -14,6 +14,7 @@ from urllib.parse import urlsplit
 
 from verboisy import run
 from verboisy.evidence.models import TaskSpec
+from verboisy.research_contract import validate_research_contract
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
 
@@ -56,13 +57,16 @@ def main() -> int:
             seed_urls=seeds,
             allowed_hosts=sorted(set(source_hosts(seeds) + extra_hosts)),
             target_records=args.target,
-            identity_fields=["organization", "facility_name"],
+            identity_fields=["/organization", "/facility_name"],
             max_pages=args.max_pages,
             max_depth=4,
             max_links_per_page=100,
         )
     except ValueError as error:
         parser.error(str(error))
+    validate_research_contract(
+        json.loads(Path(__file__).with_name("schema.json").read_text()), task
+    )
     if not args.live:
         print(json.dumps(task.model_dump(mode="json"), indent=2))
         print("Contract preview only. --live starts browser and model requests.")
