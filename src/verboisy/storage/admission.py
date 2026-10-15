@@ -37,6 +37,8 @@ def admit_candidate(
     record_delta: list[int],
 ) -> str:
     """Commit a complete admission decision or roll back every related mutation."""
+    if not reasons and "id" in candidate.record:
+        raise VerboisyError("Top-level source id is reserved; project it to source_id")
     payload = encode(candidate.record)
     identity = (
         encode([lookup(candidate.record, p) for p in task.identity_fields])
