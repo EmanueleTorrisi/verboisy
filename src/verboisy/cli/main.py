@@ -20,6 +20,7 @@ from verboisy.dataset_formats import MIME_TYPES, format_capabilities
 from verboisy.product import SortKey
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
+from verboisy.utils.json_payload import read_json_object
 from verboisy.utils.logger import setup_logging
 
 ROOT_HELP = r"""
@@ -507,7 +508,7 @@ def run_agent(
     else:
         if result.stop_reason == "provider_rate_limit":
             CLIUserInterface.print_error(
-                "OpenAI rate limit reached. "
+                "Provider rate limit reached. "
                 "Research progress was saved.\n"
                 "Resume with: verboisy run --resume"
             )
@@ -529,7 +530,6 @@ def research_changes(
     ] = None,
 ) -> None:
     """Inspect a pending proposal, or submit one and pause research."""
-    import json
     from contextlib import closing
 
     from verboisy.storage.changes import pending_change, propose_change
@@ -538,7 +538,7 @@ def research_changes(
     try:
         if not run_id.strip():
             raise VerboisyError("Choose a nonempty run ID")
-        value = json.loads(proposal.read_text(encoding="utf-8")) if proposal is not None else None
+        value = read_json_object(proposal) if proposal is not None else None
         path = str(database) if database is not None else Settings().sqlite_db_path
         with closing(ResearchStore(path, read_only=proposal is None)) as store:
             change = (
@@ -673,10 +673,9 @@ def research_runs(
     import json
 
     from verboisy.storage.diagnostics import inspect_research_runs
-    from verboisy.utils.config import Settings
 
     try:
-        selected = database if database is not None else Path(Settings().sqlite_db_path)
+        selected = database if database is not None else Path(_safe_settings().sqlite_db_path)
         report = inspect_research_runs(selected, limit=limit)
     except (VerboisyError, OSError, ValueError) as exc:
         typer.echo(str(exc), err=True)
@@ -744,6 +743,16 @@ def map_dataset(
         typer.echo(f"Projection plan: {plan}; use --dataset-projection for a new run.")
 
 
+def _safe_settings(**kwargs: Any) -> Settings:
+    """Report invalid field names without echoing configuration input values."""
+    try:
+        return Settings(**kwargs)
+    except ValidationError as error:
+        fields = ", ".join(".".join(map(str, entry["loc"])) for entry in error.errors())
+        typer.echo(f"Invalid configuration fields: {fields}", err=True)
+        raise typer.Exit(1) from None
+
+
 @app.command()
 def setup() -> None:
     """Provision Chromium and check startup; no model calls."""
@@ -753,7 +762,7 @@ def setup() -> None:
     from verboisy.browser.context import BrowserManager
 
     async def check() -> None:
-        manager = BrowserManager(Settings(browser_auto_install=True))
+        manager = BrowserManager(_safe_settings(browser_auto_install=True))
 
         try:
             await manager.start()
@@ -777,17 +786,13 @@ def doctor() -> None:
 
     import importlib.metadata
 
-    config = Settings()
+    config = _safe_settings()
 
     typer.echo(f"Verboisy {__version__}; " f"Playwright {importlib.metadata.version('playwright')}")
     typer.echo(f"Model: {config.litellm_model}; " f"sandbox: {config.browser_sandbox}")
     typer.echo(f"Search: {config.search_provider}; " f"browser headless: {config.headless_browser}")
     typer.echo(f"Automatic browser setup: " f"{config.browser_auto_install}")
     typer.echo("Run verboisy setup to check browser startup.")
-
-
-if __name__ == "__main__":
-    app()
 
 
 @app.command("formats")
@@ -801,3 +806,7 @@ def formats() -> None:
 app.command("stream")(stream_command)
 
 app.command("stream-status")(stream_status)
+
+
+if __name__ == "__main__":
+    app()
