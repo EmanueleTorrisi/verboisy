@@ -44,6 +44,32 @@ It can incur provider charges. Synthetic-case success is distinct from internet
 research quality. [Evaluation](evaluation.md) describes finite-source annotation,
 precision, recall, completion correctness and cost measurements.
 
+
+## Complete local gates and evidence limits
+
+Run `poetry check --lock`, `poetry install`, Ruff lint/format checks, `mypy src`, and
+the offline statement/branch coverage gate at its unchanged 100% threshold. Build both
+native modules and run `scripts/check_native_tests.py`. A threshold failure is a failed
+gate, even when behavioral tests pass; do not replace it with a certification claim.
+
+Provision Chromium explicitly; Linux may need administrator-installed OS libraries
+via `poetry run python -m playwright install --with-deps chromium`. Run
+`VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser -v` with the required sandbox.
+Missing/truncated downloads block browser qualification; do not substitute mocks.
+
+Run `poetry run pip-audit --local`, strict MkDocs, `poetry build`,
+`poetry run python scripts/check_distribution.py --dist-dir dist --from-sdist --install-smoke`,
+and `poetry run python scripts/check_repository.py --json`. The package is a local
+audit skip when not indexed; record dependency scope/skips separately. The checker
+covers all public Markdown and local anchors/HTML; Material renders Mermaid containers.
+
+Current source-bound evidence excludes reports to avoid recursive fingerprints.
+Configured CI and historic results are distinct from executed final-source results.
+Real providers/annotated research, supported platforms, Docker, sandbox/egress,
+million-row resource/durability qualification, native sanitizers/full workloads,
+power-loss/filesystems, independent beta, legal and release-owner gates require actual
+infrastructure and authorized owners before production acceptance.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
