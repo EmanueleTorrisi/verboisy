@@ -11,7 +11,10 @@ verboisy run \
   --export laptops.csv
 ```
 
-## Basic
+
+## Research and source policy
+
+### Basic
 
 `--goal TEXT` describes the dataset to research.
 
@@ -21,7 +24,7 @@ verboisy run \
 
 `--strings` forces simple-schema fields to `string | null`.
 
-## Source control
+### Source control
 
 `--include DOMAIN` adds a domain-specific discovery query. It may be repeated.
 
@@ -29,62 +32,17 @@ verboisy run \
 
 `--onlyinclude` restricts browsing to the domains passed with `--include`.
 
-## Dataset shaping
-
-`--maxrows N` sets the desired accepted-record ceiling.
-
-`--orderby FIELD` sorts ascending. It may be repeated.
-
-`--orderbydesc FIELD` sorts descending. It may be mixed with `--orderby`.
-
-Argument order defines priority:
-
-```text
---orderby age --orderbydesc height --orderby name
-
-1. age ascending
-2. height descending
-3. name ascending
-```
-
-`--groupby FIELD` groups rows, deterministically aggregates numeric fields, then applies surviving sort keys.
-
-## Dataset relationships
-
-`--smartid PATH` loads a previous Verboisy CSV or JSON dataset and attempts a conservative relational match. The new relation column is derived from the dataset name, for example `people.csv` to `person_id`.
-
-Ambiguous relationships become `null`.
-
-## Research
+### Research
 
 `--research` expands traversal depth, page limits, and link breadth. It is intentionally incompatible with `--maxrows`, ordering, grouping, and SmartID in this release candidate.
 
 This mode can use substantially more browser requests, search requests, model tokens, time, and provider budget.
 
-## Output and proof
-
-`--proof` writes a `*.proof.txt` report derived from persisted run state. At least one `--export` is required.
-
-Each CSV or JSON export also receives:
-
-- `*.evidence.json`
-- `*.manifest.json`
-
-## Execution and recovery
-
-`--max-steps N` limits page visits in the current invocation.
-
-`--resume` resumes the latest incomplete run.
-
-`--resume RUN_ID` resumes a specific persisted run.
-
-`--headless` and `--headed` override browser visibility.
-
-## Advanced
+### Advanced
 
 `--task PATH` loads the existing advanced TaskSpec configuration. Advanced JSON Schema and task policies remain the lower-level contract used by the same research engine.
 
-## Explicit entity identity
+### Explicit entity identity
 
 Use `--identity` with a row-relative JSON pointer to a scalar field in the requested
 schema. Repeat the option for a compound key:
@@ -110,7 +68,7 @@ Without a declared key, existing whole-record identity behavior is retained.
 Changed observations can count as separate rows; this option does not infer keys
 or establish that unkeyed rows represent distinct entities.
 
-## Search attempt budget
+### Search attempt budget
 
 Set `SEARCH_REQUEST_BUDGET` to a nonnegative integer to limit search attempts per saved run.
 The default is unlimited; `0` blocks provider search before network access. This limit
@@ -122,172 +80,45 @@ units. An attempt reservation does not establish that the provider billed the re
 Standalone low-level search calls have no durable run ledger; use the public API or CLI
 for a cumulative limit. Historical unjournaled requests cannot be counted retrospectively.
 
-## Provider failure diagnostics
 
-Future failed model requests include their HTTP status and, when recognized,
-structured provider error codes and parameter names. HTTP 400 diagnostics identify
-model compatibility checks for `max_tokens`, `temperature` and JSON
-`response_format`; HTTP 401, 403 and 404 point to credentials, permissions and model
-or endpoint configuration respectively. These are troubleshooting hints, not a
-claim that a particular setting caused the failure.
+## Output shaping and display
 
-Only a fixed set of known code and parameter identifiers is included. Raw provider
-messages, response bodies, request prompts, URLs and credentials are not copied
-into these failure messages. Retry and request budget policies are unchanged, and
-no automatic parameter substitution is performed. Previously saved generic errors
-remain unchanged; their missing provider details cannot be reconstructed locally.
+### Dataset shaping
 
-## Explicit model token-limit parameter
+`--maxrows N` sets the desired accepted-record ceiling.
 
-`LLM_TOKEN_LIMIT_PARAMETER` selects the Chat Completions keyword sent through
-LiteLLM. Its accepted values are `max_tokens` (the backward-compatible default)
-and `max_completion_tokens`. `MAX_TOKENS` remains the positive numeric ceiling
-for either choice; exactly one token-limit keyword is sent on each attempt.
+`--orderby FIELD` sorts ascending. It may be repeated.
 
-For a provider/model that requires the latter keyword, configure:
+`--orderbydesc FIELD` sorts descending. It may be mixed with `--orderby`.
 
-```dotenv
-LLM_TOKEN_LIMIT_PARAMETER=max_completion_tokens
-MAX_TOKENS=4096
+Argument order defines priority:
+
+```text
+--orderby age --orderbydesc height --orderby name
+
+1. age ascending
+2. height descending
+3. name ascending
 ```
 
-The [OpenAI Chat Completions reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create/)
-defines `max_completion_tokens` as including visible output and reasoning tokens.
-Select the keyword for your provider and model; this setting does not establish
-compatibility with temperature, JSON response format or other request fields.
-It applies to all model roles sharing the Settings instance, including explicit
-model overrides. Mixed-provider configurations must use a keyword supported by
-each configured role. Invalid choices are rejected during configuration loading.
+`--groupby FIELD` groups rows, deterministically aggregates numeric fields, then applies surviving sort keys.
 
-Conservative request reservations still use UTF-8 message bytes plus `MAX_TOKENS`;
-reported provider usage, retry limits, credential routing and JSON validation are
-unchanged. A rejected request is not automatically retried with a different
-keyword. OpenAI Responses-based search retains its own `max_output_tokens` field.
+### Dataset relationships
 
-## Explicit temperature omission
+`--smartid PATH` loads a previous Verboisy CSV or JSON dataset and attempts a conservative relational match. The new relation column is derived from the dataset name, for example `people.csv` to `person_id`.
 
-`LLM_SEND_TEMPERATURE=true` is the default: model requests include the validated
-`TEMPERATURE` value. Set `LLM_SEND_TEMPERATURE=false` to omit the keyword entirely
-when your provider/model requires omission. This sends neither a numeric value
-nor JSON null; the provider applies its own default. `TEMPERATURE` remains
-validated between 0 and 2 even when omitted.
+Ambiguous relationships become `null`.
 
-The choice applies to all Chat Completions model roles and explicit model
-overrides using the same Settings instance. It can be combined with either
-`LLM_TOKEN_LIMIT_PARAMETER` choice. It does not establish compatibility with the
-selected model's other request fields. There is no automatic fallback that drops
-temperature after a rejected request. Retry behavior, JSON response validation,
-credential routing and budget accounting remain unchanged. Responses-based
-search is unaffected.
+### Output and proof
 
-To explicitly omit temperature:
+`--proof` writes a `*.proof.txt` report derived from persisted run state. At least one `--export` is required.
 
-```dotenv
-LLM_SEND_TEMPERATURE=false
-```
+Each CSV or JSON export also receives:
 
-## Inspecting active model configuration
+- `*.evidence.json`
+- `*.manifest.json`
 
-Model-specific [provider profiles](providers.md) can select separate endpoints,
-credentials, output allowances and JSON modes for different role models. Existing
-settings remain the fallback when no profile matches.
-
-Run `poetry run verboisy model-config` before a provider retry to inspect settings
-loaded from the current environment and `.env`. The JSON report lists the default
-model and each role's effective model, selected token-limit keyword and ceiling,
-whether temperature is sent, its effective numeric value when sent, configured
-request budget, effective budget ceiling, retry count, request interval and timeout.
-It also reports credential presence as booleans and whether a custom API endpoint
-is configured. Credential values and the endpoint URL are omitted.
-
-When temperature is omitted, its reported value is null, meaning the keyword will
-be absent from the request. This report uses the same role resolution as the model
-client. It describes current configuration; it does not reconstruct an earlier
-run's settings, remaining persisted budget, or a caller's explicit model override.
-Credential presence does not establish provider authentication, account access or
-model compatibility, and other provider environment credentials are not inspected.
-
-The command makes no provider, browser, search or database calls, creates no run
-and changes no settings. Invalid configuration reports only field names, without
-printing rejected values.
-
-## Inspecting a saved run's status
-
-Run `poetry run verboisy status --run-id <actual-run-id>` to inspect a run listed
-by `verboisy runs`. The default database is the configured `SQLITE_DB_PATH`;
-`--database` selects another existing ledger. Browser-only, dataset, paused,
-failed and completed runs are supported.
-
-The JSON report contains the saved goal, status and stop reason, accepted-record
-and candidate counts, captures, snapshots, page outcomes, conflicts and journal
-event counts. Accounting shows saved reported tokens, reserved request units and
-distinct journaled search attempt reservations. These describe committed ledger
-state, not provider billing or unjournaled historical requests. Coverage gap
-event counts are historical; use `repairs` to verify current dataset gaps.
-
-Status inspection uses a coherent SQLite read-only transaction and may run while
-a writer holds the application lock. It does not resume the runner, validate
-captured evidence, create a database, acquire a write lock, migrate a ledger or
-make provider/browser/download calls. Raw event payloads and candidate records
-are omitted. It does not infer a remaining budget from today's settings.
-
-## JSON-mode request contract
-
-Every `LLMClient.complete_json` request appends a trusted system instruction to
-return one valid JSON object without Markdown fences or commentary. Original
-role instructions and the user/data message are preserved. This prevents a
-request from depending on an incidental JSON mention in untrusted page content.
-The [OpenAI JSON-mode documentation](https://developers.openai.com/api/docs/guides/structured-outputs#json-mode)
-requires an explicit JSON instruction and documents rejection when the context
-does not contain the required JSON marker. Semantic and source-assessment
-prompts previously relied on their object examples alone.
-
-The instruction is included before the UTF-8 request reservation is computed,
-so each retry reserves its full request size. Existing persisted reservations
-are retained. Strict object parsing, non-finite-number rejection, token-limit
-selection and temperature settings remain unchanged. HTTP 400 diagnostics for
-`parameter=messages` now point to message structure and JSON instructions.
-# Saved requirement proposals
-
-`verboisy run --resume RUN_ID` continues the saved requirements. If a proposal is
-pending, it records a decline and continues the original contract.
-`verboisy run --okresume RUN_ID` accepts the exact saved proposal and then resumes.
-The two flags are mutually exclusive. Either flag can omit the ID to select the
-latest incomplete run. Without a pending proposal, `--okresume` fails before
-research and asks for `--resume`.
-
-Inspect the complete pending proposal without model calls or database writes:
-
-```bash
-poetry run verboisy changes --run-id RUN_ID
-```
-
-A caller can offer a proposal using
-`verboisy changes --run-id RUN_ID --proposal change.json`. The JSON file contains
-`description`, `goal`, `schema` (a complete JSON Schema), and `task` (a complete
-TaskSpec). These are replacement requirements, not partial updates. Preserve
-existing task settings unless the offer explicitly changes them. The command
-prints the exact proposal with `*` notices and both continuation commands, and
-pauses the run before any research. It does not infer or generate a proposal.
-
-Offering changes does not alter the active schema. Acceptance records the prior
-requirements and decision in the existing event ledger, applies the replacements
-atomically, and requeues browser work under the new requirements. Existing
-snapshots and rejected candidates remain history. Old semantic and source
-assessment caches are not reused under accepted requirements. New browser visits
-may make model requests; this foundation does not yet replay saved snapshots.
-Neither decision resets token/request accounting or raises the budget.
-
-This initial workflow supports incomplete browser runs with zero accepted rows.
-Completed runs, runs with accepted rows, and declared dataset ingestion changes
-require a separate migration/revalidation workflow and are rejected. A proposal
-whose baseline requirements have since changed is rejected as stale. No database
-version migration is needed. The manual submission command does not itself detect feasibility conflicts.
-The observed-range detector below uses this same decision boundary. Preferred
-units and date presentation are available through the display options and apply
-after evidence acceptance.
-
-## Observed ranges in numeric columns
+### Observed ranges in numeric columns
 
 Browser extraction can now report an optional `range_conflicts` list with a field
 pointer, entity scope, observed source ID and literal interval. Verboisy grounds
@@ -311,8 +142,7 @@ alternative schema for a new run. Point estimates and lower bounds such as
 nested fields and numeric fields with explicit constraints or mappings are not
 automatically rewritten. Units are preserved as printed, not inferred or converted.
 Accepted range strings still require exact quotes and independent semantic review.
-Automatic conversion to preferred units and configurable date presentation remain
-subsequent features. All typed extraction proposals are now retained in the
+Preferred-unit conversion and date presentation are implemented display features. All typed extraction proposals are now retained in the
 event ledger, including the complete proof objects, before verification.
 
 
@@ -396,13 +226,212 @@ The manifest retains the original extraction schema: formatted dates may therefo
 make `collection_schema_valid` false, even though accepted source records were valid.
 Display preferences, source values and output values remain separately inspectable.
 
-## Native configuration inspection
+
+## Providers and request contracts
+
+### Provider failure diagnostics
+
+Future failed model requests include their HTTP status and, when recognized,
+structured provider error codes and parameter names. HTTP 400 diagnostics identify
+model compatibility checks for `max_tokens`, `temperature` and JSON
+`response_format`; HTTP 401, 403 and 404 point to credentials, permissions and model
+or endpoint configuration respectively. These are troubleshooting hints, not a
+claim that a particular setting caused the failure.
+
+Only a fixed set of known code and parameter identifiers is included. Raw provider
+messages, response bodies, request prompts, URLs and credentials are not copied
+into these failure messages. Retry and request budget policies are unchanged, and
+no automatic parameter substitution is performed. Previously saved generic errors
+remain unchanged; their missing provider details cannot be reconstructed locally.
+
+### Explicit model token-limit parameter
+
+`LLM_TOKEN_LIMIT_PARAMETER` selects the Chat Completions keyword sent through
+LiteLLM. Its accepted values are `max_tokens` (the backward-compatible default)
+and `max_completion_tokens`. `MAX_TOKENS` remains the positive numeric ceiling
+for either choice; exactly one token-limit keyword is sent on each attempt.
+
+For a provider/model that requires the latter keyword, configure:
+
+```dotenv
+LLM_TOKEN_LIMIT_PARAMETER=max_completion_tokens
+MAX_TOKENS=4096
+```
+
+The [OpenAI Chat Completions reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create/)
+defines `max_completion_tokens` as including visible output and reasoning tokens.
+Select the keyword for your provider and model; this setting does not establish
+compatibility with temperature, JSON response format or other request fields.
+It applies to all model roles sharing the Settings instance, including explicit
+model overrides. Mixed-provider configurations must use a keyword supported by
+each configured role. Invalid choices are rejected during configuration loading.
+
+Conservative request reservations still use UTF-8 message bytes plus `MAX_TOKENS`;
+reported provider usage, retry limits, credential routing and JSON validation are
+unchanged. A rejected request is not automatically retried with a different
+keyword. OpenAI Responses-based search retains its own `max_output_tokens` field.
+
+### Explicit temperature omission
+
+`LLM_SEND_TEMPERATURE=true` is the default: model requests include the validated
+`TEMPERATURE` value. Set `LLM_SEND_TEMPERATURE=false` to omit the keyword entirely
+when your provider/model requires omission. This sends neither a numeric value
+nor JSON null; the provider applies its own default. `TEMPERATURE` remains
+validated between 0 and 2 even when omitted.
+
+The choice applies to all Chat Completions model roles and explicit model
+overrides using the same Settings instance. It can be combined with either
+`LLM_TOKEN_LIMIT_PARAMETER` choice. It does not establish compatibility with the
+selected model's other request fields. There is no automatic fallback that drops
+temperature after a rejected request. Retry behavior, JSON response validation,
+credential routing and budget accounting remain unchanged. Responses-based
+search is unaffected.
+
+To explicitly omit temperature:
+
+```dotenv
+LLM_SEND_TEMPERATURE=false
+```
+
+### Inspecting active model configuration
+
+Model-specific [provider profiles](providers.md) can select separate endpoints,
+credentials, output allowances and JSON modes for different role models. Existing
+settings remain the fallback when no profile matches.
+
+Run `poetry run verboisy model-config` before a provider retry to inspect settings
+loaded from the current environment and `.env`. The JSON report lists the default
+model and each role's effective model, selected token-limit keyword and ceiling,
+whether temperature is sent, its effective numeric value when sent, configured
+request budget, effective budget ceiling, retry count, request interval and timeout.
+It also reports credential presence as booleans and whether a custom API endpoint
+is configured. Credential values and the endpoint URL are omitted.
+
+When temperature is omitted, its reported value is null, meaning the keyword will
+be absent from the request. This report uses the same role resolution as the model
+client. It describes current configuration; it does not reconstruct an earlier
+run's settings, remaining persisted budget, or a caller's explicit model override.
+Credential presence does not establish provider authentication, account access or
+model compatibility, and other provider environment credentials are not inspected.
+
+The command makes no provider, browser, search or database calls, creates no run
+and changes no settings. Invalid configuration reports only field names, without
+printing rejected values.
+
+### JSON-mode request contract
+
+Every `LLMClient.complete_json` request appends a trusted system instruction to
+return one valid JSON object without Markdown fences or commentary. Original
+role instructions and the user/data message are preserved. This prevents a
+request from depending on an incidental JSON mention in untrusted page content.
+The [OpenAI JSON-mode documentation](https://developers.openai.com/api/docs/guides/structured-outputs#json-mode)
+requires an explicit JSON instruction and documents rejection when the context
+does not contain the required JSON marker. Semantic and source-assessment
+prompts previously relied on their object examples alone.
+
+The instruction is included before the UTF-8 request reservation is computed,
+so each retry reserves its full request size. Existing persisted reservations
+are retained. Strict object parsing, non-finite-number rejection, token-limit
+selection and temperature settings remain unchanged. HTTP 400 diagnostics for
+`parameter=messages` now point to message structure and JSON instructions.
+# Saved requirement proposals
+
+`verboisy run --resume RUN_ID` continues the saved requirements. If a proposal is
+pending, it records a decline and continues the original contract.
+`verboisy run --okresume RUN_ID` accepts the exact saved proposal and then resumes.
+The two flags are mutually exclusive. Either flag can omit the ID to select the
+latest incomplete run. Without a pending proposal, `--okresume` fails before
+research and asks for `--resume`.
+
+Inspect the complete pending proposal without model calls or database writes:
+
+```bash
+poetry run verboisy changes --run-id RUN_ID
+```
+
+A caller can offer a proposal using
+`verboisy changes --run-id RUN_ID --proposal change.json`. The JSON file contains
+`description`, `goal`, `schema` (a complete JSON Schema), and `task` (a complete
+TaskSpec). These are replacement requirements, not partial updates. Preserve
+existing task settings unless the offer explicitly changes them. The command
+prints the exact proposal with `*` notices and both continuation commands, and
+pauses the run before any research. It does not infer or generate a proposal.
+
+Offering changes does not alter the active schema. Acceptance records the prior
+requirements and decision in the existing event ledger, applies the replacements
+atomically, and requeues browser work under the new requirements. Existing
+snapshots and rejected candidates remain history. Old semantic and source
+assessment caches are not reused under accepted requirements. New browser visits
+may make model requests; this foundation does not yet replay saved snapshots.
+Neither decision resets token/request accounting or raises the budget.
+
+This initial workflow supports incomplete browser runs with zero accepted rows.
+Completed runs, runs with accepted rows, and declared dataset ingestion changes
+require a separate migration/revalidation workflow and are rejected. A proposal
+whose baseline requirements have since changed is rejected as stale. No database
+version migration is needed. The manual submission command does not itself detect feasibility conflicts.
+The observed-range detector below uses this same decision boundary. Preferred
+units and date presentation are available through the display options and apply
+after evidence acceptance.
+
+
+## Recovery inspection and setup
+
+### Execution and recovery
+
+`--max-steps N` limits page visits in the current invocation.
+
+`--resume` resumes the latest incomplete run.
+
+`--resume RUN_ID` resumes a specific persisted run.
+
+`--headless` and `--headed` override browser visibility.
+
+### Inspecting a saved run's status
+
+Run `poetry run verboisy status --run-id <actual-run-id>` to inspect a run listed
+by `verboisy runs`. The default database is the configured `SQLITE_DB_PATH`;
+`--database` selects another existing ledger. Browser-only, dataset, paused,
+failed and completed runs are supported.
+
+The JSON report contains the saved goal, status and stop reason, accepted-record
+and candidate counts, captures, snapshots, page outcomes, conflicts and journal
+event counts. Accounting shows saved reported tokens, reserved request units and
+distinct journaled search attempt reservations. These describe committed ledger
+state, not provider billing or unjournaled historical requests. Coverage gap
+event counts are historical; use `repairs` to verify current dataset gaps.
+
+Status inspection uses a coherent SQLite read-only transaction and may run while
+a writer holds the application lock. It does not resume the runner, validate
+captured evidence, create a database, acquire a write lock, migrate a ledger or
+make provider/browser/download calls. Raw event payloads and candidate records
+are omitted. It does not infer a remaining budget from today's settings.
+
+### Native configuration inspection
 
 `verboisy native-config` inspects optional C++ quote-matcher selection and build
 fingerprints without loading a binary. It uses shell environment flags, reports
 missing or changed build inputs, and does not contact providers or open a ledger.
 Matching hashes do not establish binary compatibility. See [native validation](native.md)
 for the separate compiled-test gate.
+
+
+### Command completion and validation
+
+Console `verboisy`, `python -m verboisy`, and `python -m verboisy.cli.main` register
+the same commands. Research/preparation returns 0 completed, 2 paused/incomplete,
+1 failed/runtime error, and 130 interrupted. Read-only `stream-status` can succeed
+while reporting an incomplete stored job.
+
+JSON task/schema/projection/proposal readers reject duplicate keys, non-finite values
+and unsafe Unicode within bounded regular-file reads. `maxrows` is an integer in
+1..100000. Task identity uses scalar RFC 6901 pointers; root `id` is generated metadata
+and source IDs require explicit projection. Optional absence is preserved.
+
+`--proof` requires export. Publication I/O and contract/integrity errors have distinct
+safe diagnostics; changing destination permissions cannot fix damaged saved evidence.
+Provider inspection includes profile-specific response mode, token-limit and temperature
+overrides. Display preferences are implemented; see [presentation](presentation.md).
 
 ---
 
