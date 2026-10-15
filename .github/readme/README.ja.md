@@ -157,3 +157,10 @@ Verboisy は独自ライセンスのソフトウェアで、**オープンソー
 [研究機関のカタログ](../../examples/research_catalog/README.md) ·
 [大規模なローカル観測データの処理](../../examples/streaming_observations/README.md) ·
 [バージョン履歴：0.1.0–1.0.0](../../docs/development-roadmap.md)
+
+
+## データ契約と検証範囲
+
+通常の出力では `id` は生成メタデータ用です。元データの ID は明示的に `source_id` に投影してください。入れ子の ID とストリーミングの ID は保持されます。欠落した任意項目は欠落のままで、明示的な null は保持されます。ストリーミングは各行を検証し、未対応の配列全体の制約を拒否します。一時停止した準備処理の終了コードは 2 です。CI は設定済みですが、過去の計測は記録されたソースと実行環境にのみ適用されます。
+
+[Current offline evidence](../../evals/results/offline-validation.json).
