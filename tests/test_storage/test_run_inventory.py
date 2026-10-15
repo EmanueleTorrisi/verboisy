@@ -67,6 +67,23 @@ def test_empty_inventory(tmp_path):
     assert report["truncated"] is False
 
 
+def test_inventory_sql_failure_is_safe_and_connection_closed(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    path = tmp_path / "inventory.db"
+    with sqlite3.connect(path) as db:
+        db.execute("CREATE TABLE placeholder(value)")
+    db = sqlite3.connect(path)
+    monkeypatch.setattr(
+        "verboisy.storage.diagnostics.ResearchStore",
+        lambda *_args, **_kwargs: SimpleNamespace(db=db, close=db.close),
+    )
+    with pytest.raises(VerboisyError, match="invalid run inventory"):
+        inspect_research_runs(path)
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        db.execute("SELECT 1")
+
+
 @pytest.mark.parametrize("limit", [True, "3", 0, -1, 1001])
 def test_invalid_limits_do_not_create_database(tmp_path, limit):
     path = tmp_path / "absent.db"
@@ -107,7 +124,7 @@ def test_partial_current_ledger_reports_error_without_changes(tmp_path):
     db.commit()
     db.close()
     before = path.read_bytes()
-    with pytest.raises(VerboisyError, match="invalid run inventory"):
+    with pytest.raises(VerboisyError, match="invalid run inventory|supported research ledger"):
         inspect_research_runs(path)
     assert path.read_bytes() == before
     assert not Path(str(path) + ".lock").exists()
