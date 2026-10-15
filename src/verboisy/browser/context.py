@@ -40,41 +40,83 @@ class BrowserManager:
         self._page: Page | None = None
         self.navigation_scope: Callable[[str], bool] | None = None
         self._request_session: CDPSession | None = None
+        self._policy_failures: dict[str, int] = {}
 
     async def _validate_navigation(self, url: str) -> None:
         await validate_url(url, self.config)
         if self.navigation_scope is not None and not self.navigation_scope(url):
             raise NavigationError("Destination is outside the declared crawl scope")
 
+    def _policy_failure(self, category: str) -> None:
+        self._policy_failures[category] = min(
+            self._policy_failures.get(category, 0) + 1, 1_000_000_000
+        )
+
+    def drain_policy_failures(self) -> list[dict[str, Any]]:
+        """Return/reset fixed category counts without retaining private request URLs."""
+        notices = [
+            {"reason": category, "count": count}
+            for category, count in sorted(self._policy_failures.items())
+        ]
+        self._policy_failures.clear()
+        return notices
+
     async def _route(self, route: Route) -> None:
         try:
-            await validate_url(route.request.url, self.config)
-        except (NavigationError, PlaywrightError):
-            await route.abort("blockedbyclient")
+            request = route.request
+            frame = request.frame
+            if self._page is None or frame.page != self._page:
+                self._policy_failure("unsupported_page_target")
+                raise NavigationError("Unsupported page target")
+            if frame != self._page.main_frame:
+                self._policy_failure("unsupported_frame_target")
+                raise NavigationError("Unsupported frame target")
+            await validate_url(request.url, self.config)
+        except (NavigationError, PlaywrightError, AttributeError, ValueError):
+            self._policy_failure("request_policy_denied")
+            try:
+                await route.abort("blockedbyclient")
+            except PlaywrightError:
+                self._policy_failure("target_closed")
         else:
-            await route.continue_()
+            try:
+                await route.continue_()
+            except PlaywrightError:
+                self._policy_failure("target_closed")
 
     async def _request_paused(self, event: dict[str, Any]) -> None:
-        """Chromium pauses each request, including every redirected document hop."""
+        """Primary target Fetch mediation checks every hop; always finish a pause."""
         session = self._request_session
         if session is None:
             return
+        request_id = event.get("requestId")
+        if not isinstance(request_id, str):
+            self._policy_failure("invalid_policy_event")
+            return
+        denied = False
         try:
             url = event["request"]["url"]
             await validate_url(url, self.config)
             if event["resourceType"] == "Document":
                 await self._validate_navigation(url)
-        except NavigationError:
+        except (NavigationError, PlaywrightError, KeyError, TypeError, ValueError):
+            denied = True
+            self._policy_failure("request_policy_denied")
+        try:
             await session.send(
-                "Fetch.failRequest",
-                {"requestId": event["requestId"], "errorReason": "BlockedByClient"},
+                "Fetch.failRequest" if denied else "Fetch.continueRequest",
+                {"requestId": request_id, **({"errorReason": "BlockedByClient"} if denied else {})},
             )
-        else:
-            await session.send("Fetch.continueRequest", {"requestId": event["requestId"]})
+        except PlaywrightError:
+            self._policy_failure("target_closed")
 
     async def _websocket(self, route: WebSocketRoute) -> None:
         # WebSocket routing would otherwise bypass the HTTP request policy.
-        await route.close()
+        self._policy_failure("unsupported_websocket_target")
+        try:
+            await route.close()
+        except PlaywrightError:
+            self._policy_failure("target_closed")
 
     async def start(self) -> Page:
         try:
@@ -113,14 +155,13 @@ class BrowserManager:
                 )
                 self._context.set_default_timeout(self.config.browser_timeout_ms)
                 self._context.set_default_navigation_timeout(self.config.browser_timeout_ms)
-                if self.navigation_scope is None:
-                    await self._context.route("**/*", self._route)
+                await self._context.route("**/*", self._route)
                 await self._context.route_web_socket("**/*", self._websocket)
             if self._page is None:
                 self._page = await self._context.new_page()
                 if self.config.user_agent_rotation:
                     await StealthManager.apply_stealth(self._page)
-            if self.navigation_scope is not None and self._request_session is None:
+            if self._request_session is None:
                 self._request_session = await self._context.new_cdp_session(self._page)
                 self._request_session.on("Fetch.requestPaused", self._request_paused)
                 await self._request_session.send(
@@ -186,5 +227,6 @@ class BrowserManager:
                         "Browser cleanup failed", resource=attribute, error_type=type(exc).__name__
                     )
 
+        self._policy_failures.clear()
         if cancellation is not None:
             raise cancellation
