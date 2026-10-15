@@ -80,6 +80,25 @@ used by separate source namespaces. Missing namespaces remain unresolved, and
 multiple prior IDs for the complete key remain ambiguous. Resume reuses the saved
 key. Runs with no declared key retain the existing SmartID heuristics.
 
+
+## Verified reference loading and resume
+
+References are bounded to 50,000,000 bytes and 100,000 rows. Files must be regular,
+unchanged during reading, with unique nonempty supported IDs. JSON is strict and finite;
+CSV requires unique nonblank headers, strict syntax and exact row widths.
+
+An adjacent manifest is bounded to 1 MiB and verifies the primary file's exact hash.
+Ordinary format-3 JSON CSV has literal headers and JSON cells; stream-1 JSON CSV encodes
+headers too. Empty ordinary JSON cells mean absence; `null` means observed null.
+Plain CSV stays text, without guessed JSON types. Spreadsheet escaping retains text
+semantics. Unsupported/malformed existing manifests fail without fallback.
+
+Both reference and potential sidecar are protected publication inputs. New SmartID
+events bind file/manifest hashes and mode; resume rejects changed references. Historical
+unbound events establish a first verified binding labelled unrecorded, without claiming
+retroactive verification. Checksums establish consistency, not authenticity. Matching
+remains conservative and exact; source IDs require ordinary explicit projection.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
