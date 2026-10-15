@@ -157,3 +157,10 @@ Les contributions de code non sollicitées ne sont pas acceptées. Une collabora
 [Catalogue des établissements de recherche](../../examples/research_catalog/README.md) ·
 [Traitement de grands jeux de données locaux d’observations](../../examples/streaming_observations/README.md) ·
 [Historique des versions : 0.1.0–1.0.0](../../docs/development-roadmap.md)
+
+
+## Contrats de données et qualification
+
+Dans les résultats ordinaires, `id` est réservé aux métadonnées générées. Les identifiants source doivent être projetés explicitement vers `source_id`; les identifiants imbriqués et de streaming restent permis. Les champs optionnels absents restent absents; null explicite est conservé. Le streaming valide chaque ligne et refuse les contraintes de collection non prises en charge. Une préparation en pause retourne le code 2. La CI est configurée; les mesures historiques concernent uniquement leur source et environnement enregistrés.
+
+[Current offline evidence](../../evals/results/offline-validation.json).
