@@ -33,7 +33,7 @@ def assessment(monkeypatch):
     )
     runner = ResearchRunner.__new__(ResearchRunner)
     runner.rid = "run"
-    runner.semantic_planning_available = MagicMock(return_value=True)
+    runner.model_execution_available = MagicMock(return_value=True)
     runner.store = SimpleNamespace(events=MagicMock(return_value=[]), event=MagicMock())
     request = AsyncMock(return_value=response)
     monkeypatch.setattr("verboisy.core.research.assess_source_batch", request)
