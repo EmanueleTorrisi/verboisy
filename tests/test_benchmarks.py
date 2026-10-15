@@ -4,16 +4,71 @@
 """Keep benchmark measurements useful by rejecting changed or corrupt outputs."""
 
 import hashlib
+import importlib.util
 import json
+import os
 import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from benchmarks.runner import main, measure
 from benchmarks.workloads import CASE_NAMES, BenchmarkError, Workload, digest, make_workloads
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="Streaming RSS benchmark requires Linux")
+@pytest.mark.parametrize("work_dir", ["relative", "absolute", "default"])
+def test_streaming_benchmark_accepts_temporary_paths_from_python311(
+    tmp_path, monkeypatch, capsys, work_dir
+):
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "streaming_benchmark", root / "scripts/benchmark_streaming.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    original_directory = module.tempfile.TemporaryDirectory
+
+    class RelativeTemporaryDirectory:
+        def __init__(self, **kwargs):
+            self.directory = original_directory(**kwargs)
+
+        def __enter__(self):
+            return os.path.relpath(self.directory.__enter__(), Path.cwd())
+
+        def __exit__(self, *args):
+            return self.directory.__exit__(*args)
+
+    monkeypatch.setattr(
+        module, "tempfile", SimpleNamespace(TemporaryDirectory=RelativeTemporaryDirectory)
+    )
+    monkeypatch.chdir(tmp_path)
+    work = tmp_path / "work"
+    work.mkdir()
+    report = tmp_path / "report.json"
+    arguments = [
+        "benchmark_streaming.py",
+        "--rows",
+        "4",
+        "--padding-bytes",
+        "8",
+        "--report",
+        str(report),
+    ]
+    if work_dir != "default":
+        arguments.extend(["--work-dir", "work" if work_dir == "relative" else str(work)])
+    monkeypatch.setattr(sys, "argv", arguments)
+    assert module.main() == 2
+    result = json.loads(report.read_text())
+    assert result == json.loads(capsys.readouterr().out)
+    assert result["rows"] == 4
+    assert result["resume_after_source_deletion"] is True
+    assert result["all_output_rows_and_evidence_verified"] is True
+    assert result["qualification_passed"] is False
+    assert not list(work.iterdir())
 
 
 def collect(directory):
