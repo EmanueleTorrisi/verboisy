@@ -390,13 +390,13 @@ def test_conflict_quarantines_both_versions_and_lock(tmp_path):
         ResearchStore(str(tmp_path / "runs.db"))
     with pytest.raises(VerboisyError, match="No saved"):
         store.load(None)
-    spec = TaskSpec(identity_fields=["/id"])
+    spec = TaskSpec(identity_fields=["/source_id"])
     rid = store.create("data", {"type": "object"}, spec, None)
     store.queue(rid, "https://data.test/", 0, None)
     page = snapshot("<p>A</p>", "https://data.test/")
     work = store.next_page(rid)
     store.snapshot(rid, work["id"], page, "<p>A</p>")
-    c = Candidate(scope="page", record={"id": "A", "n": 1}, evidence={})
+    c = Candidate(scope="page", record={"source_id": "A", "n": 1}, evidence={})
     assert store.accept(rid, page, c, [], spec) == "accepted"
     assert store.accept(rid, page, c, [], spec) == "duplicate"
     c.record["n"] = 2
