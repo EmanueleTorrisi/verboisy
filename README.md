@@ -189,7 +189,7 @@ The streaming ledger retains source chunks and transactionally committed progres
 `stream-status` lists jobs; `stream --resume JOB_ID` continues a saved job. Python
 consumers page through `StreamLedger` instead of loading all rows at once.
 
-A recorded Linux/Python 3.12 workload prepared and exported **1,000,000 JSONL rows**
+A historical, source-specific Linux/Python 3.12 workload prepared and exported **1,000,000 JSONL rows**
 from **1,105,888,890 input bytes**, with **89.15 MiB peak process RSS** and **130.81 s**
 elapsed time. Recovery after deletion of the original source and export integrity
 were verified. These measurements describe one workload, not a universal speed or
@@ -298,3 +298,21 @@ Subsequent versions are recorded in the [changelog](CHANGELOG.md). The
 [version roadmap](docs/development-roadmap.md) documents the progression from 0.1.0
 to the current architecture. Source permissions, independent review and measured
 task outcomes define the scope of a research result.
+
+
+## Data and qualification boundaries
+
+Ordinary output reserves top-level `id` for generated row metadata. Rename source IDs
+explicitly to `source_id` with a [projection](docs/ingestion.md#explicit-projection-engine);
+nested IDs and streaming source IDs remain supported. Optional fields remain absent
+when unobserved; an explicit nullable null remains present.
+
+Streaming validates individual rows. Array-root item counts, uniqueness, contains,
+combinators and conditionals are rejected, rather than silently ignored. Preparation
+exits 0 when completed, 2 when paused, 1 when failed and 130 when interrupted;
+read-only inspection can succeed for an incomplete job.
+
+CI defines platform gates; configuration does not establish that they ran. Historical
+scale measurements apply to their recorded source and host. Current engineering
+results and outstanding qualification gates are recorded in
+[offline validation](evals/results/offline-validation.json).
