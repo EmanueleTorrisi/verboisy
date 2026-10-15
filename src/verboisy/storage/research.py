@@ -24,7 +24,7 @@ from verboisy.storage.assets import StoredDatasetAsset, list_assets, load_asset,
 from verboisy.storage.event_journal import decode_event_rows, reserved_attempt_ids
 from verboisy.storage.frontier_selection import select_frontier_page
 from verboisy.storage.json_payload import decode_saved_json
-from verboisy.storage.ledger_schema import initialize_ledger
+from verboisy.storage.ledger_schema import initialize_ledger, validate_ledger_identity
 from verboisy.storage.record_view import _apply_unit_normalizations as _apply_unit_normalizations
 from verboisy.storage.record_view import _replace_pointer_value as _replace_pointer_value
 from verboisy.storage.record_view import normalized_record_view
@@ -63,6 +63,11 @@ class ResearchStore:
             try:
                 self.db.row_factory = sqlite3.Row
                 self.db.execute("BEGIN")
+                tables = {
+                    row[0]
+                    for row in self.db.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                }
+                validate_ledger_identity(self.db, tables)
                 versions = self.db.execute("SELECT version FROM research_meta").fetchall()
                 if len(versions) != 1 or versions[0]["version"] != DB_VERSION:
                     raise VerboisyError("Repair inspection requires the current ledger version")
@@ -72,6 +77,10 @@ class ResearchStore:
                     raise VerboisyError("Not a readable current research ledger") from None
                 raise
             return
+        if Path(path).exists() and not Path(path).is_file():
+            raise VerboisyError("Research ledger must be a regular file")
+        if Path(path).is_symlink():
+            raise VerboisyError("Research ledger must not be a symlink")
         self.path = Path(path).resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.lock = FileLock(str(self.path) + ".lock")
@@ -81,6 +90,9 @@ class ResearchStore:
             raise VerboisyError("Database is in use by another run") from None
         try:
             self.db = sqlite3.connect(self.path)
+        except sqlite3.Error:
+            self.lock.release()
+            raise VerboisyError("Cannot open research ledger") from None
         except BaseException:
             self.lock.release()
             raise
@@ -94,9 +106,13 @@ class ResearchStore:
                     "Legacy database: preserve it and choose a new SQLITE_DB_PATH. "
                     "Legacy records are unverified."
                 )
+            validate_ledger_identity(self.db, tables)
             self.db.execute("PRAGMA foreign_keys=ON")
             self.db.execute("PRAGMA journal_mode=WAL")
             self._initialize_or_migrate(tables)
+        except sqlite3.Error:
+            self.close()
+            raise VerboisyError("Not a readable research ledger") from None
         except BaseException:
             self.close()
             raise
