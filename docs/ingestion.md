@@ -2,7 +2,10 @@
 
 # Deterministic dataset parsing
 
-## Explicit local and HTTP source modes
+
+## Grants and transport
+
+### Explicit local and HTTP source modes
 
 Local files and HTTP dataset endpoints use the same parser, projection, schema,
 identity, observed-row evidence and immutable asset/export machinery. Source
@@ -11,7 +14,7 @@ change the network policy. The declared adapters support CSV, JSON, JSONL, TSV, 
 Arbitrary file bytes can be captured and indexed explicitly with `asset`. See
 [File capabilities](formats.md) for the exact output, limitations and safety bounds.
 
-### Local files
+#### Local files
 
 Configure absolute directory grants in the local `.env`:
 
@@ -63,7 +66,7 @@ qualify gigabyte-scale inputs: current acquisition and replay defaults remain
 16 MiB and 100,000 rows. Larger local inputs use the separate
 [streaming workflow](streaming.md).
 
-### Internal and authenticated HTTP endpoints
+#### Internal and authenticated HTTP endpoints
 
 `--dataset-source json=https://internal.example/records` selects HTTP acquisition.
 The endpoint must return a body that satisfies the ordinary dataset parser
@@ -93,7 +96,7 @@ data and metadata before sharing a bundle. TLS verification, DNS pinning, resour
 limits and redirect checks remain active; this feature does not change public-web
 network defaults or authorize arbitrary internal hosts.
 
-### Qualification status
+#### Qualification status
 
 Offline regressions cover local grants, rejected paths/objects, byte limits,
 file changes, CLI/API execution, immutable resume and portable evidence replay.
@@ -130,7 +133,7 @@ Generic decompression, encoding inference, delimiter inference, archive extracti
 to disk and semantic coercion are outside this parser version's supported contract.
 The declared TSV delimiter and Office ZIP decoding are explicit parser operations.
 
-## Bounded HTTP download
+### Bounded HTTP download
 
 `verboisy.extractor.download.download_dataset` downloads an explicitly declared
 format through a caller-supplied scope predicate. Every redirect destination is
@@ -164,38 +167,10 @@ public HTTPCore backend and connection pool interfaces.
 Loopback HTTP/TLS integration tests opt into private access. Their test certificate
 and private key are fixtures only, valid for assets.example.test. Public internet and enterprise deployment qualification remain separate gates.
 
-## Persistent dataset assets
 
-`ResearchStore.save_dataset_asset(run_id, downloaded)` atomically stores an acquisition
-and a `dataset_asset` event. `load_dataset_asset(run_id, asset_id)` and
-`dataset_assets(run_id)` return verified immutable captures. They do not fetch sources
-or call models. The store replays parser version 1 with its default byte, row and
-nesting limits; larger custom-limit downloads are outside this storage contract.
+## Schemas and explicit projections
 
-Original bytes reside in SQLite BLOBs keyed by SHA-256. Each run has separate
-acquisition IDs bound to its source metadata and captured rows. Identical bytes may
-share a BLOB across runs, but loading an acquisition requires its owning run ID.
-Original/final URLs, redirect chain, content type, opaque remote disposition, parser
-version, headers, row values and physical lines or JSON pointers are retained.
-Acquisition timestamps are assigned when the capture is first saved. No remote
-filename becomes a filesystem path.
-
-Repeating an identical capture is idempotent, including its event and timestamp.
-Changed bytes or source metadata create a separate acquisition in capture order.
-Bytes, metadata and parsed rows are checked on capture and replay; inconsistent
-existing captures fail rather than being silently repaired or overwritten. This
-is integrity verification, not verification that the source's claims are true.
-
-Research database version 4 adds the asset tables. Existing version 2 and 3 databases
-migrate on opening while preserving records, stable IDs, evidence, events and token
-accounting. Older software cannot open version 4 databases; preserve a database
-backup before opening a production database with the new version.
-
-Capturing an asset does not accept its rows as research records or mark a run
-complete. Projection into requested columns, row evidence and public run integration
-follow separately.
-
-## Declared dataset sources in public API runs
+### Declared dataset sources in public API runs
 
 `arun` accepts declared sources in `task.dataset_sources`:
 
@@ -245,70 +220,7 @@ reference-period metadata. Unbounded or empty inputs do not claim completion.
 Existing public ordering, IDs, JSON/CSV exports and proof reports operate on the
 accepted rows. Exported evidence and events bind rows to asset IDs; original bytes accompany dataset captures in the portable asset sidecar described below.
 
-## Portable original-asset bundles
-
-Exports from runs with captured dataset assets add `<destination>.assets.json`.
-The manifest's authoritative `asset_bundle` field names it and `files` includes
-its SHA-256 checksum. Runs without dataset captures use `asset_bundle: null` and
-retain the ordinary three checksummed dataset/evidence/event files. Format version
-3 manifests remain additive; the asset sidecar has its own format version 1.
-
-Each acquisition contains its stable ID, capture timestamp, source metadata, parser
-version, headers, exact row values and locators, plus original bytes encoded as
-base64. The decoded bytes retain their independent SHA-256 in dataset metadata.
-All verified captures accompany the run, including unselected or rejected source
-rows; source filenames are opaque metadata and never become output paths.
-
-```python
-from pathlib import Path
-from verboisy.storage.asset_bundle import load_portable_assets
-
-assets = load_portable_assets(Path("names.json.manifest.json"))
-by_id = {asset.id: asset for asset in assets}
-# An evidence snapshot's dataset_asset_id selects by_id[asset_id].
-# Its dataset_row_index selects asset.download.dataset.rows[row_index - 1].
-```
-
-This reader needs neither SQLite nor a source server. It verifies the referenced
-sidecar checksum, acquisition IDs, decoded bytes and row metadata against parser
-version 1. Duplicate acquisitions, unsupported versions, malformed base64, metadata
-mismatches, symlink sidecars and path traversal are rejected. Each input file is
-limited to 256 MiB by default; `max_bundle_bytes` can explicitly change that limit.
-The parser's per-asset byte, row and nesting limits still apply. The reader verifies
-the asset sidecar; dataset, evidence and event checksums remain in `manifest.files`
-for callers to check as well. Checksums establish integrity relative to the supplied
-manifest, not authenticity or factual truth.
-
-Output lineage maps sorted or grouped public rows to evidence record IDs. Dataset
-row snapshots then identify the portable acquisition and source row; its locators
-identify physical CSV/JSONL lines or JSON array pointers. Captured bytes can thus
-be audited without the original database. Declared dataset runs report
-`provenance: exact_dataset_values`, without claiming a model semantic review.
-
-Captures are verified before replacing an existing export. The manifest is written
-last and is absent if a sidecar write fails. Distinct export outputs cannot overlap
-a dataset, manifest or sidecar, and new sidecars cannot overwrite database or
-schema/task inputs. JSON and CSV exports may continue sharing their proof report.
-
-
-## CLI declarations
-
-Repeat `--dataset-source FORMAT=URL` for a declared format from `verboisy formats`:
-
-```sh
-verboisy run --goal "Collect names" --schema '[name]' --dataset-source 'json=https://example.com/names.json?version=1' --maxrows 20 --export names.json --proof
-```
-
-Formats must be exactly `csv`, `json`, `jsonl`, `tsv`, `text`, `docx`, `xlsx` or
-`asset`. Quote URLs containing shell
-metacharacters. Source order and query strings are preserved. The schema must
-match exact source values; CSV cells remain strings. No browser, search or model
-calls are made. Normal export defaults, identity and source policies apply.
-`--max-steps` limits new source downloads. Resume with `verboisy run --resume RUN_ID`;
-saved declarations are reused, so do not repeat `--dataset-source` on resume.
-Python callers may use `dataset_sources`; conflicting task declarations fail.
-
-## Explicit projection engine
+### Explicit projection engine
 
 `verboisy.extractor.projection` provides a deterministic projection primitive.
 Plans can be applied through declared-source ingestion or directly to captured
@@ -355,7 +267,7 @@ returns no partial result. Ingestion binds derivations to the immutable asset an
 record against its target schema.
 
 
-## Projected ingestion
+### Projected ingestion
 
 Provide `--dataset-projection plan.json` alongside `--dataset-source`. For example,
 use a JSON plan with the `Person` to `name` and `Age` to `years` mappings above:
@@ -399,7 +311,26 @@ its projection plan and resulting value before later normalization or export sha
 Projected runs use `provenance: projected_dataset_values` and retain false truth and
 global completeness claims. No browser, search or model calls are introduced.
 
-## Bounded source profiles
+### Ordinary IDs and optional fields
+
+Ordinary top-level `id` is generated metadata. Rename source IDs explicitly using a
+projection field with `target: "/source_id"`, `source: "/id"`, and `conversion: "identity"`.
+Nested `metadata.id` remains supported. Raw captures retain original source fields.
+Optional unobserved fields stay absent; declared explicit nullable null stays present.
+
+Configuration readers reject duplicate keys, non-finite numbers and unsafe Unicode
+within bounded regular-file reads. Local reference/array path introspection is shared
+with research policy and presentation; explicit ambiguity fails preflight. See
+[contracts](contracts.md) for introspection ceilings and the separate
+[streaming subset](streaming.md#validated-checkpoints-and-public-pages).
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
+
+## Mapping and grounded metadata
+
+### Bounded source profiles
 
 Declared-source ingestion journals one `dataset_profile` event for each captured
 asset, before row projection or acceptance. It profiles original source fields,
@@ -440,7 +371,7 @@ and 1,024 preview bytes. Zero examples is supported. Frozen profile objects cont
 immutable statistics and previews; raw captured rows are unchanged. Profiling
 introduces no browser, search or model requests and makes no automatic mappings.
 
-## Conservative mapping suggestions
+### Conservative mapping suggestions
 
 `verboisy.extractor.mapping` proposes explicit identity mappings from a bounded
 source profile. Exact JSON pointers take precedence. When an exact pointer is
@@ -495,7 +426,7 @@ existing explicit projection path, preserving original bytes and source-bound
 portable evidence. Suggestions and row validation introduce no model, search or
 browser calls and do not establish external factual truth or semantic equivalence.
 
-### Review mappings from the CLI
+#### Review mappings from the CLI
 
 `verboisy map` works offline on an asset already captured in a saved research
 ledger. Choose its run ID and find asset IDs with `verboisy assets` (below),
@@ -534,7 +465,7 @@ same explicit dataset source in a new run. Approval does not silently revise an
 existing run. Journal events enter the portable events sidecar on its next
 export; previously written bundles are unchanged.
 
-### Explicit calendar date conversion
+#### Explicit calendar date conversion
 
 Projection fields support three additional, explicit conversion modes:
 
@@ -563,7 +494,7 @@ and included in each converted cell's projection lineage. Existing version-1
 plans retain their behavior. These modes convert calendar dates, without time
 or timezone interpretation.
 
-### Review a caller-declared conversion plan
+#### Review a caller-declared conversion plan
 
 To review a plan containing explicit conversions, pass its JSON file to
 `verboisy map --projection`. For example, a plan with `date_dmy` and `integer`
@@ -589,7 +520,7 @@ blocked requests create a report and journal entry but no approved plan. Apply
 an approved plan explicitly with `run --dataset-projection` in a new run.
 
 
-### Inspect captured asset identities
+#### Inspect captured asset identities
 
 ```sh
 verboisy assets --database research.db --run-id RUN_ID --limit 100
@@ -617,7 +548,7 @@ snapshot. They require the current ledger version and do not initialize an
 empty database or migrate an older one. A saved run can be inspected while the
 normal store's writer lock is held; only committed captures are visible.
 
-### Grounded dataset unit derivations
+#### Grounded dataset unit derivations
 
 `project_unit_value` provides a deterministic derivation helper for explicitly
 chosen value and unit columns in a captured `SourceRow`:
@@ -648,7 +579,7 @@ canonical units, value/unit pointers, normalized JSON value, row locations and
 policy version. Original bytes and source rows are unchanged; repeated calls
 derive from the original value rather than applying a scale twice.
 
-### Declared unit conversion in projection plans
+#### Declared unit conversion in projection plans
 
 Declare the numeric source and its same-row unit column explicitly:
 
@@ -672,7 +603,7 @@ numeric value, observed unit label, both source pointers, canonical unit,
 normalized value and physical source-row locations. The captured asset remains
 unchanged. These derivations establish the conversion, not external truth.
 
-### Grounded definition and methodology descriptor helper
+#### Grounded definition and methodology descriptor helper
 
 `project_descriptor` binds a captured field value to an explicitly selected
 label column in the same source row:
@@ -708,7 +639,7 @@ quality, authority, semantic correctness or the truth of the field value.
 The helper is also used by the declared projection bindings below.
 
 
-### Declared descriptor bindings in projection plans
+#### Declared descriptor bindings in projection plans
 
 Attach descriptors to the scalar field whose source value they describe:
 
@@ -754,7 +685,7 @@ Completed resume validates saved source bindings and replays offline, preserving
 original asset bytes and the journal. Labels establish declared literal
 associations, not semantic equivalence or external factual truth.
 
-### Grounded reference-year helper
+#### Grounded reference-year helper
 
 `project_reference_year` associates a captured value with an explicitly selected
 reference-year column in the same source row:
@@ -787,7 +718,7 @@ derivations even when the field value is unchanged.
 The helper is also used by the declared reference-year bindings below.
 
 
-### Declared reference-year bindings in projection plans
+#### Declared reference-year bindings in projection plans
 
 Add `reference_year_source` to a scalar field declaration:
 
@@ -829,7 +760,7 @@ validates captured asset bindings and reconstructs the same proofs offline.
 These bindings record the caller-declared reference period without establishing
 source authority or external factual truth.
 
-### Temporal refresh for declared dataset identities
+#### Temporal refresh for declared dataset identities
 
 Processed dataset observations now use the existing candidate comparison and
 atomic replacement machinery when identity fields are explicitly declared.
@@ -858,7 +789,7 @@ history. Resume replays saved assets without redownloading or repeating processe
 comparisons. Only processed observations participate; the existing source and
 record target bounds still determine when ingestion stops.
 
-### Repairing required dataset metadata on repeated identities
+#### Repairing required dataset metadata on repeated identities
 
 A processed repeated identity may now replace its accepted evidence when the
 entire output record is unchanged, including JSON value types, and the later
@@ -878,7 +809,7 @@ The existing source and entity target limits still apply, so only observations
 processed within those bounds can repair a record. No metadata is inferred and
 these literal bindings do not establish external factual truth or source authority.
 
-### Repair scanning after reaching an entity target
+#### Repair scanning after reaching an entity target
 
 For datasets with explicitly declared identity fields, reaching `maxrows` no
 longer ends ingestion while required dataset consistency gaps remain. Remaining
@@ -896,7 +827,7 @@ redownloading or repeating processed rows. Exhausting all declared repair rows
 without resolving the gaps still leaves the run incomplete; no search or model
 request is introduced by repair scanning.
 
-### Repairing a missing required reference year
+#### Repairing a missing required reference year
 
 An equal-valued repeated identity can now repair a missing reference-year binding
 for a non-static field whose semantics require both a reference period and
@@ -914,7 +845,7 @@ proofs and portable cell lineage then bind to the dated source row. Existing
 bounded repair scanning and offline resume apply; a rejected year leaves the
 required-period gap unresolved.
 
-### Current repair diagnostics in results and exports
+#### Current repair diagnostics in results and exports
 
 Dataset API results expose `dataset_consistency` with `scope: accepted_records`,
 current `gaps` and the existing planner's `repairs`. The CLI prints each current
@@ -935,7 +866,7 @@ Extension metadata cannot overwrite this authoritative manifest field. These
 diagnostics describe the accepted collection and do not establish external
 truth or global completeness.
 
-### Period repair planning for declared dataset sources
+#### Period repair planning for declared dataset sources
 
 For explicitly declared dataset sources, a required mutable or slowly changing
 field can use the run's temporal intent when no field-specific intent exists.
@@ -955,7 +886,7 @@ ID alongside the stable record ID and pointer. API results and manifests expose
 these requests, and they disappear after successful repair. Creating the request
 does not fetch another source, spend provider budget or change the journal.
 
-### Inspect saved repair needs without resuming
+#### Inspect saved repair needs without resuming
 
 ```bash
 verboisy repairs --database path/to/research.db --run-id RUN_ID --limit 100
@@ -976,7 +907,7 @@ must not be interpreted as the whole repair plan. Altered captures or accepted
 bindings cause inspection to fail. Inspection does not infer source authority,
 external truth, or global collection completeness.
 
-### Finding saved runs
+#### Finding saved runs
 
 Run `poetry run verboisy runs` to list up to 100 recent runs from the existing
 configured `SQLITE_DB_PATH` (default `verboisy.db`). Use `--database` to select
@@ -997,7 +928,7 @@ writer holds the application lock. It performs no migration, creates no database
 or lock file, and makes no browser, model or download calls. Older ledger versions
 must be migrated separately before inspection.
 
-### Browser proposals with nullable fields
+#### Browser proposals with nullable fields
 
 Extraction prompts distinguish required property presence from non-nullability.
 An unknown required field that permits null is represented as null without
@@ -1012,6 +943,103 @@ These instructions guide proposals and review; deterministic verification and
 semantic rejection remain authoritative. Prompt changes do not establish that a
 particular page contains qualifying records or that live extraction will succeed.
 
----
 
-[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
+
+## Captured evidence and replay
+
+### Persistent dataset assets
+
+`ResearchStore.save_dataset_asset(run_id, downloaded)` atomically stores an acquisition
+and a `dataset_asset` event. `load_dataset_asset(run_id, asset_id)` and
+`dataset_assets(run_id)` return verified immutable captures. They do not fetch sources
+or call models. The store replays parser version 1 with its default byte, row and
+nesting limits; larger custom-limit downloads are outside this storage contract.
+
+Original bytes reside in SQLite BLOBs keyed by SHA-256. Each run has separate
+acquisition IDs bound to its source metadata and captured rows. Identical bytes may
+share a BLOB across runs, but loading an acquisition requires its owning run ID.
+Original/final URLs, redirect chain, content type, opaque remote disposition, parser
+version, headers, row values and physical lines or JSON pointers are retained.
+Acquisition timestamps are assigned when the capture is first saved. No remote
+filename becomes a filesystem path.
+
+Repeating an identical capture is idempotent, including its event and timestamp.
+Changed bytes or source metadata create a separate acquisition in capture order.
+Bytes, metadata and parsed rows are checked on capture and replay; inconsistent
+existing captures fail rather than being silently repaired or overwritten. This
+is integrity verification, not verification that the source's claims are true.
+
+Research database version 4 adds the asset tables. Existing version 2 and 3 databases
+migrate on opening while preserving records, stable IDs, evidence, events and token
+accounting. Older software cannot open version 4 databases; preserve a database
+backup before opening a production database with the new version.
+
+Capturing an asset does not accept its rows as research records or mark a run
+complete. Projection into requested columns, row evidence and public run integration
+follow separately.
+
+### Portable original-asset bundles
+
+Exports from runs with captured dataset assets add `<destination>.assets.json`.
+The manifest's authoritative `asset_bundle` field names it and `files` includes
+its SHA-256 checksum. Runs without dataset captures use `asset_bundle: null` and
+retain the ordinary three checksummed dataset/evidence/event files. Format version
+3 manifests remain additive; the asset sidecar has its own format version 1.
+
+Each acquisition contains its stable ID, capture timestamp, source metadata, parser
+version, headers, exact row values and locators, plus original bytes encoded as
+base64. The decoded bytes retain their independent SHA-256 in dataset metadata.
+All verified captures accompany the run, including unselected or rejected source
+rows; source filenames are opaque metadata and never become output paths.
+
+```python
+from pathlib import Path
+from verboisy.storage.asset_bundle import load_portable_assets
+
+assets = load_portable_assets(Path("names.json.manifest.json"))
+by_id = {asset.id: asset for asset in assets}
+# An evidence snapshot's dataset_asset_id selects by_id[asset_id].
+# Its dataset_row_index selects asset.download.dataset.rows[row_index - 1].
+```
+
+This reader needs neither SQLite nor a source server. It verifies the referenced
+sidecar checksum, acquisition IDs, decoded bytes and row metadata against parser
+version 1. Duplicate acquisitions, unsupported versions, malformed base64, metadata
+mismatches, symlink sidecars and path traversal are rejected. Each input file is
+limited to 256 MiB by default; `max_bundle_bytes` can explicitly change that limit.
+The parser's per-asset byte, row and nesting limits still apply. The reader verifies
+the asset sidecar; dataset, evidence and event checksums remain in `manifest.files`
+for callers to check as well. Checksums establish integrity relative to the supplied
+manifest, not authenticity or factual truth.
+
+Output lineage maps sorted or grouped public rows to evidence record IDs. Dataset
+row snapshots then identify the portable acquisition and source row; its locators
+identify physical CSV/JSONL lines or JSON array pointers. Captured bytes can thus
+be audited without the original database. Declared dataset runs report
+`provenance: exact_dataset_values`, without claiming a model semantic review.
+
+Captures are verified before replacing an existing export. The manifest is written
+last and is absent if a sidecar write fails. Distinct export outputs cannot overlap
+a dataset, manifest or sidecar, and new sidecars cannot overwrite database or
+schema/task inputs. JSON and CSV exports may continue sharing their proof report.
+
+
+
+## Examples and CLI declarations
+
+### CLI declarations
+
+Repeat `--dataset-source FORMAT=URL` for a declared format from `verboisy formats`:
+
+```sh
+verboisy run --goal "Collect names" --schema '[name]' --dataset-source 'json=https://example.com/names.json?version=1' --maxrows 20 --export names.json --proof
+```
+
+Formats must be exactly `csv`, `json`, `jsonl`, `tsv`, `text`, `docx`, `xlsx` or
+`asset`. Quote URLs containing shell
+metacharacters. Source order and query strings are preserved. The schema must
+match exact source values; CSV cells remain strings. No browser, search or model
+calls are made. Normal export defaults, identity and source policies apply.
+`--max-steps` limits new source downloads. Resume with `verboisy run --resume RUN_ID`;
+saved declarations are reused, so do not repeat `--dataset-source` on resume.
+Python callers may use `dataset_sources`; conflicting task declarations fail.
