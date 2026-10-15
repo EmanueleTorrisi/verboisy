@@ -156,3 +156,28 @@ metadata and publication guards.
 Task quality is assessed separately against annotated sources. Measurements identify
 the tested implementation, source set, model profile and runtime conditions; they
 do not establish web-wide completeness or universal throughput.
+
+
+## Contract boundaries and durable output
+
+`utils/json_payload.py` owns strict finite JSON and bounded regular-file reads.
+`extractor/schema_paths.py` indexes local references and declared array positions;
+`research_contract.py` validates resolved ordinary contracts before state creation.
+`reference_dataset.py` verifies SmartID formats and source/manifest bindings.
+
+`streaming/integrity.py` checks saved contracts, capture hashes, checkpoint prefixes,
+row projection and completed EOF. Resume validates the prefix once and retains its
+positioned parser. Paging owns a read snapshot only when the caller does not already
+own a transaction; at most 32 connection/revision stamps cache validation without
+retaining row payloads. The first read may scan the capture and committed prefix.
+
+Shaping preserves absence and typed scalar group identity. Exact integer sums and
+rational intermediate averages produce finite JSON or fail before publication.
+Browser acquisition supports one primary page; context ownership guards deny secondary
+pages/frames, while primary-page Fetch guards mediate redirects. Denied target counts
+become safe acquisition gaps. This is best-effort browser policy, not DNS pinning;
+production deployments still need independently qualified egress isolation.
+
+Exporters flush files and sync supported directory entries. Streaming stages files
+and publishes the manifest last. Unsupported directory sync, Windows and network
+filesystems do not acquire an asserted power-loss guarantee.
