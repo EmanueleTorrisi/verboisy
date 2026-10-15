@@ -71,6 +71,10 @@ def validated_accepted_candidate(
         candidate = Candidate.model_validate(decode_saved_json(row["payload"]))
     except (ValueError, TypeError) as error:
         raise VerboisyError("Stored accepted candidate failed integrity verification") from error
+    if "id" in candidate.record:
+        raise VerboisyError(
+            "Saved source-ID contract is incompatible; create a new run projected to source_id"
+        )
     # The selected key comes from the requested identity. A structurally valid
     # payload must still refer to that entity, including every compound field.
     try:
@@ -106,6 +110,10 @@ def decode_evidence_rows(
             raise VerboisyError(
                 "Stored accepted candidate failed integrity verification"
             ) from error
+        if "id" in validated.record:
+            raise VerboisyError(
+                "Saved source-ID contract is incompatible; create a new run projected to source_id"
+            )
         # Reproduce admission's key from raw candidate identity, before any
         # presentation or unit normalization of public output values.
         try:
