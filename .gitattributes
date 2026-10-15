@@ -1,0 +1,6 @@
+# Copyright (c) 2026 Emanuele Torrisi.
+# See LICENSE for applicable terms.
+
+# LF keeps shell entrypoints portable in Linux container builds.
+* text=auto eol=lf
+*.png binary
