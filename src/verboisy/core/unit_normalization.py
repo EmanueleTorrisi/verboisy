@@ -11,7 +11,11 @@ accepted evidence intact and writes only the existing unit-normalization events.
 from collections.abc import Callable
 
 from verboisy.core.dataset_consistency import Observations
-from verboisy.core.fitness import FieldSemantics, dataset_unit_consistency_errors, pointer_pattern
+from verboisy.core.fitness import (
+    FieldSemantics,
+    dataset_unit_consistency_errors,
+    semantics_for_pointer,
+)
 from verboisy.core.source_assessment import source_fitness_candidate_key
 from verboisy.core.units import (
     canonical_unit_from_event,
@@ -84,10 +88,14 @@ def journal_unit_normalizations(
         record_id = observation.get("record_id")
         pointer = observation.get("pointer")
 
+        field = (
+            semantics_for_pointer(field_semantics, pointer) if isinstance(pointer, str) else None
+        )
         if (
             not isinstance(record_id, str)
             or not isinstance(pointer, str)
-            or pointer_pattern(pointer) not in mixed_pointers
+            or field is None
+            or field.pointer not in mixed_pointers
         ):
             continue
 
