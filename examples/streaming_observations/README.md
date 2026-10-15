@@ -77,3 +77,15 @@ with closing(StreamLedger(Path("example-runs/observations-large/stream.db"))) as
 Keep downstream buffers bounded as well. Sorting, semantic deduplication and large
 remote acquisition require their own contracts. See [streaming](../../docs/streaming.md)
 and [recorded measurements](../../docs/benchmarks.md).
+
+
+## Pause and capture-based recovery
+
+An invocation budget prints result JSON/job ID and exits 2 while paused. This is an
+incomplete outcome. Explicitly resume the printed job ID; completed capture permits
+the original file to be removed. Public samples use verified bounded paging.
+
+Completion/export checks cover rows, evidence and hashes. JSON-mode stream CSV has
+JSON headers/cells, distinct from ordinary literal headers. Streaming source IDs are
+preserved. Historical timings are source-specific; current resource/throughput and
+operational qualification must be measured independently.
