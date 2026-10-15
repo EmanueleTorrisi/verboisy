@@ -110,6 +110,24 @@ cross-domain human-reviewed held-out research and live provider qualification
 are assessed through [research evaluation](evaluation.md). Evaluation
 requires authorized sources and an explicit provider spending limit.
 
+
+## Schema-derived pointer policies
+
+For a scalar property `2024`, policy lookup uses `/2024` literally. Inside an array,
+`/rows/3/2024` resolves `/rows/*/2024` by masking only the declared array position.
+Escaped names and literal object `*` remain literal. Saved plans regenerate this
+metadata from their schema and retain their version-1 event shape.
+
+Local references/anchors resolve offline. Introspection is bounded to 64 levels,
+10,000 schema nodes and 1,000 scalar paths; unresolved/ambiguous explicit policies or
+identity shapes fail safely. Generic/Boolean array subschemas gain no invented scalar
+policy. Temporal, unit, definition and methodology requirements remain field-scoped.
+Compound identity uses real pointers such as `/organization` and `/facility_name`.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
+
+
+Tuple prefix policies use their literal indices. A homogeneous `items` policy applies
+only after `prefixItems`; an undeclared prefix field cannot inherit that rest policy.
