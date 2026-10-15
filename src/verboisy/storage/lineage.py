@@ -16,16 +16,16 @@ from verboisy.extractor.descriptor_projection import (
     grounded_projected_descriptors,
     project_descriptor,
 )
+from verboisy.extractor.schema_paths import SchemaPathIndex
 from verboisy.extractor.temporal_projection import grounded_projected_years, project_reference_year
 from verboisy.extractor.unit_projection import grounded_projected_units, project_unit_value
 from verboisy.presentation import (
     PresentationPreferences,
-    field_schema,
     number_conversion,
     present_number,
     present_value,
 )
-from verboisy.product import GroupPlan, _group_rows, _normalize_row
+from verboisy.product import GroupPlan, _group_rows, _normalize_row, group_key
 from verboisy.storage.assets import StoredDatasetAsset
 from verboisy.storage.numeric_presentation import output_numeric_units
 from verboisy.storage.research import ResearchStore
@@ -124,6 +124,8 @@ def _build_cell_lineage(
             else None
         )
 
+    schema_index = SchemaPathIndex.build(schema or {}) if presentation is not None else None
+
     def display(value: Any, pointer: str, output_id: Any) -> Any:
         if presentation is None or any(
             pointer == p or pointer.startswith(p + "/") for p in protected or []
@@ -132,7 +134,8 @@ def _build_cell_lineage(
         binding = numeric_units.get((output_id, pointer))
         if binding:
             return present_number(value, binding["label"], presentation)
-        return present_value(value, field_schema(schema or {}, pointer), presentation)
+        assert schema_index is not None
+        return present_value(value, schema_index.field(pointer) or {}, presentation)
 
     def presentation_step(
         value: Any, formatted: Any, pointer: str, output_id: Any
@@ -155,7 +158,7 @@ def _build_cell_lineage(
     if groupby is not None:
         source_rows = context_inputs.records
         normalized = [_normalize_row(row, list(row), strings=strings) for row in source_rows]
-        if normalized and groupby in normalized[0]:
+        if normalized:
             group_rows, plan, contributors = _group_rows(normalized, groupby)
             grouped = {tuple(contributors[row["id"]]): (row, plan) for row in group_rows}
     projection_assets = context_inputs.assets
@@ -184,15 +187,25 @@ def _build_cell_lineage(
                     display(expected_fields[pointer], pointer, mapping["output_id"]), output_value
                 ):
                     continue
+                field_name = next(
+                    key for key in expected if pointer in leaves({key: expected[key]})
+                )
                 inputs = []
                 for contributor in mapping["record_ids"]:
-                    value = effective[contributor].get(pointer)
+                    if pointer not in effective[contributor]:
+                        inputs.append(
+                            {
+                                "record_id": contributor,
+                                "pointer": pointer,
+                                "status": "absent",
+                                "contribution": "absence",
+                            }
+                        )
+                        continue
+                    value = effective[contributor][pointer]
                     if strings:
                         value = _normalize_row({"value": value}, ["value"], strings=True)["value"]
                     # Construct only this cell, preserving each accepted evidence binding.
-                    field_name = next(
-                        key for key in expected if pointer in leaves({key: expected[key]})
-                    )
                     source_cell = _build_cell_lineage(
                         store,
                         rid,
@@ -203,16 +216,27 @@ def _build_cell_lineage(
                     )
                     inputs.append(source_cell[0])
                 cell["contributors"] = inputs
-                if all(source["status"] == "resolved" for source in inputs):
+                if all(source["status"] in {"resolved", "absent"} for source in inputs):
                     operation = (
                         "group_key" if field_name == plan.field else plan.aggregations[field_name]
                     )
                     cell["steps"] = [
                         {
                             "operation": operation,
-                            "inputs": [source["output_value"] for source in inputs],
+                            "inputs": [
+                                source["output_value"]
+                                for source in inputs
+                                if source["status"] != "absent"
+                            ],
                             "output": expected_fields[pointer],
-                            "null_policy": "preserve" if operation == "group_key" else "exclude",
+                            "null_policy": "typed_presence"
+                            if operation == "group_key"
+                            else "exclude_unknowns; empty_is_null",
+                            "numeric_policy": "exact_integer_sum; rational_average; finite_json",
+                            "group_key": group_key(expected, plan.field),
+                            "reason": "no_observed_numeric_inputs"
+                            if operation != "group_key" and expected_fields[pointer] is None
+                            else None,
                         }
                     ]
                     if not _same(expected_fields[pointer], output_value) or numeric_binding(
