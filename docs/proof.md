@@ -35,6 +35,21 @@ The machine-readable evidence sidecar and checksummed manifest remain available 
 
 A proof report demonstrates what the engine observed and how accepted values were supported. It does not independently establish that a public source is factually correct, nor does it claim exhaustive web coverage.
 
+
+## Absence, grouping and reference provenance
+
+An absent field has no fabricated leaf proof. Group keys retain presence/type tags;
+an absent aggregate contributor has an explicit absence contribution. Unknown-only
+numeric aggregates explain `no_observed_numeric_inputs` and yield null, never zero.
+Raw, normalized and presented values remain distinct.
+
+Ordinary generated IDs remain separate from source IDs. SmartID journals the reference
+file/manifest hashes and mode; historical unbound events are labelled unrecorded when
+the first binding is established. Verified streaming pages/exports replay saved source
+and projection. Publication flushes files and syncs supported directory boundaries,
+with the manifest last; this does not assert power-loss safety on all filesystems or
+authenticity of the source.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
