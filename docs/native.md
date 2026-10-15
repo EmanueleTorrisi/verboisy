@@ -286,6 +286,18 @@ developer test command, with no change to installation or normal research use.
 Fingerprints establish consistency with the inspected files, not trust in
 metadata or proof that remote CI has passed.
 
+
+## Checkout and qualification gates
+
+The Python backend remains the default. Pure-Python wheel/sdist distributions do
+not include native sources/builders; native development requires a source checkout.
+`make test-native` builds both modules and executes the direct no-skip gate.
+Native CI advertises Linux/macOS interpreters; actual job execution is separate.
+
+Historic timing is source/host-specific. Python coverage and direct equivalence tests
+do not establish C++ sanitizer or complete-workload safety; those remain experimental
+qualification gates until executed independently.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
