@@ -34,3 +34,14 @@ See [commercial enquiries](commercial.md).
 
 Bug reports and feature requests are welcome. Security reports should be sent
 privately through the [security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
+
+
+## Data guarantees and qualification
+
+Ordinary output reserves generated `id`; source IDs require explicit projection.
+Optional absence and explicit null remain distinct. Streaming is a separate row-validation
+contract with verified capture/checkpoint paging; see [streaming](streaming.md).
+
+Scale results are historical and source-specific. [Current offline results](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json)
+record executed checks and blockers; configured platform jobs do not imply completed
+qualification. See [validation](validation.md) for the required gates.
