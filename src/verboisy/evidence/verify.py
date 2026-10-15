@@ -56,6 +56,8 @@ def verify(
     *,
     batch_quotes: bool = True,
 ) -> list[str]:
+    if "id" in candidate.record:
+        return ["reserved_output_id"]
     try:
         validate_record(candidate.record, schema)
         json.dumps(candidate.record, allow_nan=False)
