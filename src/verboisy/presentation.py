@@ -16,6 +16,8 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation, localcontext
 from typing import Any
 
+from verboisy.extractor.schema_paths import SchemaPathIndex
+
 # Keep these imports public for integrations using the original presentation module.
 from verboisy.presentation_config import (
     PresentationPreferences as PresentationPreferences,
@@ -47,16 +49,7 @@ _QUANTITY = re.compile(
 
 
 def field_schema(schema: dict[str, Any], pointer: str) -> dict[str, Any]:
-    node = schema["items"] if schema.get("type") == "array" else schema
-    for token in pointer[1:].split("/"):
-        if not isinstance(node, dict):
-            return {}
-        node = (
-            node.get("items", {})
-            if node.get("type") == "array"
-            else node.get("properties", {}).get(token.replace("~1", "/").replace("~0", "~"), {})
-        )
-    return node if isinstance(node, dict) else {}
+    return SchemaPathIndex.build(schema).field(pointer) or {}
 
 
 def present_value(value: Any, field: dict[str, Any], prefs: PresentationPreferences) -> Any:
@@ -130,6 +123,8 @@ def present_rows(
 ) -> list[dict[str, Any]]:
     """Work on copies, preserving public identifiers and caller-declared identity fields."""
 
+    index = SchemaPathIndex.build(schema)
+
     def walk(value: Any, pointer: str, output_id: Any) -> Any:
         if pointer == "/id" or any(pointer == p or pointer.startswith(p + "/") for p in protected):
             return value
@@ -143,7 +138,7 @@ def present_rows(
         binding = (numeric_units or {}).get((output_id, pointer))
         if binding is not None:
             return present_number(value, binding["label"], prefs)
-        return present_value(value, field_schema(schema, pointer), prefs)
+        return present_value(value, index.field(pointer) or {}, prefs)
 
     return [walk(copy.deepcopy(row), "", row.get("id")) for row in rows]
 
