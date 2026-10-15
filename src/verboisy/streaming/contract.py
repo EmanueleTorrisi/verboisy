@@ -4,6 +4,7 @@
 """Explicit resource ceilings and count-based results for disk-backed preparation."""
 
 from dataclasses import dataclass
+from typing import Any
 
 from verboisy.utils.exceptions import VerboisyError
 
@@ -44,3 +45,33 @@ class StreamResult:
     input_bytes: int
     source_sha256: str | None
     reason: str | None
+
+
+def validate_stream_schema(schema: dict[str, Any]) -> None:
+    """Array roots support only item validation and reference/descriptive context."""
+    if schema.get("type") != "array":
+        return
+    allowed = {
+        "type",
+        "items",
+        "$schema",
+        "$defs",
+        "definitions",
+        "$id",
+        "$anchor",
+        "$dynamicAnchor",
+        "title",
+        "description",
+        "$comment",
+        "default",
+        "examples",
+        "readOnly",
+        "writeOnly",
+        "deprecated",
+    }
+    unsupported = sorted(key for key in schema if key not in allowed and not key.startswith("x-"))
+    if unsupported or not isinstance(schema.get("items"), dict):
+        raise StreamError(
+            "Streaming validates individual rows; unsupported array keywords: "
+            + ", ".join(unsupported or ["items"])
+        )
