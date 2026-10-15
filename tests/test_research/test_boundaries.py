@@ -6,7 +6,6 @@
 import asyncio
 import importlib
 import json
-import subprocess
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
@@ -32,17 +31,17 @@ async def test_provision_cache_install_and_offline(tmp_path, monkeypatch):
     with pytest.raises(NavigationError, match="disabled"):
         await ensure_browser(str(path), False)
 
-    def install(command, **_kwargs):
-        assert command[-3:] == ["playwright", "install", "chromium"]
+    async def install(*command, **_kwargs):
+        assert command[-3:] == ("playwright", "install", "chromium")
         path.parent.mkdir(parents=True)
         path.touch()
-        return SimpleNamespace(returncode=0)
+        return SimpleNamespace(returncode=0, wait=AsyncMock(return_value=0))
 
-    process = Mock(side_effect=install)
-    monkeypatch.setattr("subprocess.run", process)
+    process = AsyncMock(side_effect=install)
+    monkeypatch.setattr("asyncio.create_subprocess_exec", process)
     await ensure_browser(str(path), True)
     await ensure_browser(str(path), True)
-    _install(path)
+    await _install(path)
     assert process.call_count == 1
 
 
@@ -50,16 +49,18 @@ async def test_provision_cache_install_and_offline(tmp_path, monkeypatch):
     "failure",
     [
         OSError("secret"),
-        subprocess.TimeoutExpired("x", 1),
-        SimpleNamespace(returncode=1),
-        SimpleNamespace(returncode=0),
+        TimeoutError("x"),
+        SimpleNamespace(returncode=1, wait=AsyncMock(return_value=1)),
+        SimpleNamespace(returncode=0, wait=AsyncMock(return_value=0)),
     ],
 )
 async def test_failed_download_never_reports_ready(tmp_path, monkeypatch, failure):
     process = (
-        Mock(side_effect=failure) if isinstance(failure, Exception) else Mock(return_value=failure)
+        AsyncMock(side_effect=failure)
+        if isinstance(failure, Exception)
+        else AsyncMock(return_value=failure)
     )
-    monkeypatch.setattr("subprocess.run", process)
+    monkeypatch.setattr("asyncio.create_subprocess_exec", process)
     with pytest.raises(NavigationError) as exc:
         await ensure_browser(str(tmp_path / "browser" / "bin" / "chrome"), True)
     assert "secret" not in str(exc.value)
@@ -150,7 +151,7 @@ async def test_source_discovery_task_files_and_collection_limits(
         await arun(goal="Find", schema={**SCHEMA, "minItems": 3}, task=task(), config=config)
     empty = tmp_path / "not-object.json"
     empty.write_text("[]")
-    with pytest.raises(VerboisyError, match="object"):
+    with pytest.raises(VerboisyError, match="configuration|object"):
         _json(empty)
     with pytest.raises(VerboisyError, match="differ"):
         _export_path(tmp_path / "db.json", str(tmp_path / "db.json"))
@@ -286,11 +287,11 @@ def test_empty_snapshot_and_missing_entity_identity():
     assert chunks(snapshot("<body></body>", "https://x.test/"), 100) == []
     c = Candidate(
         scope="page",
-        record={"id": None, "name": "A"},
+        record={"source_id": None, "name": "A"},
         evidence={"/name": Proof(source=page.sources[0].id, quote="A")},
     )
-    assert "/id:invalid_identity" in verify(
-        c, page, {"type": "object"}, TaskSpec(identity_fields=["/id"])
+    assert "/source_id:invalid_identity" in verify(
+        c, page, {"type": "object"}, TaskSpec(identity_fields=["/source_id"])
     )
 
 
@@ -355,14 +356,14 @@ async def test_macos_provision_lock_is_outside_app_bundle(tmp_path, monkeypatch)
     revision = tmp_path / "chromium-1234"
     path = revision / "chrome-mac/Chrome.app/Contents/MacOS/Chrome"
 
-    def install(*_args, **_kwargs):
+    async def install(*_args, **_kwargs):
         assert not revision.exists()
         assert (tmp_path / "chromium-1234.verboisy-install.lock").exists()
         path.parent.mkdir(parents=True)
         path.touch()
-        return SimpleNamespace(returncode=0)
+        return SimpleNamespace(returncode=0, wait=AsyncMock(return_value=0))
 
-    monkeypatch.setattr("subprocess.run", install)
+    monkeypatch.setattr("asyncio.create_subprocess_exec", install)
     await ensure_browser(str(path), True)
 
 
@@ -1528,7 +1529,7 @@ async def test_runner_semantic_plan_classifies_persists_and_reuses(
 
     runner = ResearchRunner.__new__(ResearchRunner)
     runner.semantic_plan_ready = False
-    runner.semantic_planning_available = MagicMock(return_value=True)
+    runner.model_execution_available = MagicMock(return_value=True)
     runner.client = object()
     runner.goal = "Find latest population"
     runner.schema = {
@@ -1728,7 +1729,7 @@ async def test_unavailable_semantic_planner_uses_baseline_without_persisting(
             pointer="/value",
         )
     }
-    runner.semantic_planning_available = MagicMock(return_value=False)
+    runner.model_execution_available = MagicMock(return_value=False)
     runner.store = SimpleNamespace(event=MagicMock())
 
     await runner.ensure_field_semantics()
@@ -2164,7 +2165,7 @@ async def test_source_assessment_cache_miss_then_hit(
     runner.rid = "run"
     runner.goal = "Find value"
     runner.client = SimpleNamespace()
-    runner.semantic_planning_available = MagicMock(return_value=True)
+    runner.model_execution_available = MagicMock(return_value=True)
     runner.store = SimpleNamespace(
         events=MagicMock(return_value=[]),
         event=MagicMock(),
@@ -2212,12 +2213,14 @@ async def test_source_assessment_unavailable_costs_nothing():
     )
 
     runner = ResearchRunner.__new__(ResearchRunner)
-    runner.semantic_planning_available = MagicMock(return_value=False)
+    runner.model_execution_available = MagicMock(return_value=False)
     runner.store = SimpleNamespace(
         events=MagicMock(),
         event=MagicMock(),
     )
 
+    runner.rid = "run"
+    runner._source_assessment_events = []
     result = await runner.source_assess_candidates(
         Snapshot(
             id="snapshot",
@@ -2274,7 +2277,7 @@ async def test_source_assessment_failure_does_not_block_candidate(
     runner.rid = "run"
     runner.goal = "Find value"
     runner.client = SimpleNamespace()
-    runner.semantic_planning_available = MagicMock(return_value=True)
+    runner.model_execution_available = MagicMock(return_value=True)
     runner.store = SimpleNamespace(
         events=MagicMock(return_value=[]),
         event=MagicMock(),
@@ -2353,7 +2356,7 @@ async def test_invalid_source_grounding_is_observational_only(
     runner.rid = "run"
     runner.goal = "Find value"
     runner.client = SimpleNamespace()
-    runner.semantic_planning_available = MagicMock(return_value=True)
+    runner.model_execution_available = MagicMock(return_value=True)
     runner.store = SimpleNamespace(
         events=MagicMock(return_value=[]),
         event=MagicMock(),
