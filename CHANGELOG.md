@@ -8,6 +8,27 @@ release tags rather than inferred from documentation edits.
 
 ## Unreleased
 
+### Contract and reliability corrections
+
+The following changes are unreleased:
+
+- Reserve ordinary top-level source IDs; preserve optional absence and typed groups,
+  finite aggregates, mixed-value ordering and contributor missingness.
+- Resolve local schema references and numeric object policies consistently across
+  preflight, semantic plans and presentation. Enable each policy role through its
+  own provider profile and reject ambiguous/non-finite model JSON.
+- Verify streaming contracts, prefix replay and paged records; reject unsupported
+  collection predicates without changing the version-1 ledger.
+- Protect unrelated databases, bind SmartID reference formats/checksums, align CLI
+  registration and incomplete exit codes, and include browser startup in deadlines.
+- Make provisioning cancellable, report denied browser target gaps, sync publication
+  directory entries, pin workflow actions and validate distribution archives.
+
+These changes introduce stricter input/replay boundaries. They do not establish
+provider acceptance, platform execution or production certification. Explicit
+credential routing does not prevent a provider SDK from using its own environment.
+
+
 ### Export integrity and ingestion performance
 
 - Reject output and provenance aliases of source, configuration, ledger and SmartID
@@ -24,7 +45,7 @@ release tags rather than inferred from documentation edits.
 ### Acquisition and provider execution
 
 - Route semantic planning, source assessment, extraction and escalation through
-  explicit model profiles, isolated credentials and endpoint-specific parameters.
+  explicit model profiles, explicitly routed credentials and endpoint-specific parameters.
 - Reserve model request units before transport; persist reported usage independently
   from conservative reservations. Count search attempts across providers and resume.
 - Enforce host and path policy before following browser redirects. Pin dataset
