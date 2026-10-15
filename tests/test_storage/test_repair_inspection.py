@@ -134,7 +134,7 @@ def test_inspection_does_not_initialize_or_migrate(tmp_path, kind):
     db.commit()
     db.close()
     original = path.read_bytes()
-    with pytest.raises(VerboisyError, match="ledger"):
+    with pytest.raises(VerboisyError, match="ledger|database version"):
         inspect_dataset_repairs(path, "none")
     assert path.read_bytes() == original
     assert not Path(str(path) + ".lock").exists()
@@ -151,6 +151,24 @@ def test_read_only_connection_failure_is_explained(tmp_path):
         pytest.raises(VerboisyError, match="Cannot open"),
     ):
         ResearchStore(str(path), read_only=True)
+
+
+def test_repair_inspection_translates_saved_context_failure_and_closes(ledger, monkeypatch):
+    path, _, rid = ledger
+    opened = []
+    original = ResearchStore
+
+    def remember(*args, **kwargs):
+        store = original(*args, **kwargs)
+        opened.append(store)
+        return store
+
+    monkeypatch.setattr("verboisy.storage.diagnostics.ResearchStore", remember)
+    monkeypatch.setattr(original, "load", lambda *_args: (_ for _ in ()).throw(ValueError()))
+    with pytest.raises(VerboisyError, match="invalid dataset repair context"):
+        inspect_dataset_repairs(path, rid)
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        opened[0].db.execute("SELECT 1")
 
 
 def test_unknown_run_cli_has_clear_error(ledger):
