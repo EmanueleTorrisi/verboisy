@@ -87,6 +87,20 @@ configured gateway; unsupported parameters are not accepted as arbitrary kwargs.
 See the upstream [SDK](https://docs.litellm.ai/docs/python_sdk) and
 [custom-provider interface](https://docs.litellm.ai/docs/providers/custom_llm_server).
 
+
+## Role availability and strict responses
+
+Availability resolves the model/profile for the requested role. Semantic planning
+and source assessment are independent; a matching explicit profile key or endpoint
+enables its own role. Profiles without explicit keys retain provider SDK environment
+or identity fallback. Configuration permits an attempt, not authenticated success.
+Unprofiled first-party roles preserve the deterministic no-provider path.
+
+Model JSON must be a unique-key, finite, safe UTF-8 object. Invalid responses use bounded
+retries and consume each attempt's reserved request units. Inspection makes no paid
+probe and prints no key/endpoint values. Configured profiles require separate live
+cost/latency and annotated acceptance qualification.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
