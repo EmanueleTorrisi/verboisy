@@ -6,13 +6,16 @@
 from __future__ import annotations
 
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
+from dataclasses import field as dataclass_field
 from typing import Any, Literal
 
 from verboisy.core.planner import TemporalIntent
 from verboisy.evidence.models import Candidate, Snapshot
 from verboisy.evidence.snapshot import whitespace
 from verboisy.evidence.verify import leaves
+from verboisy.extractor.schema_paths import SchemaPathIndex, matches
+from verboisy.utils.exceptions import ExtractionError
 
 TemporalClass = Literal[
     "static",
@@ -83,23 +86,15 @@ class FieldSemantics:
     confidence: float = 0.0
     basis: SemanticsBasis = "unresolved"
 
+    array_positions: tuple[int, ...] | None = dataclass_field(default=None, compare=False)
+
+    array_minimums: tuple[int, ...] = dataclass_field(default=(), compare=False)
+
     def as_event(self) -> dict[str, Any]:
-        return asdict(self)
-
-
-def _record_schema(
-    schema: dict[str, Any],
-) -> dict[str, Any]:
-    items = schema.get("items")
-
-    if schema.get("type") == "array" and isinstance(items, dict):
-        return items
-
-    return schema
-
-
-def _escape_pointer_part(value: str) -> str:
-    return value.replace("~", "~0").replace("/", "~1")
+        value = asdict(self)
+        value.pop("array_positions")
+        value.pop("array_minimums")
+        return value
 
 
 def scalar_field_schemas(
@@ -107,42 +102,7 @@ def scalar_field_schemas(
 ) -> dict[str, dict[str, Any]]:
     """Return scalar leaf schemas keyed by wildcard JSON pointer."""
 
-    result: dict[str, dict[str, Any]] = {}
-
-    def walk(
-        node: dict[str, Any],
-        pointer: str,
-    ) -> None:
-        if node.get("type") == "array":
-            walk(
-                node["items"],
-                pointer + "/*",
-            )
-            return
-
-        properties = node.get("properties")
-
-        if isinstance(properties, dict):
-            for name, child in properties.items():
-                if not isinstance(child, dict):
-                    continue
-
-                walk(
-                    child,
-                    f"{pointer}/{_escape_pointer_part(name)}",
-                )
-
-            return
-
-        if pointer:
-            result[pointer] = node
-
-    walk(
-        _record_schema(schema),
-        "",
-    )
-
-    return result
+    return {pointer: dict(node) for pointer, node in SchemaPathIndex.build(schema).fields.items()}
 
 
 def _explicit_semantics(
@@ -184,12 +144,14 @@ def build_field_semantics(
 ) -> dict[str, FieldSemantics]:
     """Build semantics without guessing meaning from field names."""
 
+    index = SchemaPathIndex.build(schema)
     return {
-        pointer: _explicit_semantics(
-            pointer,
-            field_schema,
+        pointer: replace(
+            _explicit_semantics(pointer, dict(field_schema)),
+            array_positions=index.array_positions[pointer],
+            array_minimums=index.array_minimums[pointer],
         )
-        for pointer, field_schema in scalar_field_schemas(schema).items()
+        for pointer, field_schema in index.fields.items()
     }
 
 
@@ -205,7 +167,25 @@ def semantics_for_pointer(
     semantics: dict[str, FieldSemantics],
     pointer: str,
 ) -> FieldSemantics | None:
-    return semantics.get(pointer_pattern(pointer))
+    exact = semantics.get(pointer)
+    if exact is not None and not exact.array_positions:
+        return exact
+    candidates = []
+    for field in semantics.values():
+        positions = field.array_positions
+        if positions is None:
+            positions = tuple(
+                i for i, token in enumerate(field.pointer.split("/")[1:]) if token == "*"
+            )
+        if matches(field.pointer, pointer, positions, field.array_minimums):
+            candidates.append((len(positions), field))
+    if not candidates:
+        return None
+    best = min(rank for rank, _ in candidates)
+    fields = [field for rank, field in candidates if rank == best]
+    if len(fields) != 1:
+        raise ExtractionError("Ambiguous field semantics")
+    return fields[0]
 
 
 def requires_temporal_evidence(
