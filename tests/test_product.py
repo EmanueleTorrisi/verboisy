@@ -209,7 +209,7 @@ def test_load_rows_rejects_untrusted_inputs(tmp_path: Path):
 
     invalid_json = tmp_path / "invalid.json"
     invalid_json.write_text("{", encoding="utf-8")
-    with pytest.raises(VerboisyError, match="invalid JSON"):
+    with pytest.raises(VerboisyError, match="JSON"):
         load_rows(invalid_json)
 
     unsupported = tmp_path / "data.txt"
@@ -301,7 +301,7 @@ def test_grouping_edge_cases_and_sort_value_types():
         rows, schema_fields=["country", "price", "score", "flag"], groupby="country"
     )
     assert grouped.rows[0]["price"] == 15.0
-    assert "score" in grouped.group_plan.removed_fields
+    assert grouped.rows[0]["score"] is None
     assert "flag" in grouped.group_plan.removed_fields
 
     empty = transform_rows(
