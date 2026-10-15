@@ -289,6 +289,11 @@ def test_escaped_property_names_and_semantics_preserved(ledger):
     }
     store.db.execute("UPDATE research_runs SET schema_json=? WHERE id=?", (json.dumps(schema), rid))
     store.db.commit()
+    saved_task = json.loads(store.load(rid)["task_json"])
+    saved_task["identity_fields"] = []
+    store.db.execute(
+        "UPDATE research_runs SET task_json=? WHERE id=?", (json.dumps(saved_task), rid)
+    )
     item = conflict().model_copy(update={"pointer": "/size~1value"})
     change = offer_range_change(store, rid, page(), [item, item])
     assert change is not None and len(change.request.evidence) == 1
