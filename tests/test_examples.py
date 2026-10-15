@@ -33,7 +33,7 @@ def test_research_preview_uses_real_scoped_sources_without_creating_a_run(tmp_pa
     assert task["target_records"] == 100
     assert len(task["seed_urls"]) >= 2
     assert "www.bnl.gov" in task["allowed_hosts"]
-    assert task["identity_fields"] == ["organization", "facility_name"]
+    assert task["identity_fields"] == ["/organization", "/facility_name"]
     assert not output.exists()
 
 
@@ -101,7 +101,7 @@ def test_observation_pipeline_resumes_captured_bytes_and_exports_all_rows(tmp_pa
         "--rows-per-invocation",
         17,
     )
-    assert paused.returncode == 0, paused.stderr
+    assert paused.returncode == 2, paused.stderr
     first = json.loads(paused.stdout)
     assert first["result"]["status"] == "PAUSED"
     assert first["result"]["processed_rows"] == 17
@@ -123,3 +123,42 @@ def test_observation_pipeline_resumes_captured_bytes_and_exports_all_rows(tmp_pa
     assert [
         json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()
     ] == expected
+
+
+def test_catalogue_identity_through_real_grounded_verifier():
+    from verboisy.evidence.models import Candidate, Proof, TaskSpec
+    from verboisy.evidence.snapshot import snapshot
+    from verboisy.evidence.verify import lookup, verify
+    from verboisy.research_contract import validate_research_contract
+
+    schema = json.loads((ROOT / "examples/research_catalog/schema.json").read_text())
+    task = TaskSpec(identity_fields=["/organization", "/facility_name"])
+    validate_research_contract(schema, task)
+    page = snapshot("<p>Research organization</p><p>Facility A</p>", "https://example.test/")
+    values = {name: None for name in schema["items"]["properties"]}
+    values.update(organization="Research organization", facility_name="Facility A")
+    sources = {source.text: source.id for source in page.sources}
+    candidate = Candidate(
+        scope="page",
+        record=values,
+        evidence={
+            pointer: Proof(source=sources[lookup(values, pointer)], quote=lookup(values, pointer))
+            for pointer in task.identity_fields
+        },
+    )
+    assert verify(candidate, page, schema, task) == []
+
+
+def test_prepare_example_reports_missing_source_without_traceback(tmp_path):
+    result = invoke(
+        "streaming_observations/prepare.py",
+        "--database",
+        tmp_path / "stream.db",
+        "--source",
+        tmp_path / "missing.jsonl",
+    )
+    assert result.returncode == 1 and "Traceback" not in result.stderr
+    saved = json.loads(result.stdout)
+    assert saved["result"]["status"] == "FAILED"
+    assert "missing.jsonl" in saved["result"]["reason"]
+    assert saved["first_committed_rows"] == []
