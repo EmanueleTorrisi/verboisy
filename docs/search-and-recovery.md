@@ -9,7 +9,7 @@ runs before any model request. Google browser scraping is no longer a production
 
 A SQLite file lock prevents concurrent writers. URL work is checkpointed before
 navigation, and candidate plus accepted-record writes use one transaction. Interrupted
-active pages and failed navigation pages are requeued on resume. Hash deduplication
+active pages are requeued on resume. Failed navigation pages remain failed. Hash deduplication
 makes repeated acceptance idempotent. Raw HTML and structured snapshots remain in the
 ledger. Old database tables are never silently migrated into verified records.
 
@@ -25,13 +25,26 @@ not a billing guarantee. `MAX_TOTAL_TOKENS` is a legacy alias only when the new 
 is unset. Increase the cumulative budget explicitly to resume after budget exhaustion.
 
 401 errors require corrected credentials. 429 quota/daily exhaustion is not treated as
-a useful retry loop. Transient requests use bounded delays and respect supported
-Retry-After values. Requests are not retried forever. Permanent source failures,
+a useful retry loop. Transient requests use bounded delays. Provider rate limits pause the run;
+there is no Retry-After-specific retry scheduler. Requests are not retried forever. Permanent source failures,
 unsupported browser controls and missing facts remain visible; changing to another
 batch/entity to manufacture a successful result is not a recovery strategy.
 
 Use a new run to change schema, scope, identity policy or task limits. Preserve the old
 run as evidence. Do not edit records in SQLite and then label them accepted by the engine.
+
+
+## Deadline and target boundaries
+
+The runner deadline includes browser startup. Initial discovery uses separately
+bounded attempts and first-use setup has its own cancellable provisioning ceiling;
+this is not a single end-to-end public API deadline. Cancellation stops the owned
+installer process/group and releases its lock.
+
+Single-primary-page acquisition denies unsupported secondary targets. Safe bounded
+target-policy notices become visible coverage gaps; they do not justify a clean
+exhausted-scope claim. Browser policy is not DNS-pinned dataset transport. Deployment
+egress and sandbox behavior need real qualification.
 
 ---
 
