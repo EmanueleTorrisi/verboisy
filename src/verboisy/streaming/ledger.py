@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import hashlib
 import io
-import json
 import sqlite3
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +32,7 @@ class StreamLedger:
         self.path = path.resolve()
         self.lock = FileLock(str(self.path) + ".lock")
         self.db: sqlite3.Connection | None = None
+        self.verification_cache: OrderedDict[str, Any] = OrderedDict()
         try:
             if read_only:
                 if not self.path.is_file():
@@ -57,6 +58,7 @@ class StreamLedger:
                 raise StreamError("Not a streaming ledger")
             else:
                 db.executescript("""
+                    BEGIN IMMEDIATE;
                     CREATE TABLE stream_meta(version INTEGER NOT NULL);
                     INSERT INTO stream_meta VALUES(1);
                     CREATE TABLE stream_jobs(
@@ -70,7 +72,41 @@ class StreamLedger:
                         job_id TEXT NOT NULL REFERENCES stream_jobs(id), ordinal INTEGER NOT NULL,
                         first_line INTEGER, last_line INTEGER, source_json TEXT NOT NULL,
                         output_json TEXT, PRIMARY KEY(job_id,ordinal));
+                    COMMIT;
                 """)
+            required = {
+                "stream_meta": {"version"},
+                "stream_jobs": {
+                    "id",
+                    "contract",
+                    "status",
+                    "captured",
+                    "byte_count",
+                    "sha256",
+                    "processed",
+                    "reason",
+                },
+                "stream_chunks": {"job_id", "seq", "sha256", "content"},
+                "stream_rows": {
+                    "job_id",
+                    "ordinal",
+                    "first_line",
+                    "last_line",
+                    "source_json",
+                    "output_json",
+                },
+            }
+            for table, columns in required.items():
+                info = db.execute(f"PRAGMA table_info({table})").fetchall()
+                if not columns <= {row[1] for row in info}:
+                    raise StreamError("Incomplete streaming ledger schema")
+                expected_key = {
+                    "stream_rows": {"job_id": 1, "ordinal": 2},
+                    "stream_chunks": {"job_id": 1, "seq": 2},
+                    "stream_jobs": {"id": 1},
+                }.get(table)
+                if expected_key and {row[1]: row[5] for row in info if row[5]} != expected_key:
+                    raise StreamError("Invalid streaming ledger primary key")
             if not read_only:
                 db.execute("PRAGMA foreign_keys=ON")
                 page_size = db.execute("PRAGMA page_size").fetchone()[0]
@@ -94,45 +130,42 @@ class StreamLedger:
         return self.db
 
     def job(self, job_id: str) -> dict[str, Any]:
-        row = self.connection.execute("SELECT * FROM stream_jobs WHERE id=?", (job_id,)).fetchone()
-        if row is None:
-            raise StreamError("No saved streaming job found")
-        return dict(row)
+        try:
+            row = self.connection.execute(
+                "SELECT * FROM stream_jobs WHERE id=?", (job_id,)
+            ).fetchone()
+            if row is None:
+                raise StreamError("No saved streaming job found")
+            return dict(row)
+        except sqlite3.Error:
+            raise StreamError("Cannot read saved streaming job") from None
 
     def page(self, job_id: str, *, after: int = 0, limit: int = 100) -> list[dict[str, Any]]:
-        if (
-            isinstance(after, bool)
-            or not isinstance(after, int)
-            or after < 0
-            or isinstance(limit, bool)
-            or not isinstance(limit, int)
-            or not 1 <= limit <= 1000
-        ):
-            raise StreamError("Page requires a nonnegative cursor and limit from 1 to 1000")
-        self.job(job_id)
-        return [
-            {"ordinal": row["ordinal"], "record": json.loads(row["value"])}
-            for row in self.connection.execute(
-                "SELECT ordinal, COALESCE(output_json,source_json) AS value FROM stream_rows "
-                "WHERE job_id=? AND ordinal>? ORDER BY ordinal LIMIT ?",
-                (job_id, after, limit),
-            )
-        ]
+        from verboisy.streaming.integrity import read_verified_page
+
+        try:
+            return read_verified_page(self, job_id, after, limit)
+        except sqlite3.Error:
+            raise StreamError("Cannot read verified streaming page") from None
 
     def jobs(self, *, limit: int = 10) -> list[dict[str, Any]]:
         """Recover job IDs after process termination without loading row payloads."""
         if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 1000:
             raise StreamError("Job inventory limit must be from 1 to 1000")
-        return [
-            dict(row)
-            for row in self.connection.execute(
-                "SELECT id,status,captured,byte_count,sha256,processed,reason "
-                "FROM stream_jobs ORDER BY rowid DESC LIMIT ?",
-                (limit,),
-            )
-        ]
+        try:
+            return [
+                dict(row)
+                for row in self.connection.execute(
+                    "SELECT id,status,captured,byte_count,sha256,processed,reason "
+                    "FROM stream_jobs ORDER BY rowid DESC LIMIT ?",
+                    (limit,),
+                )
+            ]
+        except sqlite3.Error:
+            raise StreamError("Cannot read streaming job inventory") from None
 
     def close(self) -> None:
+        self.verification_cache.clear()
         try:
             if self.db is not None:
                 self.db.close()
@@ -147,13 +180,21 @@ class ChunkReader(io.RawIOBase):
     def __init__(self, ledger: StreamLedger, job: dict[str, Any]):
         super().__init__()
         self.cursor = ledger.connection.execute(
-            "SELECT seq,sha256,content FROM stream_chunks WHERE job_id=? ORDER BY seq", (job["id"],)
+            "SELECT seq,sha256,CASE WHEN typeof(content)='blob' AND length(content)<=? "
+            "THEN content ELSE NULL END AS content FROM stream_chunks WHERE job_id=? ORDER BY seq",
+            (CHUNK_BYTES, job["id"]),
         )
         self.job = job
         self.pending = memoryview(b"")
         self.sequence = 0
         self.digest = hashlib.sha256()
         self.count = 0
+
+    def close(self) -> None:
+        try:
+            self.cursor.close()
+        finally:
+            super().close()
 
     def readable(self) -> bool:
         return True
