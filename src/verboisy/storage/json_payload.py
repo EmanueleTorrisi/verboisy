@@ -12,38 +12,18 @@ replacement values or rewrite saved evidence.
 from __future__ import annotations
 
 import json
-import math
 from typing import Any
 
-
-def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError("Duplicate saved JSON object key")
-        result[key] = value
-    return result
-
-
-def _finite_float(text: str) -> float:
-    value = float(text)
-    if not math.isfinite(value):
-        raise ValueError("Non-finite saved JSON number")
-    return value
-
-
-def _reject_constant(_text: str) -> Any:
-    raise ValueError("Non-finite saved JSON constant")
+from verboisy.utils.json_payload import decode_json
 
 
 def decode_saved_json(payload: str | bytes | bytearray) -> Any:
-    """Retain JSON values and object order; reject ambiguity before model coercion."""
-    return json.loads(
-        payload,
-        object_pairs_hook=_unique_object,
-        parse_float=_finite_float,
-        parse_constant=_reject_constant,
-    )
+    """Compatibility boundary retaining strict JSON and historical shape."""
+    # Historical portable bundles accepted BOM/UTF-16/32 JSON bytes. Preserve
+    # that reader contract; external configuration and model text remain UTF-8.
+    if isinstance(payload, bytes | bytearray):
+        payload = bytes(payload).decode(json.detect_encoding(payload))
+    return decode_json(payload)
 
 
 def copy_saved_json(value: Any) -> Any:
