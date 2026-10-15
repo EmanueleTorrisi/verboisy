@@ -20,10 +20,10 @@ from verboisy.product import (
     SortKey,
     apply_smart_ids,
     assign_row_ids,
-    load_rows,
     relation_field,
     transform_rows,
 )
+from verboisy.reference_dataset import load_reference_dataset
 from verboisy.research_summary import summarize_fields
 from verboisy.storage.dataset import export_dataset
 from verboisy.storage.numeric_presentation import output_numeric_units
@@ -124,7 +124,20 @@ def prepare_output(
     smartid_decisions: list[dict[str, Any]] = []
     relation_name: str | None = None
     if smartid:
-        previous = load_rows(smartid)
+        reference = load_reference_dataset(smartid)
+        binding = {
+            "file_sha256": reference.sha256,
+            "manifest_sha256": reference.manifest_sha256,
+            "csv_mode": reference.mode,
+            "manifest_version": reference.version,
+        }
+        prior = [entry["payload"] for entry in store.events(rid, "smartid")]
+        for event in prior:
+            if "reference_binding" in event and event["reference_binding"] != binding:
+                raise VerboisyError(
+                    "SmartID reference changed; create a new explicitly reviewed run"
+                )
+        previous = reference.rows
         relation_name = relation_field(smartid)
         transformed.rows, smartid_decisions = apply_smart_ids(
             transformed.rows, previous, relation_name, identity_fields=spec.identity_fields
@@ -135,6 +148,10 @@ def prepare_output(
             {
                 "dataset": str(Path(smartid).resolve()),
                 "relation_field": relation_name,
+                "reference_binding": binding,
+                "previous_binding": "recorded"
+                if prior and "reference_binding" in prior[-1]
+                else "unrecorded",
                 "decisions": smartid_decisions,
             },
         )
@@ -224,9 +241,12 @@ def write_output(
                     presentation=display,
                 )
             )
-        except (OSError, ValueError):
+        except (ValueError, VerboisyError):
+            raise VerboisyError(f"Export validation failed; run {rid} is saved") from None
+        except OSError:
             raise VerboisyError(
-                f"Export failed; run {rid} is saved. Resume with a writable destination"
+                f"Export failed (I/O); run {rid} is saved. "
+                "Check destination access and available storage"
             ) from None
     if proof:
         if not destinations:
