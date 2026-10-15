@@ -157,3 +157,10 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 [연구 기관 목록](../../examples/research_catalog/README.md) ·
 [대규모 로컬 관측 데이터 처리](../../examples/streaming_observations/README.md) ·
 [버전 이력: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+
+
+## 데이터 계약과 검증 범위
+
+일반 출력의 `id`는 생성된 메타데이터용입니다. 원본 ID는 명시적으로 `source_id`에 투영해야 하며, 중첩 ID와 스트리밍 ID는 유지됩니다. 누락된 선택 필드는 그대로 누락되고 명시적 null은 유지됩니다. 스트리밍은 개별 행을 검증하고 지원되지 않는 배열 전체 제약은 거부합니다. 일시 중지된 준비 작업은 종료 코드 2를 반환합니다. CI는 구성되어 있지만 과거 측정은 기록된 소스와 실행 환경에만 적용됩니다.
+
+[Current offline evidence](../../evals/results/offline-validation.json).
