@@ -10,14 +10,20 @@ import pytest
 from filelock import FileLock
 from verboisy.storage.ledger_schema import initialize_ledger
 from verboisy.storage.research import DB_VERSION, ResearchStore, _stable_row_id
+from verboisy.utils.exceptions import VerboisyError
 
 
 def legacy_database(path, version, *, stable=False):
+    if version is None:
+        return
+    store = ResearchStore(path)
+    store.close()
     with sqlite3.connect(path) as db:
-        if version is not None:
-            db.execute("CREATE TABLE research_meta(version INTEGER NOT NULL)")
-            db.execute("INSERT INTO research_meta VALUES(?)", (version,))
+        db.execute("UPDATE research_meta SET version=?", (version,))
         if version == 2:
+            db.execute("DROP TABLE dataset_assets")
+            db.execute("DROP TABLE dataset_blobs")
+            db.execute("DROP TABLE records")
             field = ",stable_id TEXT" if stable else ""
             db.execute(
                 "CREATE TABLE records(id INTEGER PRIMARY KEY,run_id TEXT,identity TEXT,"
@@ -117,7 +123,7 @@ def test_version_publication_sql_fault_preserves_schema_and_releases_writer(
             "BEGIN SELECT RAISE(ABORT,'injected version failure'); END"
         )
         before = state(db)
-    with pytest.raises(sqlite3.IntegrityError, match="injected version"):
+    with pytest.raises(VerboisyError, match="readable research ledger"):
         ResearchStore(path)
     # The failed constructor must release its lease as well as roll back SQLite.
     lock = FileLock(str(path.resolve()) + ".lock")
@@ -142,3 +148,24 @@ def test_supported_initialization_commits_and_repeated_open_is_stable(tmp_path, 
         assert state(store.db) == before
     with closing(ResearchStore(path, read_only=True)) as reader:
         assert state(reader.db) == before
+
+
+def test_metadata_change_between_identity_read_and_initialization_is_rejected(
+    tmp_path, monkeypatch
+):
+    import verboisy.storage.ledger_schema as schema
+
+    path = tmp_path / "version-race.db"
+    store = ResearchStore(path)
+    store.close()
+    original = schema.validate_ledger_identity
+
+    def interleave(db, tables):
+        original(db, tables)
+        with sqlite3.connect(path) as writer:
+            writer.execute("INSERT INTO research_meta VALUES(999)")
+
+    monkeypatch.setattr(schema, "validate_ledger_identity", interleave)
+    with closing(sqlite3.connect(path)) as db, pytest.raises(VerboisyError, match="version"):
+        db.row_factory = sqlite3.Row
+        initialize(db)
