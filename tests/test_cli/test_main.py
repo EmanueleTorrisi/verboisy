@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import pytest
 import verboisy.cli.main as cli
 from typer.testing import CliRunner
 from verboisy.api import RunResult
@@ -157,9 +158,17 @@ def test_cli_reports_provider_rate_limit(monkeypatch):
     )
 
     assert response.exit_code == 2
-    assert "OpenAI rate limit reached" in response.output
+    assert "Provider rate limit reached" in response.output
     assert "Research progress was saved" in response.output
     assert "verboisy run --resume" in response.output
     assert "Dataset:" not in response.output
     assert "Manifest:" not in response.output
     assert "Proof:" not in response.output
+
+
+@pytest.mark.parametrize("command", ["doctor", "runs", "setup"])
+def test_malformed_settings_use_field_only_diagnostics(monkeypatch, command):
+    monkeypatch.setenv("MAX_STEPS", "private-invalid-value")
+    result = CliRunner().invoke(cli.app, [command])
+    assert result.exit_code == 1 and "Invalid configuration fields" in result.output
+    assert "private-invalid-value" not in result.output
