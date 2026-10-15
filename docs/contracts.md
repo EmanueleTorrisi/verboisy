@@ -24,7 +24,8 @@ unit conversion, date interpretation and cross-page joins are not automatic.
 Task options are strict: unknown keys produce configuration errors. `seed_urls` is a
 list of real HTTP(S) locations. Without it, goal URLs are used; without either, Brave
 provides at most ten discovery leads. Search snippets are never extraction evidence.
-`allowed_hosts` uses exact hostnames, not wildcard suffixes. If omitted, seed hosts
+`allowed_hosts` includes each declared host and its subdomains. The global
+`ALLOWED_DOMAINS` network allowlist uses exact hosts. If omitted, seed hosts
 form the crawl boundary. `include_paths` and `exclude_paths` use shell-style glob
 patterns on URL paths, not regexes or query strings. Navigation depth starts at zero.
 
@@ -65,6 +66,28 @@ missing/null distinction. Never mix the two modes in a pipeline without recordin
 
 JSON-mode headers preserve field names exactly for programmatic readers. For spreadsheets
 use spreadsheet mode, which also escapes formula-like headers.
+
+
+## Schema paths, values and publication
+
+Ordinary top-level `id` is reserved for generated output metadata. Explicitly project
+source IDs to `source_id`; nested IDs and streaming IDs are preserved. Optional absence
+is not null. Default unshaped output preserves accepted schema values; grouping,
+SmartID and presentation can intentionally change that schema.
+
+Field introspection resolves local Draft 2020-12 references and anchors offline.
+Only schema-declared array positions mask canonical ASCII indices. Object `2024` and
+literal `*` tokens stay literal. Bounds are 64 levels, 10,000 nodes and 1,000 scalar
+paths, separately from authoritative JSON Schema validation. Ambiguous explicit
+policies/identity fail research preflight; generic arrays acquire no invented policy.
+
+Grouping distinguishes missing, null, Boolean, integer, finite float and string.
+Unknown-only numeric groups yield null. Integer sums are exact; averages use rational
+intermediates and finite final floats. Structured/non-finite keys fail safely.
+Streaming rejects unsupported array-root assertions and validates individual rows.
+
+Manifests publish last after file flush and supported directory sync. Checksums bind
+captures and bundle content; they do not establish authenticity or factual truth.
 
 ---
 
