@@ -69,7 +69,8 @@ from verboisy.extractor.range_changes import (
 )
 from verboisy.extractor.research_changes import offer_research_change
 from verboisy.extractor.schema_builder import SchemaBuilder
-from verboisy.llm.client import LLMClient
+from verboisy.llm.client import LLMClient, ModelRole
+from verboisy.llm.providers import resolve_provider
 from verboisy.storage.research import ResearchStore
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import (
@@ -155,61 +156,36 @@ class ResearchRunner:
             payload,
         )
 
-    def semantic_planning_available(self) -> bool:
-        """Return whether semantic classification can use a model."""
-
+    def model_execution_available(self, role: ModelRole) -> bool:
+        """Resolve role availability; configuration authorizes an attempt."""
         config = getattr(self, "config", None)
         client = getattr(self, "client", None)
-
-        if config is None:
+        if config is None or client is None:
             return False
-
-        if client is None:
-            return False
-
-        if getattr(config, "litellm_api_key", None) is not None:
-            return True
-
-        if getattr(config, "litellm_api_base", None):
-            return True
-
         model = str(
-            client.model_for("semantic_plan")
+            client.model_for(role)
             if isinstance(client, LLMClient)
             else getattr(client, "model", "")
         )
+        if not isinstance(config, Settings):
+            if getattr(config, "litellm_api_key", None) or getattr(
+                config, "litellm_api_base", None
+            ):
+                return True
+            if model.startswith(("anthropic/", "claude-")):
+                return getattr(config, "anthropic_api_key", None) is not None
+            if model.startswith(("openai/", "gpt-", "o1", "o3", "o4")):
+                return getattr(config, "openai_api_key", None) is not None
+            return True
+        resolved = resolve_provider(config, model)
+        if resolved.prefix is not None or resolved.api_key is not None or resolved.api_base:
+            return True
+        # Unprofiled first-party roles preserve the deterministic no-provider path.
+        return not model.startswith(("anthropic/", "claude-", "openai/", "gpt-", "o1", "o3", "o4"))
 
-        if model.startswith(("anthropic/", "claude-")):
-            return (
-                getattr(
-                    config,
-                    "anthropic_api_key",
-                    None,
-                )
-                is not None
-            )
-
-        if model.startswith(
-            (
-                "openai/",
-                "gpt-",
-                "o1",
-                "o3",
-                "o4",
-            )
-        ):
-            return (
-                getattr(
-                    config,
-                    "openai_api_key",
-                    None,
-                )
-                is not None
-            )
-
-        # Custom/local LiteLLM providers may obtain credentials
-        # outside Verboisy's first-party key settings.
-        return True
+    def semantic_planning_available(self) -> bool:
+        """Compatibility view of semantic-plan role availability."""
+        return self.model_execution_available("semantic_plan")
 
     async def ensure_field_semantics(self) -> None:
         """Classify and persist field semantics through the existing journal workflow."""
@@ -416,7 +392,7 @@ class ResearchRunner:
     ) -> list[dict[str, GroundedClaimAssessment]]:
         """Assess verified candidates without affecting acceptance."""
 
-        if not candidates or not self.semantic_planning_available():
+        if not candidates:
             return []
 
         events = getattr(
@@ -434,6 +410,17 @@ class ResearchRunner:
                 "source_assessment_cache",
             )
             self._source_assessment_events = events
+
+        from verboisy.core.source_assessment import (
+            cached_source_assessment,
+            source_assessment_cache_key,
+        )
+
+        # Persisted cache hits remain usable when provider credentials are absent.
+        if cached_source_assessment(
+            events, source_assessment_cache_key(page, candidates)
+        ) is None and not self.model_execution_available("source_assessment"):
+            return []
 
         async def request() -> SourceAssessmentBatchResponse:
             # Cache hits must not resolve a client, goal or model request budget.
@@ -669,8 +656,8 @@ class ResearchRunner:
 
         status, reason = "PAUSED", "page_budget"
         try:
-            await self.browser.start()
             async with asyncio.timeout(self.config.run_timeout_seconds):
+                await self.browser.start()
                 for _ in range(max_steps):
                     if self.target_met():
                         status, reason = "COMPLETED", "target_met"
