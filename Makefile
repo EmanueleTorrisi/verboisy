@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Emanuele Torrisi.
 # See LICENSE for applicable terms.
 
-.PHONY: install test test-browser lint format build security docs validate repo-check clean
+.PHONY: install test test-browser lint format build security docs validate repo-check test-native release-verify clean
 
 install:
 	poetry install
@@ -38,3 +38,11 @@ validate: lint test test-browser security docs build repo-check
 
 clean:
 	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov dist build site
+
+test-native:
+	poetry run python scripts/build_native.py
+	poetry run python scripts/build_native_tests.py
+	poetry run python scripts/check_native_tests.py
+
+release-verify: validate test-native
+	poetry run python scripts/check_distribution.py --dist-dir dist --from-sdist --install-smoke
