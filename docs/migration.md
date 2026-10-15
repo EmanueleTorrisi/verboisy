@@ -1,6 +1,26 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Migrating from 0.1 to 0.2
+# Ledger and output compatibility
+
+## Current ledger and output compatibility
+
+Back up and verify a ledger before changing execution environments. Ordinary v2/v3
+ledgers with supported complete core schemas upgrade atomically to v4. Foreign,
+partial and final-symlink databases are rejected before schema/journal mutations.
+Streaming remains version 1; invalid contracts/checkpoints are never silently repaired.
+
+Legacy ordinary selected records containing top-level source `id` fail with guidance
+to create a new explicitly projected `source_id` run. Captured raw evidence remains.
+Optional absence stays absent; typed grouping separates Python-equal JSON categories
+and unknown-only aggregates become null. SmartID reference mode/hash bindings are
+verified; changed references require a new reviewed run. Invocation pause exits 2.
+The following section describes the historical 0.1-to-0.2 transition.
+
+---
+
+[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
+
+## Historical 0.1-to-0.2 transition
 
 This guide describes the architectural transition from the historical 0.1 API.
 Back up databases and retained evidence before upgrading, and review the release
@@ -39,7 +59,3 @@ first, then set `BROWSER_AUTO_INSTALL=false`. A missing browser fails explicitly
 CSV defaults to JSON-encoded cells for exact nested/type/null preservation. Choose
 `csv_mode: "spreadsheet"` explicitly for conventional spreadsheet cells. All exported data
 now has evidence and manifest sidecars. Consumers must check status and file hashes.
-
----
-
-[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
