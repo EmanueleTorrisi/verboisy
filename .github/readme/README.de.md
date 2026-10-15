@@ -157,3 +157,10 @@ Unaufgeforderte Codebeiträge werden derzeit nicht angenommen. Bezahlte Zusammen
 [Katalog der Forschungseinrichtungen](../../examples/research_catalog/README.md) ·
 [Verarbeitung großer lokaler Beobachtungsdatensätze](../../examples/streaming_observations/README.md) ·
 [Versionsgeschichte: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+
+
+## Datenverträge und Qualifikation
+
+In gewöhnlichen Ergebnissen ist `id` für erzeugte Metadaten reserviert. Quell-IDs müssen ausdrücklich nach `source_id` projiziert werden; verschachtelte IDs und Streaming-IDs bleiben erhalten. Fehlende optionale Felder bleiben fehlend, explizites null bleibt erhalten. Streaming validiert einzelne Zeilen und lehnt nicht unterstützte Bedingungen auf der Array-Wurzel ab. Ein pausierter Vorbereitungslauf endet mit Code 2. CI ist konfiguriert; historische Messungen gelten nur für ihren dokumentierten Quellstand und Host.
+
+[Current offline evidence](../../evals/results/offline-validation.json).
