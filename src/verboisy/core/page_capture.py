@@ -50,4 +50,12 @@ async def capture_rendered_page(
     if len(html.encode()) > runner.config.max_page_bytes:
         raise NavigationError("Page exceeds configured size limit")
     captured = make_snapshot(visible_html, url, runner.config.max_snapshot_chars)
+    drain = getattr(runner.browser, "drain_policy_failures", None)
+    if callable(drain):
+        for notice in drain():
+            runner.store.event(
+                runner.rid,
+                "coverage_gap",
+                {"snapshot_id": captured.id, "reason": notice["reason"], "count": notice["count"]},
+            )
     return captured, url, html, visible_html
