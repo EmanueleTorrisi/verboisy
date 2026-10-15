@@ -22,7 +22,10 @@ def runtime(monkeypatch, config):
         goto=AsyncMock(return_value=None),
         url="https://example.com",
     )
+    page.main_frame = SimpleNamespace(page=page)
+    session = SimpleNamespace(on=Mock(), send=AsyncMock(), detach=AsyncMock())
     context = SimpleNamespace(
+        new_cdp_session=AsyncMock(return_value=session),
         new_page=AsyncMock(return_value=page),
         close=AsyncMock(),
         route=AsyncMock(),
@@ -183,6 +186,8 @@ async def test_requests_are_allowed(runtime, config):
         continue_=AsyncMock(),
     )
 
+    runtime.manager._page = runtime.page
+    route.request.frame = runtime.page.main_frame
     await runtime.manager._route(route)
 
     route.continue_.assert_awaited_once()
@@ -265,3 +270,70 @@ async def test_cleanup_ignores_already_closed_context(config):
     await manager.close()
 
     assert manager._context is None
+
+
+@pytest.mark.parametrize("target", ["popup", "frame", "unknown", "closed"])
+async def test_unsupported_ownership_and_policy_notices(runtime, target):
+    from playwright.async_api import Error
+
+    runtime.manager._page = runtime.page
+    frame = (
+        SimpleNamespace(page=SimpleNamespace())
+        if target == "popup"
+        else SimpleNamespace(page=runtime.page, secondary=True)
+    )
+    route = SimpleNamespace(
+        request=SimpleNamespace(frame=frame, url="https://8.8.8.8"),
+        abort=AsyncMock(),
+        continue_=AsyncMock(),
+    )
+    if target == "unknown":
+        route.request = SimpleNamespace(url="https://8.8.8.8")
+    if target == "closed":
+        route.abort.side_effect = Error("closed")
+    await runtime.manager._route(route)
+    route.continue_.assert_not_awaited()
+    notices = runtime.manager.drain_policy_failures()
+    assert notices and all(set(n) == {"reason", "count"} for n in notices)
+    assert runtime.manager.drain_policy_failures() == []
+
+
+async def test_paused_policy_event_is_safe_and_closed_target_is_counted(runtime):
+    from playwright.async_api import Error
+
+    await runtime.manager._request_paused({})
+    assert not runtime.manager.drain_policy_failures()
+    await runtime.manager.start()
+    await runtime.manager._request_paused({})
+    runtime.manager._request_session.send.side_effect = Error("closed")
+    await runtime.manager._request_paused({"requestId": "r", "request": {}})
+    notices = runtime.manager.drain_policy_failures()
+    assert {n["reason"] for n in notices} == {
+        "invalid_policy_event",
+        "request_policy_denied",
+        "target_closed",
+    }
+
+
+async def test_continue_target_closure_is_counted(runtime):
+    from playwright.async_api import Error
+
+    runtime.manager._page = runtime.page
+    route = SimpleNamespace(
+        request=SimpleNamespace(frame=runtime.page.main_frame, url="https://8.8.8.8"),
+        abort=AsyncMock(),
+        continue_=AsyncMock(side_effect=Error("closed")),
+    )
+    await runtime.manager._route(route)
+    assert runtime.manager.drain_policy_failures() == [{"reason": "target_closed", "count": 1}]
+
+
+async def test_websocket_policy_notice_survives_target_close(runtime):
+    from playwright.async_api import Error
+
+    route = SimpleNamespace(close=AsyncMock(side_effect=Error("closed")))
+    await runtime.manager._websocket(route)
+    assert {n["reason"] for n in runtime.manager.drain_policy_failures()} == {
+        "unsupported_websocket_target",
+        "target_closed",
+    }
