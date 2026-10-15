@@ -166,6 +166,29 @@ poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --
 Profile files add instrumentation overhead; use the report's unprofiled samples
 for timings and the profile to locate costs. Native mode remains optional.
 
+## Current evidence and recovery costs
+
+The current report, `evals/results/offline-validation.json`, records the executed
+source fingerprints, environment, small ingestion/component workloads and streaming
+checks. [Validation](validation.md#complete-local-gates-and-evidence-limits) explains
+its scope. Historical reports retain their original hashes and measurements;
+they are not qualification of changed source. Compare correctness and compatible
+fixtures before interpreting host-specific timing differences.
+
+The first verified streaming page may replay the saved capture and committed prefix.
+Ten subsequent pages from an unchanged ledger revision reuse validation stamps while
+retaining bounded keyset reads; the stamps contain no row payloads. A changed revision
+requires verification again. Resume verifies its committed prefix once and continues
+from the positioned parser, rather than replaying that prefix for every admitted row.
+
+Small runs do not meet streaming qualification. The scale gate requires at least
+1,000,000 distinct rows, at least 1 GiB of input, peak process RSS at most 192 MiB and
+end-to-end throughput at least 5,000 rows/s, with every output/evidence/hash checked and
+resume after source deletion. A blocked or smaller run keeps `qualification_passed`
+false. Process RSS includes native/SQLite/import memory and differs from component
+`tracemalloc` peaks. SIGKILL/WAL recovery and storage fault injection do not establish
+physical power-loss or every filesystem's durability.
+
 ## Compare saved reports
 
 The offline comparison command reads two saved reports; it does not rerun workloads,
