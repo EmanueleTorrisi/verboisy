@@ -95,7 +95,7 @@ body:
       placeholder: |
         - OS: Ubuntu 24.04
         - Python: 3.12.5
-        - Verboisy: 0.1.0
+        - Verboisy: 1.0.0 or the exact commit
         - Installation method: pip / source / other
       render: yaml
     validations:
@@ -145,3 +145,8 @@ body:
       description: Include a minimal schema/task, expected outcome and supported fixture. Redact credentials, personal data and private source contents.
     validations:
       required: true
+
+  - type: textarea
+    attributes:
+      label: Workflow boundary
+      description: State the saved status and whether the failure affects capture, shaping, paging or publication. Redact private content; do not attach credentials or private ledgers.
