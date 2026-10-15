@@ -41,6 +41,20 @@ schema, target, status and reviewed evidence. A scale demonstration should ident
 synthetic input, byte/row counts, limits, elapsed time and memory separately. Time-lapse
 or edited pauses should be labelled so they do not imply a shorter runtime.
 
+
+## Executable contracts
+
+The catalogue declares compound pointers `/organization` and `/facility_name`; preview
+validates that research contract without paid work. Live execution requires permitted
+sources, browser infrastructure and configured provider budget.
+
+Project ordinary source IDs to `source_id`, preserving generated public IDs. Optional
+unobserved fields stay absent. SmartID reads manifest-declared modes and verifies the
+reference hash; plain CSV remains text. The local streaming example pauses with exit 2
+and resumes by its printed job ID after deletion of the original captured source.
+See [catalogue](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) and
+[streaming observations](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md).
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
