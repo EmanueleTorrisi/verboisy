@@ -44,7 +44,7 @@ def main():
     with tempfile.TemporaryDirectory(
         prefix="verboisy-stream-bench-", dir=args.work_dir
     ) as temporary:
-        root = Path(temporary)
+        root = Path(temporary).resolve()
         source = root / "input.jsonl"
         database = root / "stream.db"
         output = root / "rows.jsonl"
