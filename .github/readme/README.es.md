@@ -157,3 +157,10 @@ No se aceptan contribuciones de código no solicitadas. La colaboración remuner
 [Catálogo de instituciones de investigación](../../examples/research_catalog/README.md) ·
 [Procesamiento de grandes conjuntos locales de observaciones](../../examples/streaming_observations/README.md) ·
 [Historial de versiones: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+
+
+## Contratos de datos y cualificación
+
+En resultados ordinarios, `id` está reservado para metadatos generados. Los IDs de origen requieren una proyección explícita a `source_id`; se conservan los IDs anidados y de streaming. Los campos opcionales ausentes siguen ausentes; null explícito se conserva. Streaming valida filas individuales y rechaza condiciones de colección no compatibles. Una preparación pausada devuelve código 2. CI está configurada; las mediciones históricas corresponden únicamente a su código fuente y entorno registrados.
+
+[Current offline evidence](../../evals/results/offline-validation.json).
