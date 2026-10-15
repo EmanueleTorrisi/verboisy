@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import typer
+from pydantic import ValidationError
 
 from verboisy.evidence.models import ProjectionPlan
 from verboisy.storage.path_safety import validate_output_paths
@@ -17,6 +18,7 @@ from verboisy.streaming import StreamLedger, StreamLimits, stream_dataset
 from verboisy.streaming.export import bundle_paths
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
+from verboisy.utils.json_payload import read_json_object
 
 
 def stream_command(
@@ -53,11 +55,9 @@ def stream_command(
             raise VerboisyError("Resume uses the saved streaming contract")
         fmt, path = (dataset_file or "").partition("=")[::2]
         source = Path(path) if dataset_file is not None and path else None
-        schema_value = (
-            json.loads(schema.read_text(encoding="utf-8")) if schema is not None else None
-        )
+        schema_value = read_json_object(schema) if schema is not None else None
         plan = (
-            ProjectionPlan.model_validate_json(projection.read_text(encoding="utf-8"))
+            ProjectionPlan.model_validate(read_json_object(projection))
             if projection is not None
             else None
         )
@@ -94,8 +94,15 @@ def stream_command(
             protected_inputs=input_paths if resume is None else None,
         )
         typer.echo(json.dumps(asdict(result), ensure_ascii=False, indent=2))
-        if result.status == "FAILED":
-            raise typer.Exit(1)
+        if result.reason == "interrupted":
+            raise typer.Exit(130)
+        if result.status != "COMPLETED":
+            raise typer.Exit(2 if result.status == "PAUSED" else 1)
+    except ValidationError:
+        typer.echo("Error: Invalid streaming configuration fields", err=True)
+        raise typer.Exit(1) from None
+    except KeyboardInterrupt:
+        raise typer.Exit(130) from None
     except (VerboisyError, OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from None
