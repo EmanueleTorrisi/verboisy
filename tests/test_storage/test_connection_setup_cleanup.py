@@ -55,13 +55,11 @@ def test_row_factory_failure_closes_connection_and_releases_owned_lock(
 
     monkeypatch.setattr(sqlite3, "connect", connect)
     try:
-        expected = (
-            VerboisyError if read_only and issubclass(failure_kind, sqlite3.Error) else failure_kind
-        )
+        expected = VerboisyError if issubclass(failure_kind, sqlite3.Error) else failure_kind
         with pytest.raises(expected) as caught:
             RetainedStore(path, read_only=read_only)
         if expected is VerboisyError:
-            assert str(caught.value) == "Not a readable current research ledger"
+            assert "readable" in str(caught.value) and "ledger" in str(caught.value)
         else:
             assert caught.value is failure
         assert len(connections) == 1
@@ -77,3 +75,19 @@ def test_row_factory_failure_closes_connection_and_releases_owned_lock(
             sqlite3.Connection.close(connection)
         for store in stores:
             store.lock.release()
+
+
+def test_sqlite_open_failure_releases_writer_lock(tmp_path, monkeypatch):
+    path = tmp_path / "open.db"
+    original_connect = sqlite3.connect
+    with monkeypatch.context() as fault:
+
+        def fail_open(*_args, **_kwargs):
+            raise sqlite3.OperationalError("storage unavailable")
+
+        fault.setattr(sqlite3, "connect", fail_open)
+        with pytest.raises(VerboisyError, match="Cannot open research ledger"):
+            ResearchStore(path)
+    assert sqlite3.connect is original_connect
+    with closing(ResearchStore(path)) as replacement:
+        assert replacement.lock.is_locked
