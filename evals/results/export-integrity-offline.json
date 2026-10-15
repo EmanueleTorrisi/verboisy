@@ -580,5 +580,8 @@
   "truth_verified": false,
   "global_completeness_claimed": false,
   "independent_review_performed": false,
-  "legal_review_performed": false
+  "legal_review_performed": false,
+  "qualification_status": "historical_source_bound",
+  "qualification_applies_to_current_source": false,
+  "current_report": "offline-validation.json"
 }
