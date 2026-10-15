@@ -56,6 +56,19 @@ paging. Report generated input size, retained ledger size, output size, elapsed 
 and process memory separately. Avoid presenting generated observations as retrieved
 real-world facts.
 
+
+## Source-specific engineering evidence
+
+The original export-integrity report is historical and retains its original measurements
+and fingerprints. [Current offline evidence](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json)
+records actual final-source commands, failures and blockers. Relevant repository inputs
+are fingerprinted; report files under `evals/results/` are excluded to avoid recursion.
+
+Synthetic fixtures and offline coverage do not replace annotated research acceptance,
+live role-profile cost/latency campaigns, real Chromium target/sandbox/egress tests,
+Docker and supported-platform runs, durability qualification or release-owner review.
+Each gate must have its own executed record before a production claim.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
