@@ -17,6 +17,7 @@ from pydantic import Field, ValidationError
 from verboisy.core.planner import build_research_plan
 from verboisy.evidence.models import StrictModel, TaskSpec
 from verboisy.extractor.schema_builder import SchemaBuilder
+from verboisy.research_contract import validate_research_contract
 from verboisy.storage.event_journal import decode_event_rows
 from verboisy.storage.research import ResearchStore
 from verboisy.utils.exceptions import VerboisyError
@@ -166,6 +167,7 @@ def propose_change(store: ResearchStore, rid: str, value: Any) -> SavedChange:
     try:
         request = ChangeRequest.model_validate(value)
         normalized = SchemaBuilder.normalize(request.schema_)
+        validate_research_contract(normalized, request.task)
     except (ValidationError, VerboisyError):
         raise VerboisyError("Invalid proposed requirements") from None
     if not request.description.strip() or not request.goal.strip():
@@ -206,7 +208,8 @@ def decide_change(store: ResearchStore, rid: str, *, accept: bool) -> SavedChang
     if _baseline(state) != change.baseline_sha256:
         raise VerboisyError("Saved requirements changed; the proposal is stale")
     # Revalidate persisted schema before any mutation, even if the ledger was edited.
-    SchemaBuilder.normalize(change.request.schema_)
+    normalized = SchemaBuilder.normalize(change.request.schema_)
+    validate_research_contract(normalized, change.request.task)
     if change.request.task.dataset_sources:
         raise VerboisyError("This change workflow currently supports browser research only")
     # The decision and its requirement update share a transaction. Old evidence and
