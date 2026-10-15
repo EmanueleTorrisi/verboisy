@@ -157,3 +157,10 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 [研究机构目录](../../examples/research_catalog/README.md) ·
 [大型本地观测数据处理流程](../../examples/streaming_observations/README.md) ·
 [版本历史：0.1.0–1.0.0](../../docs/development-roadmap.md)
+
+
+## 数据契约与验证范围
+
+普通输出中的 `id` 保留给生成的元数据。源 ID 必须显式映射为 `source_id`；嵌套 ID 和流式源 ID 仍可使用。缺失的可选字段保持缺失，显式 null 保留。流式处理逐行验证，并拒绝不支持的数组整体约束。暂停的准备任务返回退出码 2。CI 已配置，但历史测量仅适用于记录的源代码和运行环境。
+
+[Current offline evidence](../../evals/results/offline-validation.json).
