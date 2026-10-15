@@ -11,3 +11,12 @@ Both examples use the public interfaces. They expose actual statuses and preserv
 partial outcomes rather than replacing failure with a prepared result. Generated
 inputs, ledgers, exports and recordings belong outside the tracked source tree.
 Software execution requires the applicable [license](../LICENSE).
+
+
+## Completion and prerequisites
+
+Catalogue preview validates `/organization` and `/facility_name`; live research
+requires browser/provider access and explicit budgets. The deterministic streaming
+example prints its saved job ID and exits 2 on invocation pause. Resume that job after
+source deletion, then verify completed status, every row, evidence sidecars and hashes.
+Synthetic preparation is not evidence of successful live catalogue research.
