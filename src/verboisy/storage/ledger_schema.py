@@ -16,6 +16,59 @@ from collections.abc import Callable
 from verboisy.utils.exceptions import VerboisyError
 
 
+def validate_ledger_identity(db: sqlite3.Connection, tables: set[str]) -> None:
+    """Reject foreign/partial databases before journal-mode changes or migration."""
+    tables = {name for name in tables if not name.startswith("sqlite_")}
+    if not tables:
+        return
+    required = {
+        "research_meta": {"version"},
+        "research_runs": {
+            "id",
+            "goal",
+            "schema_json",
+            "task_json",
+            "status",
+            "reason",
+            "tokens",
+            "reserved",
+            "export_path",
+        },
+        "pages": {"id", "run_id", "url", "parent_url", "depth", "status", "reason"},
+        "snapshots": {"id", "run_id", "page_id", "payload", "html", "visible_html"},
+        "candidates": {"id", "run_id", "snapshot_id", "payload", "reasons", "accepted"},
+        "records": {"id", "run_id", "identity", "payload", "candidate_id"},
+        "conflicts": {"run_id", "identity"},
+        "events": {"id", "run_id", "kind", "payload", "created_at"},
+    }
+    try:
+        versions = db.execute("SELECT version FROM research_meta").fetchall()
+        if len(versions) != 1 or versions[0][0] not in (2, 3, 4):
+            raise VerboisyError("Unsupported research database version")
+        version = versions[0][0]
+        if version >= 3:
+            required["records"].add("stable_id")
+        if version >= 4:
+            required.update(
+                {
+                    "dataset_blobs": {"sha256", "content"},
+                    "dataset_assets": {"id", "run_id", "sha256", "metadata", "acquired_at"},
+                }
+            )
+        allowed = set(required) | {"dataset_blobs", "dataset_assets"}
+        if tables - allowed or not set(required) <= tables:
+            raise VerboisyError(
+                "Not a complete supported research ledger; preserve it and choose a new path"
+            )
+        for table, columns in required.items():
+            if not columns <= {row[1] for row in db.execute(f"PRAGMA table_info({table})")}:
+                raise VerboisyError("Incomplete research ledger columns")
+    except sqlite3.Error:
+        raise VerboisyError(
+            "Not a supported research ledger; preserve it and choose a new path"
+        ) from None
+
+
 def initialize_ledger(
     db: sqlite3.Connection,
     tables: set[str],
@@ -24,6 +77,7 @@ def initialize_ledger(
     stable_row_id: Callable[[str, str], str],
 ) -> None:
     """Apply the existing supported upgrades using the store's current ID helper."""
+    validate_ledger_identity(db, tables)
     if "research_meta" in tables:
         rows = db.execute("SELECT version FROM research_meta").fetchall()
         # An arbitrary first row cannot establish an unambiguous upgrade path.
