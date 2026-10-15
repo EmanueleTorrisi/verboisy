@@ -138,7 +138,7 @@ async def test_sum_average_nulls_sort_and_resume(tmp_path):
         path = tmp_path / f"arithmetic-{attempt}.json"
         result = await arun(resume=rid, config=config, export=path)
         assert result.records == [
-            {"id": 1, "region": "B", "population": None, "count": 0},
+            {"id": 1, "region": "B", "population": None, "count": None},
             {"id": 2, "region": "A", "population": 3.0, "count": 3},
         ]
         cells = json.loads(path.with_suffix(".json.manifest.json").read_text())["cell_lineage"]
@@ -147,7 +147,7 @@ async def test_sum_average_nulls_sort_and_resume(tmp_path):
             step = cell["steps"][0]
             values = [value for value in step["inputs"] if value is not None]
             if step["operation"] == "sum":
-                assert sum(values) == step["output"]
+                assert (sum(values) if values else None) == step["output"]
             elif step["operation"] == "average":
                 assert (sum(values) / len(values) if values else None) == step["output"]
             else:
