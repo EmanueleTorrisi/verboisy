@@ -202,6 +202,8 @@ def _merge(
         comparable_across_rows=(proposal.comparable_across_rows),
         confidence=proposal.confidence,
         basis="model",
+        array_positions=baseline.array_positions,
+        array_minimums=baseline.array_minimums,
     )
 
 
@@ -237,7 +239,8 @@ def semantic_plan_from_event(
     except ValidationError as exc:
         raise ValueError("invalid persisted semantic plan") from exc
 
-    expected = set(scalar_field_schemas(schema))
+    baseline = build_field_semantics(schema)
+    expected = set(baseline)
     pointers = [field.pointer for field in plan.fields]
 
     if len(pointers) != len(set(pointers)) or set(pointers) != expected:
@@ -271,6 +274,8 @@ def semantic_plan_from_event(
                 comparable_across_rows=(field.comparable_across_rows),
                 confidence=field.confidence,
                 basis=field.basis,
+                array_positions=baseline[field.pointer].array_positions,
+                array_minimums=baseline[field.pointer].array_minimums,
             )
 
     except ValueError as exc:
