@@ -21,6 +21,7 @@ from verboisy.utils.exceptions import (
     LLMRateLimitError,
     LLMResponseError,
 )
+from verboisy.utils.json_payload import decode_json
 
 
 class _InvalidResponseError(ValueError):
@@ -339,12 +340,9 @@ class LLMClient:
                 if not isinstance(content, str) or not content.strip():
                     raise _InvalidResponseError("empty")
 
-                def reject_constant(_value: str) -> None:
-                    raise _InvalidResponseError("non_json_constant")
-
                 try:
-                    parsed = json.loads(content, parse_constant=reject_constant)
-                except json.JSONDecodeError as exc:
+                    parsed = decode_json(content)
+                except ValueError as exc:
                     raise _InvalidResponseError("invalid_json") from exc
 
                 if not isinstance(parsed, dict):
