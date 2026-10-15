@@ -216,6 +216,33 @@ were independently verified after the original source was deleted. No provider
 requests were made. This qualifies that workload; other platforms and workload
 distributions still need their own measurements.
 
+
+## Validated checkpoints and public pages
+
+Array roots permit only `type`, object `items`, `$schema`, `$defs`, `definitions`,
+`$id`, `$anchor`, `$dynamicAnchor`, standard descriptive annotations and non-validating
+`x-` annotations. Root references, prefix/contains/item-count/uniqueness/unevaluated
+assertions and combinators/conditionals fail before a ledger is opened. References
+inside items retain the root context. Object roots retain per-row JSON Schema validation.
+
+Saved contracts, types, ceilings and exact ordinal prefixes are verified. Completed
+jobs additionally require actual EOF. Resume validates capture and the committed prefix
+once before admission, then reuses its positioned parser. Captured bytes permit resume
+after source deletion. Corruption fails before status/checkpoint mutation; no implicit
+repair or ledger version change occurs.
+
+Public keyset pages return verified source-bound rows from coherent read snapshots.
+First access can scan the capture/prefix; subsequent pages at a stable connection
+revision reuse at most 32 small stamps. Both own writes and external commits invalidate
+stamps; caller transactions remain owned by the caller and are never cached. Pages
+are limited to 1..1000 rows, with no full-dataset result list.
+
+Staged export files are flushed/fsynced, directory entries sync where supported, and
+the manifest publishes last. Preparation exits 0/2/1/130 for completed/paused/failed/
+interrupted outcomes. Status inspection can exit 0 for a paused job. Historical million-row
+results apply to their recorded source/host; see the current offline evidence and
+[validation](validation.md) for unqualified resource, platform and durability gates.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
