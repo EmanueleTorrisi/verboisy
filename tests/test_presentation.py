@@ -113,3 +113,27 @@ def test_nested_rows_and_identity_fields_do_not_mutate_input():
     assert rows == before
     assert field_schema({"properties": {"x": False}}, "/x/y") == {}
     assert field_schema({"properties": {"x": False}}, "/x") == {}
+
+
+def test_referenced_date_and_dimension_match_inline_presentation():
+    from verboisy.presentation import present_rows
+    from verboisy.presentation_config import PresentationPreferences
+
+    schema = {
+        "type": "object",
+        "$defs": {
+            "day": {"type": "string", "format": "date"},
+            "length": {"type": "string", "x-verboisy-dimension": "length"},
+        },
+        "properties": {"day": {"$ref": "#/$defs/day"}, "length": {"$ref": "#/$defs/length"}},
+    }
+    rows = [{"id": 1, "day": "2026-10-08", "length": "2 m"}]
+    formatted = present_rows(
+        rows, schema, PresentationPreferences(date_format="dmy", length_unit="ft"), protected=[]
+    )
+    assert formatted[0]["day"] == "08/10/2026" and formatted[0]["length"] == "6.56168 ft"
+    assert rows[0]["day"] == "2026-10-08"
+    protected = present_rows(
+        rows, schema, PresentationPreferences(date_format="dmy"), protected=["/day"]
+    )
+    assert protected[0]["day"] == "2026-10-08"
