@@ -17,7 +17,6 @@ from typing import Any, cast
 from pydantic import ValidationError
 
 from verboisy import __version__
-from verboisy.core.fitness import scalar_field_schemas
 from verboisy.core.initial_discovery import (
     discover_seed_sources,
     preflight_initial_discovery,
@@ -35,6 +34,7 @@ from verboisy.extractor.evidenced import PROPOSE, REVIEW
 from verboisy.extractor.ingestion import run_dataset_sources, validate_dataset_evidence
 from verboisy.extractor.range_changes import offer_saved_range_change, saved_range_evidence
 from verboisy.extractor.schema_builder import SchemaBuilder
+from verboisy.extractor.schema_paths import SchemaPathIndex
 from verboisy.llm.client import LLMClient
 from verboisy.output import prepare_output, write_output
 from verboisy.presentation_config import preferences, resolve_saved_preferences
@@ -43,6 +43,8 @@ from verboisy.product import (
     SourcePolicy,
     parse_simple_schema,
 )
+from verboisy.reference_dataset import reference_input_paths
+from verboisy.research_contract import validate_identity_fields, validate_research_contract
 from verboisy.storage.changes import SavedChange, decide_change, pending_change
 from verboisy.storage.path_safety import (
     dataset_output_paths,
@@ -57,6 +59,7 @@ from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import (
     VerboisyError,
 )
+from verboisy.utils.json_payload import decode_json, read_json_object
 
 
 @dataclass(frozen=True)
@@ -99,11 +102,9 @@ def _json(value: str | Path | dict[str, Any]) -> dict[str, Any]:
     if isinstance(value, dict):
         return value
     try:
-        payload = json.loads(Path(value).read_text(encoding="utf-8"))
+        payload = read_json_object(Path(value))
     except (OSError, ValueError):
         raise VerboisyError("Cannot load JSON configuration file") from None
-    if not isinstance(payload, dict):
-        raise VerboisyError("Configuration must be a JSON object")
     return payload
 
 
@@ -193,20 +194,21 @@ def _export_path(value: str | Path | None, db_path: str) -> Path | None:
 
 
 def _schema_fields(schema: dict[str, Any]) -> list[str]:
-    item = schema["items"] if schema["type"] == "array" else schema
-    return list(item.get("properties", {}))
+    return list(SchemaPathIndex.build(schema).properties)
 
 
 def _normalize_sort_keys(
     order: Sequence[SortKey | tuple[str, str] | dict[str, str]] | None,
 ) -> list[SortKey]:
+    if order is not None and (not isinstance(order, Sequence) or isinstance(order, str | bytes)):
+        raise VerboisyError("Invalid sort specification")
     result: list[SortKey] = []
     for item in order or []:
         if isinstance(item, SortKey):
             result.append(item)
         elif isinstance(item, tuple) and len(item) == 2:
-            result.append(SortKey(str(item[0]), str(item[1])))  # type: ignore[arg-type]
-        elif isinstance(item, dict):
+            result.append(SortKey(item[0], item[1]))  # type: ignore[arg-type]
+        elif isinstance(item, dict) and set(item) <= {"field", "direction"} and "field" in item:
             result.append(
                 SortKey(item["field"], item.get("direction", "asc"))  # type: ignore[arg-type]
             )
@@ -260,19 +262,7 @@ async def _initial_discovery(
 
 def _declared_identity(identity: Sequence[str], schema: dict[str, Any]) -> list[str]:
     """Validate explicit scalar JSON pointers; never infer entity uniqueness."""
-    if isinstance(identity, str | bytes) or not 1 <= len(identity) <= 20:
-        raise VerboisyError("Identity requires 1 to 20 scalar JSON pointers")
-    fields = scalar_field_schemas(schema)
-    result: list[str] = []
-    for pointer in identity:
-        if not isinstance(pointer, str) or pointer not in fields or "*" in pointer.split("/"):
-            raise VerboisyError(
-                "Identity pointers must name scalar schema fields without array wildcards"
-            )
-        if pointer in result:
-            raise VerboisyError("Duplicate identity pointer")
-        result.append(pointer)
-    return result
+    return validate_identity_fields(identity, schema)
 
 
 async def arun(
@@ -305,6 +295,13 @@ async def arun(
 ) -> RunResult:
     """Start or resume evidence-backed research using simple or advanced configuration."""
 
+    for flag in (onlyinclude, strings, proof, research):
+        if not isinstance(flag, bool):
+            raise VerboisyError("Boolean options require True or False")
+    if headless is not None and not isinstance(headless, bool):
+        raise VerboisyError("Boolean options require True or False")
+    if proof and export is None and not (resume or okresume):
+        raise VerboisyError("--proof requires at least one --export destination")
     display_overrides = {
         key: value
         for key, value in {
@@ -331,8 +328,10 @@ async def arun(
         raise VerboisyError("max_steps must be a positive integer")
     if not isinstance(resume, bool | str) or (isinstance(resume, str) and not resume):
         raise VerboisyError("resume must be True, False, or a nonempty run id")
-    if maxrows is not None and (isinstance(maxrows, bool) or maxrows <= 0):
-        raise VerboisyError("--maxrows must be a positive integer")
+    if maxrows is not None and (
+        isinstance(maxrows, bool) or not isinstance(maxrows, int) or not 1 <= maxrows <= 100000
+    ):
+        raise VerboisyError("--maxrows must be a positive integer from 1 to 100000")
     sort_keys = _normalize_sort_keys(order)
     policy = SourcePolicy(tuple(include or ()), tuple(avoid or ()), onlyinclude)
     destinations = _export_paths(export, config.sqlite_db_path)
@@ -363,7 +362,7 @@ async def arun(
     input_paths.add(Path(".env").resolve())
     input_paths.update(config.input_files())
     if smartid is not None:
-        input_paths.add(Path(smartid).resolve())
+        input_paths.update(reference_input_paths(smartid))
     try:
         validate_output_paths(output_files, input_paths)
     except (OSError, ValueError):
@@ -398,15 +397,16 @@ async def arun(
         raise VerboisyError(
             "Resume uses its saved goal, schema, source policy, and dataset shaping options"
         )
-    if not resume and (not goal or not goal.strip() or schema is None):
+    if not resume and (not isinstance(goal, str) or not goal.strip() or schema is None):
         raise VerboisyError("New runs require --goal and --schema")
 
-    store = ResearchStore(config.sqlite_db_path)
+    store: ResearchStore | None = None
     simple_schema = False
     inferred_schema: dict[str, Any] | None = None
     change_notice: str | None = None
     try:
         if resume:
+            store = ResearchStore(config.sqlite_db_path)
             state = store.load(resume if isinstance(resume, str) else None)
             rid = state["id"]
             # Preflight shaping and output paths before recording a user decision.
@@ -419,10 +419,15 @@ async def arun(
             for entry in saved_inputs:
                 input_paths.update(export_input_paths([entry]))
             pending_change(store, rid)
-            saved_task = TaskSpec.model_validate_json(state["task_json"])
+            try:
+                saved_task = TaskSpec.model_validate(decode_json(state["task_json"]))
+            except (ValidationError, ValueError):
+                raise VerboisyError("Saved task failed contract validation") from None
+            saved_schema = SchemaBuilder.normalize(decode_json(state["schema_json"]))
+            validate_research_contract(saved_schema, saved_task)
             input_paths.update(local_source_paths(s.url for s in saved_task.dataset_sources))
             if options.get("smartid"):
-                input_paths.add(Path(options["smartid"]).resolve())
+                input_paths.update(reference_input_paths(options["smartid"]))
             _protect_exports(destinations, input_paths)
             policy = SourcePolicy(**options["source_policy"])
             if store.events(rid, "initial_discovery") and not store.events(rid, "seed_frontier"):
@@ -512,7 +517,23 @@ async def arun(
                 updates["max_depth"] = max(spec.max_depth, 8)
                 updates["max_pages"] = max(spec.max_pages, 1000)
                 updates["max_links_per_page"] = max(spec.max_links_per_page, 500)
-            spec = spec.model_copy(update=updates)
+            try:
+                spec = TaskSpec.model_validate(spec.model_copy(update=updates).model_dump())
+            except ValidationError:
+                raise VerboisyError("Invalid resolved task specification") from None
+            validate_research_contract(target_schema, spec)
+            record_schema = (
+                target_schema.get("items", target_schema)
+                if target_schema.get("type") == "array"
+                else target_schema
+            )
+            if groupby is not None and (
+                not isinstance(groupby, str)
+                or not groupby.strip()
+                or record_schema.get("additionalProperties") is False
+                and groupby not in _schema_fields(target_schema)
+            ):
+                raise VerboisyError("Cannot group by unknown declared field")
 
             validate_time_series(
                 spec.time_series,
@@ -526,16 +547,12 @@ async def arun(
                 spec.target_records,
             )
 
-            if spec.target_records and target_schema["type"] == "array":
-                minimum = target_schema.get("minItems", 0)
-                maximum = target_schema.get("maxItems", 100000)
-                if not minimum <= spec.target_records <= maximum:
-                    raise VerboisyError("Target conflicts with schema collection limits")
             input_paths.update(local_source_paths(s.url for s in spec.dataset_sources))
             _protect_exports(destinations, input_paths)
             stored_exports = (
                 json.dumps([str(path) for path in destinations]) if destinations else None
             )
+            store = ResearchStore(config.sqlite_db_path)
             rid = store.create(
                 goal or "",
                 target_schema,
@@ -673,7 +690,8 @@ async def arun(
             dataset_consistency=dataset_consistency,
         )
     finally:
-        store.close()
+        if store is not None:
+            store.close()
 
 
 def run(**kwargs: Any) -> RunResult:
