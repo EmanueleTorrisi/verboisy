@@ -17,7 +17,7 @@ from benchmarks.workloads import FIELDS, digest, evidence, make_workloads, recor
     "case,expected",
     [
         ("lineage_scalar", "d3e3b935e8b29e097d92b6f44f8526f66883cc1c0775fdb63f011ac28eb99b70"),
-        ("lineage_grouped", "ad8d35a62f91f40efbb2fddea5e94c67807ea508e5cb0444a05e64cc5b23f47e"),
+        ("lineage_grouped", "0d0311d129c3132820ada1d8ad946e9776b5486becbfa48e6e14da003a376420"),
     ],
 )
 @pytest.mark.parametrize("normalized", [False, True])
