@@ -94,6 +94,20 @@ is recorded through the existing failure outcome, not presented as a completed
 interpretation. To retain a file that falls outside a parser contract, select
 `asset` explicitly; Verboisy does not silently downgrade parsing to capture.
 
+
+## Typed CSV and strict readers
+
+Ordinary format-3 JSON CSV uses literal headers and JSON-encoded present cells;
+an empty cell means absence and `null` means explicit null. Streaming `stream-1` JSON
+CSV JSON-encodes both headers and cells and requires stable columns. Spreadsheet
+mode preserves text/escaping semantics and is not universally reversible.
+
+SmartID verifies the adjacent manifest version/mode and primary-file hash before
+decoding cells. Unmanifested CSV is text: `001`, `null` and `true` are not heuristically
+converted. Duplicate headers/IDs, ragged rows, invalid UTF-8 and ambiguous/non-finite
+JSON fail. Streaming array roots support only pure object items, reference context,
+standard descriptions and non-validating `x-` annotations; unsupported assertions fail.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
