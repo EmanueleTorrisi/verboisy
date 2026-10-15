@@ -85,7 +85,7 @@ async def test_scoped_start_attaches_once_and_cleanup_detaches(runtime):
     runtime.context.new_cdp_session = AsyncMock(return_value=session)
     assert await runtime.manager.start() is runtime.page
     assert await runtime.manager.start() is runtime.page
-    runtime.context.route.assert_not_awaited()
+    runtime.context.route.assert_awaited_once()
     runtime.context.new_cdp_session.assert_awaited_once_with(runtime.page)
     session.on.assert_called_once_with("Fetch.requestPaused", runtime.manager._request_paused)
     session.send.assert_awaited_once_with(
