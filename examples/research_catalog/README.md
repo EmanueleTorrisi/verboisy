@@ -78,3 +78,12 @@ sources before making completeness claims or using records in downstream analysi
 
 For a real product recording, use the selected sources and the actual resulting rows;
 do not replace a failed run with the synthetic browser regression fixture.
+
+
+## Compound identity and evidence
+
+The executable compound identity is `/organization` plus `/facility_name`. Preview
+validates declared scalar pointers before creating a directory or run. Synthetic
+verifier regressions establish pointer lookup, not real facility research success.
+Live use needs authorized sources, browser infrastructure, provider credentials and
+bounded request/page budgets; captures and manifests disclose their evidence limits.
