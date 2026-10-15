@@ -113,6 +113,18 @@ conversion of an integer field, or a changed unit-dependent bound can make
 contract or invalidate otherwise accepted source records. Inspect the evidence and
 cell lineage alongside the output when the displayed schema check differs.
 
+
+## Referenced fields
+
+Local references resolve through the shared schema index once per output generation.
+An inline `{"type":"string","format":"date"}` and a local `$defs` reference to that
+schema both display `2026-10-08` as `08/10/2026` under DMY preferences. Numeric dimensions
+use the same conservative rules; names do not imply dates or units.
+
+Generated IDs, declared identity/matching values and raw evidence remain protected.
+Display output may differ from the collection schema, which manifests disclose.
+Ambiguous explicit format/dimension policies fail research preflight.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
