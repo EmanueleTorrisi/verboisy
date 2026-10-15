@@ -273,8 +273,8 @@ def test_corruption_blocks_resume_and_export(prepare, tmp_path, mutation):
     result = prepare()
     with closing(StreamLedger(tmp_path / "stream.db")) as ledger, ledger.connection:
         ledger.connection.execute(mutation)
-    resumed = stream_dataset(database=tmp_path / "stream.db", resume=result.job_id)
-    assert resumed.status == "FAILED" and "integrity" in resumed.reason
+    with pytest.raises(StreamError):
+        stream_dataset(database=tmp_path / "stream.db", resume=result.job_id)
     assert not (tmp_path / "rows.json").exists()
 
 
@@ -462,7 +462,7 @@ def test_cli_new_job_resume_and_invalid_configuration(tmp_path, monkeypatch):
     first = cli.invoke(
         app, [*base, "--dataset-file", f"jsonl={source}", "--rows-per-invocation", "1"]
     )
-    assert first.exit_code == 0, first.output
+    assert first.exit_code == 2, first.output
     job = json.loads(first.output)["job_id"]
     source.unlink()
     second = cli.invoke(app, [*base, "--resume", job, "--export", str(tmp_path / "rows.jsonl")])
@@ -541,7 +541,7 @@ def test_saved_storage_limit_and_export_alias_guards(tmp_path, prepare):
             ledger.connection.execute("UPDATE stream_jobs SET contract=?", (json.dumps(contract),))
             ledger.connection.execute("CREATE TABLE filler(x BLOB)")
             ledger.connection.execute("INSERT INTO filler VALUES(?)", (b"x" * 100_000,))
-    with pytest.raises(StreamError, match="saved storage"):
+    with pytest.raises(StreamError, match="storage limit"):
         stream_dataset(database=tmp_path / "stream.db", resume=result.job_id)
     with pytest.raises(StreamError, match="storage"):
         StreamLedger(tmp_path / "stream.db", max_storage_bytes=65_536)
