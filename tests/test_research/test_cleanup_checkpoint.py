@@ -29,6 +29,7 @@ async def test_cleanup_failure_still_recovers_claimed_page_and_saves_accounting(
         runner = ResearchRunner.__new__(ResearchRunner)
         runner.store, runner.rid = store, rid
         runner.adaptive_frontier = False
+        runner.config = SimpleNamespace(run_timeout_seconds=10)
         runner.client = SimpleNamespace(total_tokens=17, reserved_tokens=123)
         failure = asyncio.CancelledError() if cancel_cleanup else RuntimeError("Cleanup failed")
 
