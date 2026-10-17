@@ -15,9 +15,9 @@ to an out-of-core dataset.
 ## Small verification run
 
 ```bash
-poetry run python examples/streaming_observations/generate.py \
+python examples/streaming_observations/generate.py \
   --output example-runs/observations/input.jsonl --rows 1000 --metadata-bytes 128
-poetry run python examples/streaming_observations/prepare.py \
+python examples/streaming_observations/prepare.py \
   --source example-runs/observations/input.jsonl \
   --database example-runs/observations/stream.db --rows-per-invocation 500
 ```
@@ -29,7 +29,7 @@ status, source hash and at most five committed rows.
 Use that actual job ID to resume and export:
 
 ```bash
-poetry run python examples/streaming_observations/prepare.py \
+python examples/streaming_observations/prepare.py \
   --database example-runs/observations/stream.db --resume JOB_ID \
   --export example-runs/observations/output.jsonl
 ```
@@ -46,10 +46,10 @@ The generator prints the actual size. Allow roughly 25 GiB of available disk spa
 for source, retained ledger, export and staging; actual requirements depend on data.
 
 ```bash
-poetry run python examples/streaming_observations/generate.py \
+python examples/streaming_observations/generate.py \
   --output example-runs/observations-large/input.jsonl \
   --rows 2000000 --metadata-bytes 1024
-poetry run python examples/streaming_observations/prepare.py \
+python examples/streaming_observations/prepare.py \
   --source example-runs/observations-large/input.jsonl \
   --database example-runs/observations-large/stream.db --rows-per-invocation 250000
 ```
