@@ -20,6 +20,12 @@ Package metadata identifies `LicenseRef-Verboisy-Source-Inspection-1.0`.
 
 ## Obtain permission
 
+Download access, execution rights and paid services are distinct. PyPI cannot gate
+public downloads with a customer code. A private registry credential controls future
+downloads; an order identifier does not grant usage rights. The written agreement
+defines those rights, support, updates and any additional services. See
+[commercial scope](commercial.md) and [distribution](distribution.md).
+
 Email [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com) to request a
 demo, evaluation, internal-use or enterprise license. Describe the intended use,
 source types, approximate volume and deployment environment. Usage scope, fees,
