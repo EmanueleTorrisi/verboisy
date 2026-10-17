@@ -166,8 +166,8 @@ features and are not changed by this workflow.
 Display preferences are independent of saved research requirements:
 
 ```bash
-poetry run verboisy run --resume RUN_ID --mass-unit lb --length-unit ft --date-format mdy
-poetry run verboisy run --resume COMPLETED_RUN_ID --date-format iso --export rows.json
+verboisy run --resume RUN_ID --mass-unit lb --length-unit ft --date-format mdy
+verboisy run --resume COMPLETED_RUN_ID --date-format iso --export rows.json
 ```
 
 Defaults are `--mass-unit kg`, `--length-unit m`, and `--date-format dmy`.
@@ -178,7 +178,7 @@ Set new-run defaults with `VERBOISY_MASS_UNIT`, `VERBOISY_LENGTH_UNIT`, and
 opening a ledger or calling a provider:
 
 ```bash
-poetry run verboisy presentation-config
+verboisy presentation-config
 ```
 
 Explicit run flags override saved preferences. Saved preferences override configured
@@ -299,7 +299,7 @@ Model-specific [provider profiles](providers.md) can select separate endpoints,
 credentials, output allowances and JSON modes for different role models. Existing
 settings remain the fallback when no profile matches.
 
-Run `poetry run verboisy model-config` before a provider retry to inspect settings
+Run `verboisy model-config` before a provider retry to inspect settings
 loaded from the current environment and `.env`. The JSON report lists the default
 model and each role's effective model, selected token-limit keyword and ceiling,
 whether temperature is sent, its effective numeric value when sent, configured
@@ -346,7 +346,7 @@ research and asks for `--resume`.
 Inspect the complete pending proposal without model calls or database writes:
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
+verboisy changes --run-id RUN_ID
 ```
 
 A caller can offer a proposal using
@@ -389,7 +389,7 @@ after evidence acceptance.
 
 ### Inspecting a saved run's status
 
-Run `poetry run verboisy status --run-id <actual-run-id>` to inspect a run listed
+Run `verboisy status --run-id <actual-run-id>` to inspect a run listed
 by `verboisy runs`. The default database is the configured `SQLITE_DB_PATH`;
 `--database` selects another existing ledger. Browser-only, dataset, paused,
 failed and completed runs are supported.
