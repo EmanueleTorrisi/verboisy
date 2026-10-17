@@ -2,7 +2,7 @@
 
 # File capabilities
 
-Run `poetry run verboisy formats` to inspect the implemented format contracts.
+Run `verboisy formats` to inspect the implemented format contracts.
 Choose the format explicitly with `--dataset-file FORMAT=PATH` or
 `--dataset-source FORMAT=URL`. An extension, media type or embedded link never
 selects a parser, invokes a model, or authorizes another source.
@@ -64,7 +64,7 @@ These are deliberately limited extraction contracts, not full Office renderers.
 ## Capture an arbitrary file
 
 ```bash
-poetry run verboisy run --goal 'Index the supplied file' \
+verboisy run --goal 'Index the supplied file' \
   --schema '[sha256,byte_count]' \
   --dataset-file 'asset=/srv/verboisy-inputs/report.pdf' \
   --export files.json
