@@ -1,16 +1,16 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-<p align="center"><img src="../../logo.png" alt="Verboisy" width="220" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/EmanueleTorrisi/verboisy/main/logo.png" alt="Verboisy" width="220" /></p>
 
 <p align="center">
-  <a href="../../README.md">English</a> ·
-  <a href="README.it.md">Italiano</a> ·
-  <a href="README.de.md">Deutsch</a> ·
-  <a href="README.fr.md">Français</a> ·
-  <a href="README.es.md">Español</a> ·
-  <a href="README.ja.md">日本語</a> ·
-  <a href="README.ko.md">한국어</a> ·
-  <a href="README.zh-CN.md">简体中文</a>
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md">English</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.it.md">Italiano</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.de.md">Deutsch</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.fr.md">Français</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.es.md">Español</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.ja.md">日本語</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.ko.md">한국어</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.zh-CN.md">简体中文</a>
 </p>
 
 <h1 align="center">Verboisy</h1>
@@ -24,7 +24,7 @@ Verboisy는 구조화된 정보와 그 정보의 출처를 확인하는 방법�
 
 또한 모델·검색·브라우저 호출 없이 결정론적 어댑터로 로컬 파일 및 선언된 HTTP 데이터셋을 준비합니다. 대용량 로컬 입력에는 제한된 버퍼와 디스크 원장을 사용하는 별도 흐름이 있습니다.
 
-**소스 열람 가능, 실행은 별도 라이선스 필요.** [LICENSE](../../LICENSE)는 소스 검토를 허용하며 실행은 허용하지 않습니다. 테스트, 수정, 배포에는 별도 서면 허가가 필요합니다. 아래 예시는 허가된 사용을 설명합니다.
+**소스 열람 가능, 실행은 별도 라이선스 필요.** [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE)는 소스 검토를 허용하며 실행은 허용하지 않습니다. 테스트, 수정, 배포에는 별도 서면 허가가 필요합니다. 아래 예시는 허가된 사용을 설명합니다.
 
 ## 이 접근 방식의 가치
 
@@ -51,30 +51,34 @@ JSON이나 표만으로는 사실을 직접 관찰했는지, 값이 어떻게 �
 | 이미지, 영상 및 기타 파일 | 불변 바이트 캡처, 해시와 참조, 자동 내용 해석 없음 |
 | 시계열 | 명시적 계열·시각 규칙, 정렬 및 누락·중복 진단 |
 
-바이너리 캡처는 OCR이나 모든 문서의 해석을 의미하지 않습니다. OAuth, 데이터베이스 드라이버, 애플리케이션 커넥터 및 API 페이지 처리는 별도 통합이 필요합니다. [형식](../../docs/formats.md)을 참조하세요.
+바이너리 캡처는 OCR이나 모든 문서의 해석을 의미하지 않습니다. OAuth, 데이터베이스 드라이버, 애플리케이션 커넥터 및 API 페이지 처리는 별도 통합이 필요합니다. [형식](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/formats.md)을 참조하세요.
 
 ## 설치와 설정
 
-Python **3.11–3.14**, Poetry 및 실행에 대한 서면 허가가 필요합니다. CI는 Linux, macOS, Windows를 대상으로 합니다. 모델 조사에는 호환 프로필과 자격 증명이, 브라우저 수집에는 Chromium과 시스템 라이브러리가 필요합니다. 로컬 입력에는 명시적 디렉터리 허가와 충분한 디스크 공간이 필요합니다. 일반 설치에는 C++ 컴파일러가 필요하지 않습니다.
+Python **3.11–3.14**와 서면 실행 허가가 필요합니다. Poetry는 개발 도구이며 설치 후 명령은 `verboisy`입니다. CI에는 Linux, macOS, Windows 작업이 정의되어 있지만 현재 결과는 별도로 확인해야 합니다. 웹 조사에는 공급자 설정, Chromium과 시스템 라이브러리가 필요합니다. 로컬 입력에는 디렉터리 허가와 디스크 공간이 필요하며 C++ 컴파일러는 필요하지 않습니다.
+
+허가된 체크아웃에서 다음 명령을 실행하세요. pipx가 설치되어 있으면 `pipx install .`로 프로젝트 밖에서도 명령을 사용할 수 있습니다. 허가된 PyPI 공개 후에는 `pipx install verboisy`를 사용할 수 있습니다. 현재 PyPI에 공개되어 있다고 가정하지 않습니다. `python examples/local_quickstart.py`는 모델이나 브라우저 없이 합성 레코드 두 개를 검증합니다.
 
 ```bash
-poetry install
-poetry run verboisy --help
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install .
+verboisy --help
 ```
 
-키는 [.env.example](../../.env.example)을 참고하여 개인 환경이나 `.env`에 보관하고 커밋하지 마세요. 셸 예시는 POSIX 문법이며 Windows에서는 동등한 방법으로 환경 변수를 설정해야 합니다.
+키는 [.env.example](https://github.com/EmanueleTorrisi/verboisy/blob/main/.env.example)을 참고하여 개인 환경이나 `.env`에 보관하고 커밋하지 마세요. 셸 예시는 POSIX 문법이며 Windows에서는 동등한 방법으로 환경 변수를 설정해야 합니다.
 
 ```bash
-poetry run verboisy setup
-poetry run verboisy model-config
+verboisy setup
+verboisy model-config
 ```
 
-`model-config`는 설정과 자격 증명의 존재 여부만 표시하고 키 값은 노출하지 않습니다. 결정론적 로컬 준비는 모델이나 브라우저가 필요 없습니다. [공급자](../../docs/providers.md)와 [검증](../../docs/validation.md)을 참조하세요.
+`model-config`는 설정과 자격 증명의 존재 여부만 표시하고 키 값은 노출하지 않습니다. 결정론적 로컬 준비는 모델이나 브라우저가 필요 없습니다. [공급자](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/providers.md)와 [검증](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/validation.md)을 참조하세요.
 
 ## 웹 조사와 API
 
 ```bash
-poetry run verboisy run \
+verboisy run \
   --goal "연구 기관과 명시적으로 공개된 공식 웹사이트를 찾아 주세요" \
   --schema '[이름,웹사이트,국가]' \
   --export 연구기관.json
@@ -99,7 +103,7 @@ print(결과.run_id, 결과.status, 결과.records)
 
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy입력"]'
-poetry run verboisy run \
+verboisy run \
   --dataset-file 'jsonl=/srv/verboisy입력/관측데이터.jsonl' \
   --schema 관측스키마.json \
   --export 관측데이터.json
@@ -110,7 +114,7 @@ poetry run verboisy run \
 ## 대용량 데이터셋
 
 ```bash
-poetry run verboisy stream \
+verboisy stream \
   --database 관측스트림.db \
   --dataset-file 'jsonl=/srv/verboisy입력/관측데이터.jsonl' \
   --schema 관측스키마.json \
@@ -119,48 +123,69 @@ poetry run verboisy stream \
 
 스트리밍 원장은 불변 원본 청크와 트랜잭션 진행 상황을 보존합니다. `stream-status`로 작업을 확인하고 `stream --resume 작업ID`로 저장된 작업을 재개합니다. `StreamLedger`는 페이지 단위 읽기를 제공합니다.
 
-Linux/Python 3.12의 JSONL 측정에서는 **1,000,000행**, **1,105,888,890바이트**를 준비·출력했고 최대 RSS는 **89.15 MiB**, 경과 시간은 **130.81초**였습니다. 원본 삭제 후 복구와 출력 무결성도 검증했습니다. 이는 특정 작업의 측정이며 보편적인 속도나 메모리 보장은 아닙니다. [스트리밍](../../docs/streaming.md)과 [벤치마크](../../docs/benchmarks.md)를 참조하세요.
+Linux/Python 3.12의 JSONL 측정에서는 **1,000,000행**, **1,105,888,890바이트**를 준비·출력했고 최대 RSS는 **89.15 MiB**, 경과 시간은 **130.81초**였습니다. 원본 삭제 후 복구와 출력 무결성도 검증했습니다. 이는 특정 작업의 측정이며 보편적인 속도나 메모리 보장은 아닙니다. [스트리밍](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/streaming.md)과 [벤치마크](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/benchmarks.md)를 참조하세요.
 
 ## 제안, 재개와 근거
 
 ```bash
-poetry run verboisy changes --run-id 실행ID
-poetry run verboisy status --run-id 실행ID
-poetry run verboisy run --resume 실행ID
+verboisy changes --run-id 실행ID
+verboisy status --run-id 실행ID
+verboisy run --resume 실행ID
 ```
 
 `--resume`은 기존 요구를 유지하고 제안을 거절합니다. `--okresume`은 저장된 변경만 승인합니다. 제안은 타입, 열 또는 검색 범위를 바꿀 수 있습니다. 재개는 사용량을 초기화하거나 출처 권한을 암묵적으로 확대하지 않습니다.
 
 범위는 범위로 유지합니다. 하한을 정확한 값이나 만들어 낸 상한으로 바꾸지 않습니다. 숫자형 min/max 열에는 적절한 스키마가 필요합니다. 기본 표시는 킬로그램, 미터, 일/월/년이며 대안을 명시해도 원본 근거를 보존합니다. 시계열 진단은 누락된 관찰을 보간하거나 모호한 현지 시각을 추측하지 않습니다.
 
-이동 가능한 출력은 근거, 관련 이벤트, 출력 출처 기록과 해당하는 캡처 자료를 포함합니다. 그룹은 기여 레코드를 식별합니다. 체크섬은 매니페스트와 바이트 일치 여부를 확인하며 사실성이나 독립적인 진본성을 증명하지 않습니다. [출처 기록](../../docs/proof.md)을 참조하세요.
+이동 가능한 출력은 근거, 관련 이벤트, 출력 출처 기록과 해당하는 캡처 자료를 포함합니다. 그룹은 기여 레코드를 식별합니다. 체크섬은 매니페스트와 바이트 일치 여부를 확인하며 사실성이나 독립적인 진본성을 증명하지 않습니다. [출처 기록](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/proof.md)을 참조하세요.
 
 ## 아키텍처와 문서
 
 Python은 오케스트레이션, 계약, 어댑터, CLI 및 SQLite 원장을 담당합니다. 선택적 C++17 구성 요소는 Python 참조 구현을 유지하며 특정 근거 비교를 가속합니다. 테스트와 CI는 플랫폼, 브라우저, 복구 및 무결성을 검증하고 문장·분기의 완전한 커버리지를 요구합니다. 실제 조사 품질과 공급자 호환성은 별도 평가가 필요합니다.
 
-[CLI](../../docs/cli.md) · [API](../../docs/api.md) · [계약](../../docs/contracts.md) · [식별](../../docs/smartid.md) · [수집](../../docs/ingestion.md) · [표시](../../docs/presentation.md) · [의미](../../docs/research-semantics.md) · [설계](../../ARCHITECTURE.md) · [변경 기록](../../CHANGELOG.md)
+[CLI](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/cli.md) · [API](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/api.md) · [계약](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/contracts.md) · [식별](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/smartid.md) · [수집](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/ingestion.md) · [표시](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/presentation.md) · [의미](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/research-semantics.md) · [설계](https://github.com/EmanueleTorrisi/verboisy/blob/main/ARCHITECTURE.md) · [변경 기록](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)
 
 ## 라이선스, 데모와 상업 문의
 
 Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 LICENSE가 공식 조건이며 이 번역은 권리를 변경하지 않습니다. 식별자는 `LicenseRef-Verboisy-Source-Inspection-1.0`입니다. 제삼자 구성 요소는 각자의 라이선스를 유지합니다. 실행, 테스트, 수정, 통합, 배포 및 호스팅에는 별도 서면 허가가 필요합니다.
 
-데모, 평가, 사내·기업 라이선스, 투자, 제휴 및 향후 유급 협업은 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** 으로 문의하세요. 작업 흐름, 출처, 규모, 환경을 설명하고 자격 증명이나 기밀 자료는 보내지 마세요. 가격, 지원 및 권리는 개별 합의합니다. [라이선스](../../docs/licensing.md)와 [상업 문의](../../docs/commercial.md)를 참조하세요.
+데모, 평가, 사내·기업 라이선스, 투자, 제휴 및 향후 유급 협업은 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** 으로 문의하세요. 작업 흐름, 출처, 규모, 환경을 설명하고 자격 증명이나 기밀 자료는 보내지 마세요. 가격, 지원 및 권리는 개별 합의합니다. [라이선스](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)와 [상업 문의](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)를 참조하세요.
 
 ## 피드백과 협업
 
-**Emanuele Torrisi**가 Verboisy를 만들고 유지하며 현재 유일한 개발자입니다. [버그 보고와 기능 요청](https://github.com/EmanueleTorrisi/verboisy/issues)을 환영합니다. 취약점은 [보안 정책](../SECURITY.md)에 따라 비공개로 보고하세요.
+**Emanuele Torrisi**가 Verboisy를 만들고 유지하며 현재 유일한 개발자입니다. [버그 보고와 기능 요청](https://github.com/EmanueleTorrisi/verboisy/issues)을 환영합니다. 취약점은 [보안 정책](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md)에 따라 비공개로 보고하세요.
 
-요청하지 않은 코드 기여는 받지 않습니다. 유료 협업은 범위, 보수, 기밀 유지와 지식재산권에 대한 사전 합의가 필요합니다. 버전 변경은 [변경 기록](../../CHANGELOG.md), 0.1.0에서 1.0.0까지의 발전은 [버전 역사](../../docs/development-roadmap.md)에 기록합니다. [참여 정책](../CONTRIBUTING.md)과 [저작권](../../COPYRIGHT.md)을 확인하세요.
+요청하지 않은 코드 기여는 받지 않습니다. 유료 협업은 범위, 보수, 기밀 유지와 지식재산권에 대한 사전 합의가 필요합니다. 버전 변경은 [변경 기록](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md), 0.1.0에서 1.0.0까지의 발전은 [버전 역사](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)에 기록합니다. [참여 정책](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)과 [저작권](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)을 확인하세요.
 ## 실제 워크플로 예제
 
-[연구 기관 목록](../../examples/research_catalog/README.md) ·
-[대규모 로컬 관측 데이터 처리](../../examples/streaming_observations/README.md) ·
-[버전 이력: 0.1.0–1.0.0](../../docs/development-roadmap.md)
+[연구 기관 목록](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
+[대규모 로컬 관측 데이터 처리](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md) ·
+[버전 이력: 0.1.0–1.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
 
 
 ## 데이터 계약과 검증 범위
 
 일반 출력의 `id`는 생성된 메타데이터용입니다. 원본 ID는 명시적으로 `source_id`에 투영해야 하며, 중첩 ID와 스트리밍 ID는 유지됩니다. 누락된 선택 필드는 그대로 누락되고 명시적 null은 유지됩니다. 스트리밍은 개별 행을 검증하고 지원되지 않는 배열 전체 제약은 거부합니다. 일시 중지된 준비 작업은 종료 코드 2를 반환합니다. CI는 구성되어 있지만 과거 측정은 기록된 소스와 실행 환경에만 적용됩니다.
 
-[Current offline evidence](../../evals/results/offline-validation.json).
+[과거 결과이며 현재 소스의 검증 완료를 자동으로 의미하지 않습니다](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json).
+
+
+## 상업 계약을 선택하는 이유
+
+**소스 열람에서 허가된 운영과 전문 지원으로.** 상업 계약의 가치는 합의된 사용 권한과, 별도로 구매하는 경우 제공되는 설정·통합·유지보수 지원에 있습니다.
+
+| 목표 | 계약으로 정할 범위 |
+| --- | --- |
+| 일상 업무에 사용 | 합의된 사용자와 환경에 대한 서면 실행 및 내부 사용 권한 |
+| 제품에 통합 | 용도에 맞는 수정·통합·배포 권한 |
+| 초기 작업 감소 | 온보딩, 스키마 설계, 대표 데이터 평가 |
+| 비공개 인프라에서 운영 | 배포 환경 검토와 허가된 소스 통합 |
+| 유지보수와 지원 계획 | 계약에 명시된 업데이트, 지원 범위, 응답 시간 |
+
+서비스, 가격, 일정과 권한은 서면 계약으로 정합니다. 다운로드만으로 지원이 포함되지는 않습니다. 이 저장소에는 별도 기능을 제공하는 Pro 등급이나 활성화 코드 서비스가 없습니다. 호스팅, 예약 실행, 공유 작업 공간과 새 커넥터는 개발 방향이며 현재 제공되는 기능에 대한 약속이 아닙니다.
+
+[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)
+
+[설치](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) · [릴리스와 평가](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md)
+
+버전은 `1.0.0`이지만 전체 제품 검증은 아직 완료되지 않았습니다. 매트릭스는 기술 시험, 실제 작업 평가, 독립 베타 시험과 릴리스 담당자 검토를 구분합니다.
