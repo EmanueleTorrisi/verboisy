@@ -20,3 +20,9 @@ requires browser/provider access and explicit budgets. The deterministic streami
 example prints its saved job ID and exits 2 on invocation pause. Resume that job after
 source deletion, then verify completed status, every row, evidence sidecars and hashes.
 Synthetic preparation is not evidence of successful live catalogue research.
+
+## Local CLI quickstart
+
+After activating the installed environment, run `python examples/local_quickstart.py`
+from the repository root. It verifies two synthetic records and writes its isolated
+outputs to `example-runs/`. It needs no model key or browser.
