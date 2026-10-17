@@ -33,7 +33,7 @@ Grant the input directory through `DATASET_LOCAL_ROOTS`. Use a dedicated ledger,
 not the existing research database:
 
 ```bash
-poetry run verboisy stream \
+verboisy stream \
   --database large-dataset.db \
   --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
   --schema observation-schema.json \
@@ -54,15 +54,15 @@ job; resume does not silently change the meaning of already accepted records.
 To pause after a chosen number of newly committed rows:
 
 ```bash
-poetry run verboisy stream --database large-dataset.db \
+verboisy stream --database large-dataset.db \
   --dataset-file 'csv=/srv/verboisy-inputs/observations.csv' \
   --rows-per-invocation 100000
 
-poetry run verboisy stream --database large-dataset.db \
+verboisy stream --database large-dataset.db \
   --resume JOB_ID --export observations.jsonl
 ```
 
-Use `poetry run verboisy stream-status --database large-dataset.db --limit 10`
+Use `verboisy stream-status --database large-dataset.db --limit 10`
 to inspect recent job IDs and committed counts, including during preparation.
 A database with an interrupted SQLite rollback journal may require opening
 `StreamLedger` in writer mode once to recover that journal before read-only
@@ -195,7 +195,7 @@ EOF; it makes no global research completeness claim.
 Run the reproducible Linux benchmark without provider credentials or network calls:
 
 ```bash
-PYTHONPATH=src poetry run python scripts/benchmark_streaming.py \
+PYTHONPATH=src python scripts/benchmark_streaming.py \
   --rows 1000000 --padding-bytes 1080 --report streaming-result.json
 ```
 
