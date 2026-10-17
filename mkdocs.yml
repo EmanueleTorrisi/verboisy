@@ -5,8 +5,20 @@ site_name: Verboisy
 site_description: Evidence-backed research and data extraction with portable provenance.
 theme:
   name: material
+  palette:
+    scheme: slate
+    primary: deep purple
+    accent: cyan
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.highlight
 nav:
   - Home: index.md
+  - Installation: installation.md
+  - Release qualification: release.md
+  - Publishing and customer delivery: distribution.md
   - Licensing: licensing.md
   - Demos and enterprise: commercial.md
   - CLI: cli.md
