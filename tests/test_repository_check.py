@@ -174,7 +174,9 @@ def test_expanded_consistency_surfaces(repo, case):
             )
         )
     report = CHECK.inspect(repo)
-    assert not report["passed"] and report["documents"] == 43
+    assert not report["passed"] and report["documents"] == len(
+        [p for p in CHECK.public_files(repo) if p.suffix.lower() == ".md"]
+    )
 
 
 def test_unicode_duplicate_anchors_and_fenced_examples():
@@ -185,12 +187,15 @@ def test_unicode_duplicate_anchors_and_fenced_examples():
     assert "not-a-heading" not in anchors
 
 
-def test_source_line_ending_attributes():
+def test_source_line_ending_attributes(tmp_path):
+    # Source ZIPs have no .git directory; exercise the real attributes in a fixture repo.
+    shutil.copyfile(ROOT / ".gitattributes", tmp_path / ".gitattributes")
+    subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)
     result = subprocess.run(
         [
             "git",
             "-C",
-            str(ROOT),
+            str(tmp_path),
             "check-attr",
             "text",
             "eol",
