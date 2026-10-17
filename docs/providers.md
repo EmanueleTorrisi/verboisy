@@ -57,7 +57,7 @@ provider SDK behavior still need a separate no-egress qualification.
 ## Inspect before transport
 
 ```bash
-poetry run verboisy model-config
+verboisy model-config
 ```
 
 The report retains its existing fields and adds `effective_provider_settings`
