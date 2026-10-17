@@ -1,0 +1,241 @@
+{
+  "report_type": "engineering",
+  "started_at": "2026-10-17T16:34:45.856321+00:00",
+  "finished_at": "2026-10-17T16:48:06.717791+00:00",
+  "source_digest": "1a5590794d78e6f07a9ca30ff13ca322c6c7e86622a894b451b9658fd3d633c8",
+  "source_unchanged": true,
+  "git_revision": "3524bb41584617f6ca57184cac66676629fc5858",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+  "passed": false,
+  "checks": [
+    {
+      "name": "lock",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "check",
+        "--lock"
+      ],
+      "exit_code": 0,
+      "seconds": 1.125,
+      "log": "build/release-checks/20261017T163445-1782/lock.log",
+      "log_sha256": "a2428ed4ae02d9dbfff2895449321f5a297182c3fd189cddfe630c6e0fa76747"
+    },
+    {
+      "name": "repository",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "python",
+        "scripts/check_repository.py",
+        "--json"
+      ],
+      "exit_code": 0,
+      "seconds": 1.955,
+      "log": "build/release-checks/20261017T163445-1782/repository.log",
+      "log_sha256": "8047c62a7bab0047a27d71a875987930d85b5d67a9f7924c4de9967908aadedb"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "ruff",
+        "check",
+        "."
+      ],
+      "exit_code": 0,
+      "seconds": 0.938,
+      "log": "build/release-checks/20261017T163445-1782/lint.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "format",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "ruff",
+        "format",
+        "--check",
+        "."
+      ],
+      "exit_code": 0,
+      "seconds": 0.938,
+      "log": "build/release-checks/20261017T163445-1782/format.log",
+      "log_sha256": "681d35b1cf232b2a72d72fb3f824d62f4e49bddf5e5bc167dc34481caf918c40"
+    },
+    {
+      "name": "types",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "mypy",
+        "src"
+      ],
+      "exit_code": 0,
+      "seconds": 5.851,
+      "log": "build/release-checks/20261017T163445-1782/types.log",
+      "log_sha256": "f081b5d00f508ce0fca3bf4f2b38166282393aa51b2cc3a0206704b214d41cea"
+    },
+    {
+      "name": "offline",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "pytest",
+        "-m",
+        "not browser and not live",
+        "--cov=src",
+        "--cov-branch",
+        "--cov-report=term-missing",
+        "--cov-fail-under=100"
+      ],
+      "exit_code": 0,
+      "seconds": 606.192,
+      "log": "build/release-checks/20261017T163445-1782/offline.log",
+      "log_sha256": "53e089228ebd1ea93df4bc09eeeda3b01490990b5f509ea0354a791479b5323e"
+    },
+    {
+      "name": "quickstart",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "python",
+        "examples/local_quickstart.py"
+      ],
+      "exit_code": 0,
+      "seconds": 5.283,
+      "log": "build/release-checks/20261017T163445-1782/quickstart.log",
+      "log_sha256": "810ddbf66fd9cce7460b14dc15120efc8c460b293086bfdb7787d9a579038af9"
+    },
+    {
+      "name": "docs",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "mkdocs",
+        "build",
+        "--strict"
+      ],
+      "exit_code": 0,
+      "seconds": 3.811,
+      "log": "build/release-checks/20261017T163445-1782/docs.log",
+      "log_sha256": "4ffea4f2307b394f1a4168af37f67cf9ee5fdeb924e5240a37b8e292f2d4b7cc"
+    },
+    {
+      "name": "native-build",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "python",
+        "scripts/build_native.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.824,
+      "log": "build/release-checks/20261017T163445-1782/native-build.log",
+      "log_sha256": "f310b20333d106008ecf54770473f6beb6eef6fa4805f112df39a412afda581b"
+    },
+    {
+      "name": "native-tests-build",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "python",
+        "scripts/build_native_tests.py"
+      ],
+      "exit_code": 0,
+      "seconds": 6.067,
+      "log": "build/release-checks/20261017T163445-1782/native-tests-build.log",
+      "log_sha256": "79960e1b1f7851bc37759888c6267651b12b96201ac53773a77835890f706993"
+    },
+    {
+      "name": "native",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "python",
+        "scripts/check_native_tests.py"
+      ],
+      "exit_code": 0,
+      "seconds": 14.979,
+      "log": "build/release-checks/20261017T163445-1782/native.log",
+      "log_sha256": "cda1171436ddf1eabc44dccc4db4b419f77bc6acf6043c31cb6c7f857e9adab2"
+    },
+    {
+      "name": "audit",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "pip-audit",
+        "--local"
+      ],
+      "exit_code": 1,
+      "seconds": 12.459,
+      "log": "build/release-checks/20261017T163445-1782/audit.log",
+      "log_sha256": "4ff9bd0c91ee96d476da37e7f12dbab7894d95670f6eb910d26b2a545bbc0956"
+    },
+    {
+      "name": "build",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "build",
+        "--output",
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-checks/20261017T163445-1782/dist"
+      ],
+      "exit_code": 0,
+      "seconds": 2.437,
+      "log": "build/release-checks/20261017T163445-1782/build.log",
+      "log_sha256": "f834b4540b502a4d890fcc44799b4dcdad8502450e11002c023a4d88c9cb5876"
+    },
+    {
+      "name": "distribution",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/poetry",
+        "run",
+        "python",
+        "scripts/check_distribution.py",
+        "--dist-dir",
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-checks/20261017T163445-1782/dist",
+        "--from-sdist",
+        "--install-smoke"
+      ],
+      "exit_code": 0,
+      "seconds": 133.789,
+      "log": "build/release-checks/20261017T163445-1782/distribution.log",
+      "log_sha256": "b76c10f7ff2c795e41be8a47e2b787d235b817da913814b03598511f465fd7b3"
+    },
+    {
+      "name": "twine",
+      "command": [
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-tools/bin/twine",
+        "check",
+        "--strict",
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-checks/20261017T163445-1782/dist/verboisy-1.0.0-py3-none-any.whl",
+        "/home/lele/code/EmanueleTorrisi/verboisy/build/release-checks/20261017T163445-1782/dist/verboisy-1.0.0.tar.gz"
+      ],
+      "exit_code": 0,
+      "seconds": 0.643,
+      "log": "build/release-checks/20261017T163445-1782/twine.log",
+      "log_sha256": "ac5c8e6b3d1cf2d2605ef682219034473ee851da25a71e77a237dd8419029af2"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "build/release-checks/20261017T163445-1782/dist/verboisy-1.0.0-py3-none-any.whl",
+      "sha256": "0e4f602852310c63f534cd8031ebb018a44ef0ff04e564e03ac08f5959151984"
+    },
+    {
+      "path": "build/release-checks/20261017T163445-1782/dist/verboisy-1.0.0.tar.gz",
+      "sha256": "202a7ae0089fa0e12e16f863ebde31a4491fa0970a3226202b316f5cf2ab48e2"
+    }
+  ],
+  "qualification_applies_to_current_source": false,
+  "scope": "Executed engineering checks only; no full release qualification",
+  "limitations": [
+    "Other platforms were not exercised by this invocation",
+    "No real-provider or annotated 69-run acceptance campaign",
+    "No legal review, independent beta or production certification",
+    "Browser, native and dependency audit apply only if named in checks",
+    "No current million-row or power-loss qualification"
+  ]
+}
