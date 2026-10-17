@@ -25,7 +25,7 @@ DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
 Then use a repeatable file declaration:
 
 ```bash
-poetry run verboisy run --goal "Prepare the supplied people records" \
+verboisy run --goal "Prepare the supplied people records" \
   --schema '[name]' --dataset-file 'json=/srv/verboisy-inputs/people.json' \
   --export people.json
 ```
@@ -909,7 +909,7 @@ external truth, or global collection completeness.
 
 #### Finding saved runs
 
-Run `poetry run verboisy runs` to list up to 100 recent runs from the existing
+Run `verboisy runs` to list up to 100 recent runs from the existing
 configured `SQLITE_DB_PATH` (default `verboisy.db`). Use `--database` to select
 another ledger and `--limit` (1-1000) to bound the list. The JSON report includes
 the actual database path, run IDs, goals, statuses, stop reasons, declared dataset
