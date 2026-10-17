@@ -7,6 +7,17 @@ including development tests, requires the permissions described in [licensing](l
 
 ## Standard checks
 
+For the source-bound release report, after `bash scripts/bootstrap.sh`:
+
+```bash
+source .venv/bin/activate
+python scripts/verify_release.py --native --audit --package
+```
+
+This saves executed outcomes and artifact hashes without claiming all seven release
+gates are complete. See [release qualification](release.md) for evidence review.
+The existing Make targets below remain available to developers using Poetry.
+
 ```bash
 make validate
 ```
@@ -22,7 +33,7 @@ for offline engineering tests.
 
 ## Browser and native tests
 
-Provision Chromium with `poetry run verboisy setup`. Linux hosts also need the
+Provision Chromium with `verboisy setup`. Linux hosts also need the
 browser's operating-system libraries. Browser tests must exercise the actual
 configured sandbox; a permissive isolated test environment does not establish
 production sandbox behavior.
@@ -36,7 +47,7 @@ contracts. Ordinary installation retains the Python implementation.
 The opt-in evaluator runs annotated synthetic cases with the configured model:
 
 ```bash
-poetry run python scripts/evaluate.py --live --repetitions 3 \
+python scripts/evaluate.py --live --repetitions 3 \
   --mode evidence baseline --output evaluation-results/model-evaluation.json
 ```
 
@@ -53,13 +64,13 @@ native modules and run `scripts/check_native_tests.py`. A threshold failure is a
 gate, even when behavioral tests pass; do not replace it with a certification claim.
 
 Provision Chromium explicitly; Linux may need administrator-installed OS libraries
-via `poetry run python -m playwright install --with-deps chromium`. Run
+via `python -m playwright install --with-deps chromium`. Run
 `VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser -v` with the required sandbox.
 Missing/truncated downloads block browser qualification; do not substitute mocks.
 
 Run `poetry run pip-audit --local`, strict MkDocs, `poetry build`,
-`poetry run python scripts/check_distribution.py --dist-dir dist --from-sdist --install-smoke`,
-and `poetry run python scripts/check_repository.py --json`. The package is a local
+`python scripts/check_distribution.py --dist-dir dist --from-sdist --install-smoke`,
+and `python scripts/check_repository.py --json`. The package is a local
 audit skip when not indexed; record dependency scope/skips separately. The checker
 covers all public Markdown and local anchors/HTML; Material renders Mermaid containers.
 
