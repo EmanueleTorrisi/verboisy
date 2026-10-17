@@ -20,6 +20,22 @@ operation. Enquiries are handled directly by its creator, **Emanuele Torrisi**, 
 
 ## Commercial engagement
 
+The current commercial value is permission to operate Verboisy for an agreed use,
+plus services explicitly purchased with that agreement. There is no separate Pro
+feature tier or activation-code service implemented in this repository.
+
+| Customer objective | What a scoped agreement can provide |
+| --- | --- |
+| Move from inspection to daily use | Written execution/internal-use rights for defined users and deployments |
+| Embed the workflow in a product | Appropriate modification, integration and distribution rights |
+| Reduce evaluation and setup effort | Onboarding, schema design and a representative acceptance exercise |
+| Work with approved private sources | Deployment assessment and specifically commissioned integration work |
+| Plan ongoing operation | Explicit update entitlement, maintenance scope and response commitments |
+
+These services are not automatically included with a download. Agree delivery dates,
+acceptance criteria and fees in writing. The roadmap below describes possible future
+offerings and must not be presented as delivered functionality.
+
 Contact the maintainer to discuss demonstrations, scoped evaluations, commercial
 usage rights, integration projects or a deployment assessment. An engagement starts
 with representative inputs, target outputs and measurable success criteria.
@@ -56,6 +72,11 @@ editions, hosting options and service packages will be described as they are
 introduced. No fixed delivery date or universal connector support is implied.
 
 ## Public repository and version policy
+
+For initial private sales, deliver a tested wheel and the customer's actual agreement
+through a protected channel. A registry read token may gate later downloads; it does
+not disable installed copies. [Distribution](distribution.md) gives the terminal
+commands for public PyPI uploads, private deliveries and customer installation.
 
 The public repository is intended to remain a maintained technical reference,
 with documented capabilities, examples and versioned changes. Public updates and
