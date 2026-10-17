@@ -42,7 +42,7 @@ reorganization, before running native tests or selecting native mode.
 Run from a source checkout, with the interpreter used by Verboisy:
 
 ```bash
-poetry run python scripts/build_native.py
+python scripts/build_native.py
 poetry run pytest tests/test_quote_match.py tests/test_native_quote_match.py --no-cov -q
 ```
 
@@ -63,9 +63,9 @@ between interpreter versions or platforms. Rebuild with the target interpreter.
 Python is the default and needs no compiler. These are **shell environment** options:
 
 ```bash
-VERBOISY_QUOTE_MATCHER=python poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --output benchmark-results/verify-python.json
-VERBOISY_QUOTE_MATCHER=native poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --output benchmark-results/verify-native.json
-VERBOISY_QUOTE_MATCHER=regex poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --output benchmark-results/verify-regex.json
+VERBOISY_QUOTE_MATCHER=python python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --output benchmark-results/verify-python.json
+VERBOISY_QUOTE_MATCHER=native python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --output benchmark-results/verify-native.json
+VERBOISY_QUOTE_MATCHER=regex python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --output benchmark-results/verify-regex.json
 ```
 
 Native mode is explicitly requested; a missing or incompatible extension raises
@@ -88,7 +88,7 @@ row, with unique literals and numeric boundaries. All three backends must produc
 the same output digest:
 
 ```bash
-poetry run python -m benchmarks.runner --case quote_regex --case quote_python --case quote_native --rows 10000 --repeats 3 --output benchmark-results/quotes.json
+python -m benchmarks.runner --case quote_regex --case quote_python --case quote_native --rows 10000 --repeats 3 --output benchmark-results/quotes.json
 ```
 
 These cases are opt-in; the default eight-workload benchmark does not require a
@@ -122,7 +122,7 @@ The production extension also has assertions written directly in C++:
 Build and execute them with the same interpreter as the production extension:
 
 ```bash
-poetry run python scripts/build_native_tests.py
+python scripts/build_native_tests.py
 poetry run pytest tests/test_native_cpp_suites.py --no-cov -vv
 ```
 
@@ -166,15 +166,15 @@ This introduces no automatic native selection or changes to evidence acceptance.
 Rebuild both binaries and run the batch checks:
 
 ```bash
-poetry run python scripts/build_native.py
-poetry run python scripts/build_native_tests.py
+python scripts/build_native.py
+python scripts/build_native_tests.py
 poetry run pytest tests/test_quote_batch.py tests/test_native_quote_batch.py tests/test_native_cpp_suites.py tests/test_native_quote_match.py tests/test_quote_match.py --no-cov -q
 ```
 
 Compare scalar and batch matching with identical inputs and checked output hashes:
 
 ```bash
-poetry run python -m benchmarks.runner --case quote_python --case quote_native --case quote_batch_python --case quote_batch_native --rows 10000 --repeats 7 --output benchmark-results/quote-batches.json
+python -m benchmarks.runner --case quote_python --case quote_native --case quote_batch_python --case quote_batch_native --rows 10000 --repeats 7 --output benchmark-results/quote-batches.json
 ```
 
 Batch workloads prepare chunks of 1024 entries outside the timed region. Their
@@ -191,9 +191,9 @@ explicitly selected. Python and regex verification remain scalar. The benchmark
 runner exposes that comparison without changing the research CLI:
 
 ```bash
-VERBOISY_QUOTE_MATCHER=native poetry run python -m benchmarks.runner --case verify --scalar-native-quotes --rows 10000 --repeats 7 --output benchmark-results/verify-native-scalar.json
-VERBOISY_QUOTE_MATCHER=native poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 7 --output benchmark-results/verify-native-batch.json
-poetry run python -m benchmarks.comparison benchmark-results/verify-native-scalar.json benchmark-results/verify-native-batch.json --output benchmark-results/verify-native-comparison.json
+VERBOISY_QUOTE_MATCHER=native python -m benchmarks.runner --case verify --scalar-native-quotes --rows 10000 --repeats 7 --output benchmark-results/verify-native-scalar.json
+VERBOISY_QUOTE_MATCHER=native python -m benchmarks.runner --case verify --rows 10000 --repeats 7 --output benchmark-results/verify-native-batch.json
+python -m benchmarks.comparison benchmark-results/verify-native-scalar.json benchmark-results/verify-native-batch.json --output benchmark-results/verify-native-comparison.json
 ```
 
 Reports record `native_verifier_quote_mode` as `scalar` or `batch`, as well as the
@@ -221,9 +221,9 @@ ordinary optional-test skips. Pytest failure exit codes propagate unchanged.
 Run the same gate locally after building both modules:
 
 ```bash
-poetry run python scripts/build_native.py
-poetry run python scripts/build_native_tests.py
-poetry run python scripts/check_native_tests.py
+python scripts/build_native.py
+python scripts/build_native_tests.py
+python scripts/check_native_tests.py
 ```
 
 The workflow retains the JUnit report and both build fingerprints as diagnostic
@@ -243,7 +243,7 @@ measurements and broader workload evidence are required before changing it.
 ## Inspect local native configuration
 
 ```bash
-poetry run verboisy native-config
+verboisy native-config
 ```
 
 This read-only command reports the selected quote backend, the current
