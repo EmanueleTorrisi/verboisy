@@ -10,6 +10,7 @@ adapters and supports a separate disk-backed workflow for large local files.
 
 | Goal | Guide |
 | --- | --- |
+| Install the direct `verboisy` command | [Installation](installation.md) |
 | Research a question and export structured records | [CLI](cli.md), [contracts](contracts.md) and [providers](providers.md) |
 | Prepare local or declared HTTP inputs | [Ingestion](ingestion.md) and [file capabilities](formats.md) |
 | Prepare large local files with checkpoints | [Streaming](streaming.md) |
@@ -42,6 +43,11 @@ Ordinary output reserves generated `id`; source IDs require explicit projection.
 Optional absence and explicit null remain distinct. Streaming is a separate row-validation
 contract with verified capture/checkpoint paging; see [streaming](streaming.md).
 
-Scale results are historical and source-specific. [Current offline results](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json)
+Scale results are historical and source-specific. [Historical offline results](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json)
 record executed checks and blockers; configured platform jobs do not imply completed
 qualification. See [validation](validation.md) for the required gates.
+
+## Prepare a release
+
+[Release qualification](release.md) explains the seven evidence gates.
+[Publishing and customer delivery](distribution.md) covers PyPI, pipx, private wheels and commercial access.
