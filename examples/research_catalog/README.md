@@ -20,13 +20,13 @@ points, not saved extraction results. Review access permissions and current scop
 before execution; source availability and content can change.
 
 ```bash
-poetry run python examples/research_catalog/research.py --target 100 --max-pages 200
+python examples/research_catalog/research.py --target 100 --max-pages 200
 ```
 
 Repeat `--seed` to replace the supplied selection with permitted URLs:
 
 ```bash
-poetry run python examples/research_catalog/research.py \
+python examples/research_catalog/research.py \
   --seed 'https://www.energy.gov/science/office-science-user-facilities' \
   --seed 'https://www.bnl.gov/science/facilities.php' \
   --target 100 --max-pages 200
@@ -44,7 +44,7 @@ provider charges. The example disables search discovery and uses a 300,000-unit
 model request ceiling unless explicitly overridden; units are not billed tokens.
 
 ```bash
-poetry run python examples/research_catalog/research.py \
+python examples/research_catalog/research.py \
   --seed 'https://www.energy.gov/science/office-science-user-facilities' \
   --seed 'https://www.bnl.gov/science/facilities.php' \
   --target 100 --max-pages 200 --steps 12 \
@@ -61,15 +61,15 @@ completed research. The script prints its run ID, ledger path and stop reason.
 Set `SQLITE_DB_PATH` to the printed ledger path, then inspect the actual run ID:
 
 ```bash
-poetry run verboisy status --database example-runs/research-catalog/research.db --run-id RUN_ID
-poetry run verboisy changes --database example-runs/research-catalog/research.db --run-id RUN_ID
+verboisy status --database example-runs/research-catalog/research.db --run-id RUN_ID
+verboisy changes --database example-runs/research-catalog/research.db --run-id RUN_ID
 ```
 
 Resume uses the configured `SQLITE_DB_PATH`:
 
 ```bash
 SQLITE_DB_PATH=example-runs/research-catalog/research.db \
-  poetry run verboisy run --resume RUN_ID
+  verboisy run --resume RUN_ID
 ```
 
 `--resume` retains requirements and declines an offered change; `--okresume` accepts
