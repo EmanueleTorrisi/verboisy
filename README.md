@@ -1,25 +1,29 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-<p align="center"><img src="logo.png" alt="Verboisy" width="220" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/EmanueleTorrisi/verboisy/main/logo.png" alt="Verboisy" width="220" /></p>
 <h1 align="center">Verboisy</h1>
 <p align="center"><strong>From a research question to a dataset you can inspect.</strong></p>
 <p align="center">Evidence-backed research · Structured extraction · Local data preparation · Portable provenance</p>
 <p align="center">
   <a href="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml/badge.svg" alt="Continuous integration" /></a>
   <img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB" alt="Python 3.11–3.14" />
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Source%20inspection%20only-7057ff" alt="Source inspection license" /></a>
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Source%20inspection%20only-7057ff" alt="Source inspection license" /></a>
 </p>
-<p align="center"><a href="#what-verboisy-does">Overview</a> · <a href="#getting-started">Getting started</a> · <a href="#documentation">Documentation</a> · <a href="#licensing-demos-and-commercial-enquiries">Demos & licensing</a></p>
+<p align="center"><a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#what-verboisy-does">Overview</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#getting-started">Getting started</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#documentation">Documentation</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#licensing-demos-and-commercial-enquiries">Demos & licensing</a></p>
 
 <p align="center">
-  <a href=".github/readme/README.it.md">Italiano</a> ·
-  <a href=".github/readme/README.de.md">Deutsch</a> ·
-  <a href=".github/readme/README.fr.md">Français</a> ·
-  <a href=".github/readme/README.es.md">Español</a> ·
-  <a href=".github/readme/README.ja.md">日本語</a> ·
-  <a href=".github/readme/README.ko.md">한국어</a> ·
-  <a href=".github/readme/README.zh-CN.md">简体中文</a>
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.it.md">Italiano</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.de.md">Deutsch</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.fr.md">Français</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.es.md">Español</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.ja.md">日本語</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.ko.md">한국어</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.zh-CN.md">简体中文</a>
 </p>
+
+> **Release status:** the package version is `1.0.0`; full product qualification is
+> still pending. The [release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) separates engineering
+> evidence, real-task evaluation, independent beta and release-owner reviews.
 
 ## What Verboisy does
 
@@ -34,7 +38,7 @@ without returning every row in one in-memory list. The CLI and Python API suppor
 repeatable workflows, saved state and explicit recovery.
 
 **Source-visible, commercially licensed.** Reading the source is permitted under
-[LICENSE](LICENSE). Running, testing, modifying or deploying Verboisy requires a
+[LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE). Running, testing, modifying or deploying Verboisy requires a
 separate written license. The examples below describe authorized use. For a demo,
 evaluation or enterprise license, contact [Emanuele Torrisi](mailto:emanueletorrisi98@gmail.com).
 
@@ -78,27 +82,27 @@ data extraction; that is a product direction, not a claim of market leadership.
 | Other files, including images or video | Immutable byte capture, hashes and reference records; no automatic content interpretation |
 | Time-series observations | Explicit series/timestamp policies, ordering and gap/duplicate diagnostics |
 
-See [file capabilities](docs/formats.md) for precise contracts. Binary capture is
+See [file capabilities](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/formats.md) for precise contracts. Binary capture is
 not OCR, image understanding or universal document extraction. Service-specific
 connectors, OAuth flows and API pagination require explicit integrations.
 
 ## Workflows in practice
 
-- [Multi-source research catalogue](examples/research_catalog/README.md): define
+- [Multi-source research catalogue](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md): define
   permitted sources, a compound identity and a target of 100 grounded facility records.
-- [Large local observation pipeline](examples/streaming_observations/README.md):
+- [Large local observation pipeline](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md):
   generate multi-gigabyte synthetic input, pause and resume preparation, then page
   through committed records without loading the dataset into memory.
 
 These are executable workflows, not prerecorded results. Research uses the selected
 model and actual sources; the scale example labels its generated data as synthetic.
-See [evaluation](docs/evaluation.md) for the meaning of workload measurements.
+See [evaluation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/evaluation.md) for the meaning of workload measurements.
 
 ## Getting started
 
 ### Requirements
 
-- Python **3.11–3.14** and Poetry; Linux, macOS and Windows are covered by CI.
+- Python **3.11–3.14**. CI defines Linux, macOS and Windows jobs; current results must be reviewed.
 - A written evaluation or usage license for execution.
 - For model-based research, an approved provider profile and its credentials.
 - For browser acquisition, Chromium and the required system libraries.
@@ -108,33 +112,50 @@ Normal installation requires **no C++ compiler**. Optional native components hav
 Python reference paths and separate build instructions. Deterministic local data
 preparation does not require a model key or a browser.
 
-From an authorized checkout:
+From an authorized source checkout, install the CLI in an isolated environment:
 
 ```bash
-poetry install
-poetry run verboisy --help
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install .
+verboisy --help
 ```
 
+Then use **`verboisy run`** directly. Poetry is a development tool, not a prefix
+required by the installed command. For a command available outside this checkout,
+use `pipx install .` after installing pipx. Once an authorized public release is
+published, the equivalent is `pipx install verboisy`. Publication is not assumed.
+See [installation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) for pipx, wheels, Python imports and Windows.
+
+Try the actual local CLI without model keys or a browser:
+
+```bash
+python examples/local_quickstart.py
+```
+
+This example verifies two **synthetic** records and saves the data and evidence in
+`example-runs/`. It demonstrates deterministic ingestion, not real-world research quality.
+
 Keep provider credentials in your private environment or `.env`; start from
-[.env.example](.env.example). Do not commit populated secrets. Provision Chromium
+[.env.example](https://github.com/EmanueleTorrisi/verboisy/blob/main/.env.example). Do not commit populated secrets. Provision Chromium
 when using web research:
 
 ```bash
-poetry run verboisy setup
-poetry run verboisy model-config
+verboisy setup
+verboisy model-config
 ```
 
 Shell examples use POSIX syntax; on Windows, configure environment variables using
 the equivalent shell syntax or your private `.env`.
 
 The configuration inspector reports settings and credential presence without
-printing key values. Review [provider configuration](docs/providers.md) and
-[installation checks](docs/validation.md) before connecting a provider.
+printing key values. Review [provider configuration](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/providers.md) and
+[installation checks](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/validation.md) before connecting a provider.
 
 ### Research a question
 
 ```bash
-poetry run verboisy run \
+verboisy run \
   --goal "Find research institutions and their explicitly published homepages" \
   --schema '[name,website,country]' \
   --export institutions.json
@@ -163,7 +184,7 @@ rows; use the streaming API for large local inputs.
 
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
-poetry run verboisy run \
+verboisy run \
   --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
   --schema observation-schema.json \
   --export observations.json
@@ -173,12 +194,12 @@ The directory and schema file must exist. Model credentials do not grant filesys
 access. Declared HTTP sources use bounded downloads, redirect policy, DNS-pinned
 transport and origin-scoped credentials. A local source workflow can remain local;
 choosing a remote model separately determines what observation content is sent
-outside the machine. Review [ingestion](docs/ingestion.md) and [enterprise deployment](docs/commercial.md).
+outside the machine. Review [ingestion](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/ingestion.md) and [enterprise deployment](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
 
 ### Prepare large local inputs
 
 ```bash
-poetry run verboisy stream \
+verboisy stream \
   --database observations-stream.db \
   --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
   --schema observation-schema.json \
@@ -193,7 +214,7 @@ A historical, source-specific Linux/Python 3.12 workload prepared and exported *
 from **1,105,888,890 input bytes**, with **89.15 MiB peak process RSS** and **130.81 s**
 elapsed time. Recovery after deletion of the original source and export integrity
 were verified. These measurements describe one workload, not a universal speed or
-memory guarantee. See [streaming](docs/streaming.md) and [benchmarks](docs/benchmarks.md).
+memory guarantee. See [streaming](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/streaming.md) and [benchmarks](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/benchmarks.md).
 
 ## Review, resume and inspect
 
@@ -202,9 +223,9 @@ observed data: different types, added or removed columns, or another search scop
 Inspect the exact proposal before deciding:
 
 ```bash
-poetry run verboisy changes --run-id RUN_ID
-poetry run verboisy status --run-id RUN_ID
-poetry run verboisy run --resume RUN_ID
+verboisy changes --run-id RUN_ID
+verboisy status --run-id RUN_ID
+verboisy run --resume RUN_ID
 ```
 
 `--resume` keeps the current requirements and declines the offer. `--okresume`
@@ -220,7 +241,7 @@ observations or resolve ambiguous local times by guessing.
 Portable exports include evidence, relevant events, output lineage and retained
 source material where applicable. Grouped rows identify their contributing records.
 Checksums establish byte consistency with the manifest, not independent truth or
-source authenticity. See [proof and provenance](docs/proof.md).
+source authenticity. See [proof and provenance](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/proof.md).
 
 ## Architecture and engineering
 
@@ -234,24 +255,24 @@ and operating-system combinations; full statement and branch coverage is require
 Model compatibility and real-task quality depend on the selected profile and sources
 and require their own evaluation.
 
-[Architecture](ARCHITECTURE.md) explains component ownership, data flow and trust
-boundaries. [Validation](docs/validation.md) describes reproducible engineering checks.
+[Architecture](https://github.com/EmanueleTorrisi/verboisy/blob/main/ARCHITECTURE.md) explains component ownership, data flow and trust
+boundaries. [Validation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/validation.md) describes reproducible engineering checks.
 
 ## Documentation
 
 | Start here | Technical references |
 | --- | --- |
-| [CLI reference](docs/cli.md) · [Python API](docs/api.md) | [Contracts](docs/contracts.md) · [Identity and SmartID](docs/smartid.md) |
-| [Source ingestion](docs/ingestion.md) · [File capabilities](docs/formats.md) | [Projection and source evidence](docs/proof.md) · [Search and recovery](docs/search-and-recovery.md) |
-| [Presentation](docs/presentation.md) · [Research semantics](docs/research-semantics.md) | [Providers](docs/providers.md) · [Large local datasets](docs/streaming.md) |
-| [Security policy](.github/SECURITY.md) · [Reporting and collaboration](.github/CONTRIBUTING.md) | [Release notes](CHANGELOG.md) · [Version evolution](docs/development-roadmap.md) |
-| [Licensing](docs/licensing.md) · [Commercial enquiries](docs/commercial.md) | [Copyright and third-party notices](COPYRIGHT.md) |
+| [CLI reference](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/cli.md) · [Python API](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/api.md) | [Contracts](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/contracts.md) · [Identity and SmartID](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/smartid.md) |
+| [Source ingestion](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/ingestion.md) · [File capabilities](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/formats.md) | [Projection and source evidence](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/proof.md) · [Search and recovery](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/search-and-recovery.md) |
+| [Presentation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/presentation.md) · [Research semantics](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/research-semantics.md) | [Providers](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/providers.md) · [Large local datasets](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/streaming.md) |
+| [Security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md) · [Reporting and collaboration](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md) | [Release notes](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md) · [Version evolution](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md) |
+| [Licensing](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) · [Commercial enquiries](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) | [Copyright and third-party notices](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md) |
 
 ## Licensing, demos and commercial enquiries
 
 Verboisy is proprietary software with source inspection permissions, **not an
 open-source project**. Execution, testing, modification, integration, deployment
-and redistribution require separate written permission. [LICENSE](LICENSE) is the
+and redistribution require separate written permission. [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) is the
 authoritative English text; translations of this README do not alter its terms.
 Third-party components retain their respective licenses.
 
@@ -266,36 +287,43 @@ Describe the workflow, source types, expected volume and deployment environment.
 Do not send confidential datasets or credentials in an initial enquiry. Pricing,
 support, delivery dates and usage rights are agreed individually.
 
-## Commercial solutions and product direction
+## Why choose a commercial agreement?
 
-Verboisy welcomes independent professionals, researchers, startups, agencies and
-enterprise teams. Commercial discussions can start with a single workflow:
-a guided evaluation, usage licensing, integration work or deployment planning.
+**Turn source inspection into an authorized, supported workflow.** The commercial
+value is the right to operate Verboisy in your agreed setting and, when purchased,
+specialist help to get that workflow into dependable use.
 
-The paid product direction includes managed research, scheduled workflows, team
-workspaces, internal-source connectors, private deployments, high-volume workload
-management, integration interfaces, quality tooling and support agreements.
-Availability, delivery and service commitments are confirmed in each proposal.
-See [commercial solutions](docs/commercial.md) for the scope and enquiry process.
+| Your goal | What to agree commercially |
+| --- | --- |
+| Use Verboisy in daily work | Written execution and internal-use rights for the agreed users and environment |
+| Integrate research into your product | Modification, integration and deployment rights appropriate to that product |
+| Reduce setup and evaluation work | Scoped onboarding, schema design and a representative acceptance exercise |
+| Fit private infrastructure | Deployment assessment and integration work for approved sources and networks |
+| Plan maintenance and assistance | Explicit update entitlement, support scope and response commitments |
+| Deliver work to clients | Agreed service, redistribution or embedding rights where needed |
 
-The public repository is intended to receive maintained, documented updates as
-Verboisy develops. Commercial extensions and managed-service infrastructure may
-be distributed separately. Source visibility and product updates do not change
-the permissions set out in [LICENSE](LICENSE).
+Usage rights, services, fees and delivery dates are defined in the signed agreement.
+Support is not included merely because a copy was downloaded. There is currently
+**no separate Pro feature tier or activation-code service** in this repository.
+Hosted execution, scheduling, shared workspaces and new connectors are product
+directions, not available features promised by this page.
+
+[Discuss your workflow](mailto:emanueletorrisi98@gmail.com) ·
+[Commercial scope](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) · [Distribution options](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/distribution.md)
 
 ## Feedback and collaboration
 
 Verboisy is created and maintained by **Emanuele Torrisi**, currently the project's
 sole developer. Bug reports and feature requests are welcome through
 [GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues). Report security
-issues privately using the [security policy](.github/SECURITY.md).
+issues privately using the [security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
 
 Unsolicited code contributions are not currently accepted. Future paid collaboration
 may be arranged where it fits the product roadmap; discuss scope, compensation and
-intellectual-property terms before beginning work. See [participation guidelines](.github/CONTRIBUTING.md).
+intellectual-property terms before beginning work. See [participation guidelines](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md).
 
-Subsequent versions are recorded in the [changelog](CHANGELOG.md). The
-[version roadmap](docs/development-roadmap.md) documents the progression from 0.1.0
+Subsequent versions are recorded in the [changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md). The
+[version roadmap](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md) documents the progression from 0.1.0
 to the current architecture. Source permissions, independent review and measured
 task outcomes define the scope of a research result.
 
@@ -303,7 +331,7 @@ task outcomes define the scope of a research result.
 ## Data and qualification boundaries
 
 Ordinary output reserves top-level `id` for generated row metadata. Rename source IDs
-explicitly to `source_id` with a [projection](docs/ingestion.md#explicit-projection-engine);
+explicitly to `source_id` with a [projection](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/ingestion.md#explicit-projection-engine);
 nested IDs and streaming source IDs remain supported. Optional fields remain absent
 when unobserved; an explicit nullable null remains present.
 
@@ -315,4 +343,4 @@ read-only inspection can succeed for an incomplete job.
 CI defines platform gates; configuration does not establish that they ran. Historical
 scale measurements apply to their recorded source and host. Current engineering
 results and outstanding qualification gates are recorded in
-[offline validation](evals/results/offline-validation.json).
+[release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) and [release guide](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md).
