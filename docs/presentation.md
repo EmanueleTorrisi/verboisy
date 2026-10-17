@@ -15,8 +15,8 @@ VERBOISY_DATE_FORMAT=dmy
 ```
 
 ```bash
-poetry run verboisy presentation-config
-poetry run verboisy run --resume RUN_ID --mass-unit lb --length-unit ft --date-format iso
+verboisy presentation-config
+verboisy run --resume RUN_ID --mass-unit lb --length-unit ft --date-format iso
 ```
 
 `presentation-config` reports configured defaults only. It does not open a database,
