@@ -1,6 +1,6 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Architecture and contracts
+# Architecture · evidence from input to export
 
 Verboisy separates acquisition, evidence validation, admission and presentation.
 The separation matters during recovery: a model response, partially downloaded
@@ -20,6 +20,36 @@ flowchart TD
     ResearchLedger --> Output["Verified export generation"]
     StreamLedger --> Output
 ```
+
+## Design decisions
+
+| Decision | Reason | Trade-off |
+| --- | --- | --- |
+| Separate research and streaming ledgers | Each workflow can enforce its own recovery contract | The APIs and bundle versions are intentionally distinct |
+| Immutable source capture | Resuming and auditing need the same observed bytes | Capture and retained evidence consume disk space |
+| Model proposals plus deterministic admission | A fluent answer cannot authorize a record | Unsupported candidates may be rejected or require review |
+| Explicit projections and source grants | Transformations and access must be inspectable | Operators configure schemas, units and allowed directories |
+| Manifest published after staged files | Readers need a coherent export generation | Filesystem and power-loss guarantees remain platform-specific |
+| Optional native acceleration | Python remains the reference behavior | Native binaries need separate builds and equivalence evidence |
+
+## Admission and publication
+
+```mermaid
+flowchart TD
+    Capture["Observed source capture"] --> Candidate["Candidate record"]
+    Contract["Schema, identity and scope"] --> Verify["Deterministic verification"]
+    Candidate --> Verify
+    Verify -->|Rejected| Diagnostic["Recorded diagnostic"]
+    Verify -->|Verified| Review["Required semantic review"]
+    Review -->|Accepted| Ledger["Committed evidence and record"]
+    Ledger --> Stage["Staged output and lineage"]
+    Stage --> Integrity["Generation integrity checks"]
+    Integrity -->|Valid| Manifest["Manifest published last"]
+    Integrity -->|Invalid| Prior["Prior generation retained"]
+```
+
+This diagram shows the model-assisted research boundary. Deterministic ingestion
+uses its adapter contract; it does not invoke a model merely to parse local rows.
 
 ## Ownership
 
@@ -181,3 +211,17 @@ production deployments still need independently qualified egress isolation.
 Exporters flush files and sync supported directory entries. Streaming stages files
 and publishes the manifest last. Unsupported directory sync, Windows and network
 filesystems do not acquire an asserted power-loss guarantee.
+
+
+## Operational review map
+
+| Event | Inspect | Next action |
+| --- | --- | --- |
+| Research pauses with a proposed change | Saved baseline, replacement and supporting evidence | Decline with ordinary resume or accept the exact saved proposal |
+| Source acquisition fails | Scope decision, request journal and capture status | Correct access or limits; partial capture cannot admit rows |
+| A process stops during ingestion | Last transactionally committed checkpoint | Resume under the saved contract and verify captured bytes |
+| Export fails | Prior manifest and staged generation | Retain the prior valid output; investigate the failed integrity check |
+| Source or dependencies change before release | Source digest and engineering report | Revalidate and renew affected release reviews |
+
+The release process is described in [the release guide](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md).
+Passing implementation checks is distinct from evaluating real-task quality.
