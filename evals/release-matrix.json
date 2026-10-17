@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "copyright": "Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms.",
-  "status": "proposed",
+  "status": "qualification_in_progress",
   "version_baseline": "1.0.0",
   "production_status": "not_certified",
   "scope": {
@@ -802,37 +802,80 @@
     {
       "id": 1,
       "name": "Product contract and evaluation design",
-      "status": "draft_for_review"
+      "status": "draft_for_review",
+      "criteria": {
+        "scope": "Approve advertised workflows, formats, source/provider modes, language scope and exclusions.",
+        "gold": "Select every held-out source, retain permitted source captures and hashes, and obtain independent gold annotations before tuning.",
+        "targets": "Approve quality/economic targets, provider roles and aggregate EUR pilot/campaign budget; keep request units separate from billed cost."
+      },
+      "review": null
     },
     {
       "id": 2,
       "name": "Real product acceptance",
-      "status": "not_started"
+      "status": "not_started",
+      "criteria": {
+        "pilot": "Review three held-out tasks from three workflow classes before the full campaign.",
+        "campaign": "Complete 36 held-out, 9 historical and 24 critical-control runs; retain all successes, failures, empty results, exact inputs and raw measurements.",
+        "quality": "Meet supported-field precision >=0.99, finite-source recall >=0.95, positive-run success >=0.90, zero critical-control failures and zero false completions.",
+        "coverage": "Qualify every advertised adapter, source mode and provider profile; explicitly narrow unsupported combinations."
+      },
+      "review": null
     },
     {
       "id": 3,
       "name": "Product UX and economics",
-      "status": "not_started"
+      "status": "not_started",
+      "criteria": {
+        "ux": "A new authorized user installs and uses the CLI and Python API; verify invalid-input, pause, resume and export behavior without undocumented steps.",
+        "economics": "Measure actual billed spend and end-to-end latency including failed runs; satisfy approved cost, median and p95 limits.",
+        "demo": "Record a reproducible real-source demonstration with inspectable evidence, limitations and no synthetic data presented as research."
+      },
+      "review": null
     },
     {
       "id": 4,
       "name": "Security portability and release reliability",
-      "status": "partially_implemented_unverified"
+      "status": "partially_implemented_unverified",
+      "criteria": {
+        "engineering": "Pass lock, repository consistency, lint, formatting, types, offline 100% statement/branch coverage, native tests without skips, strict docs, dependency audit and fresh wheel/sdist install.",
+        "platforms": "Retain passing supported-platform CI, real Chromium and Docker results for the release source; qualify intended production browser sandbox and egress independently.",
+        "security": "Review threat boundaries, grants, redirects, secret handling and dependency audit findings; resolve release-blocking defects.",
+        "durability": "Run current scale/resource workloads, interruptions, native sanitizers and relevant filesystem/power-loss tests for every durability claim; narrow untested claims."
+      },
+      "review": null
     },
     {
       "id": 5,
       "name": "Repository editorial and legal readiness",
-      "status": "partially_implemented_unverified"
+      "status": "partially_implemented_unverified",
+      "criteria": {
+        "editorial": "Review README, all seven translations, CLI examples, architecture, links, version and package metadata against current behavior.",
+        "secrets": "Inspect the complete Git history and release archives for credentials, confidential data and unintended files; rotate any exposed secrets before publication.",
+        "legal": "Obtain qualified review of current licensing, ownership, third-party notices, prior BSD grants and commercial agreement terms."
+      },
+      "review": null
     },
     {
       "id": 6,
       "name": "Independent beta",
-      "status": "not_started"
+      "status": "not_started",
+      "criteria": {
+        "independent": "An independent authorized beta user completes representative work in a documented environment and records unassisted outcomes.",
+        "resolution": "Record feedback, severity, fixes and retest evidence; close every release-blocking issue and obtain explicit beta sign-off."
+      },
+      "review": null
     },
     {
       "id": 7,
       "name": "Release and commercial presentation",
-      "status": "not_started"
+      "status": "not_started",
+      "criteria": {
+        "delivery": "Rehearse the chosen public or private delivery channel with the exact tested artifact hashes and installation instructions.",
+        "presentation": "Approve the real demo, published capabilities, limits, commercial scope and support contact; distinguish roadmap from shipping features.",
+        "operations": "Assign release/support ownership, update policy, rollback/withdrawal procedure and access revocation for private delivery."
+      },
+      "review": null
     }
   ],
   "open_decisions": [
@@ -1170,5 +1213,10 @@
       "verification_record": "evals/results/repository-offline.json",
       "local_consistency_status": "passed"
     }
+  },
+  "review_protocol": {
+    "tool": "scripts/release_matrix.py",
+    "completion": "Explicit reviewer findings and evidence hashes bound to release source",
+    "automatic_certification": false
   }
 }
