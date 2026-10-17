@@ -5,8 +5,8 @@
 Run from the repository root using the same Poetry environment as the application:
 
 ```bash
-poetry run python -m benchmarks.runner --rows 1000 --lineage-rows 100 --repeats 3 --output benchmark-results/baseline.json
-poetry run python -m benchmarks.runner --rows 10000 --case parse_csv --case parse_json --case parse_jsonl --case group --case sort --repeats 3 --output benchmark-results/large.json
+python -m benchmarks.runner --rows 1000 --lineage-rows 100 --repeats 3 --output benchmark-results/baseline.json
+python -m benchmarks.runner --rows 10000 --case parse_csv --case parse_json --case parse_jsonl --case group --case sort --repeats 3 --output benchmark-results/large.json
 ```
 
 The default run covers CSV, JSON and JSONL parsing; evidence verification; grouping;
@@ -38,8 +38,8 @@ be absent. Timing samples do not run under `tracemalloc` or `cProfile`.
 Use a separate profile invocation to locate expensive functions:
 
 ```bash
-poetry run python -m benchmarks.runner --case lineage_grouped --lineage-rows 100 --profile-dir benchmark-results/profiles --output benchmark-results/profile.json
-poetry run python -m pstats benchmark-results/profiles/lineage_grouped.prof
+python -m benchmarks.runner --case lineage_grouped --lineage-rows 100 --profile-dir benchmark-results/profiles --output benchmark-results/profile.json
+python -m pstats benchmark-results/profiles/lineage_grouped.prof
 ```
 
 Profiles add overhead and must not be compared with unprofiled timings. `pstats` accepts
@@ -70,7 +70,7 @@ Measure the complete local JSON workflow, including immutable capture, candidate
 admission, result shaping, portable export and text proof:
 
 ```bash
-poetry run python scripts/benchmark_ingestion.py --counts 50 100 200 400 --repeats 3 > benchmark-results/ingestion.json
+python scripts/benchmark_ingestion.py --counts 50 100 200 400 --repeats 3 > benchmark-results/ingestion.json
 ```
 
 Each repetition uses a fresh ledger. Fixture creation and final expected-value
@@ -128,7 +128,7 @@ the call. Output rows, contributor order and the accepted ledger are not mutated
 Compare both scalar and grouped lineage with the retained baseline:
 
 ```bash
-poetry run python -m benchmarks.runner --case lineage_scalar --case lineage_grouped --lineage-rows 100 --repeats 3 --output benchmark-results/lineage.json
+python -m benchmarks.runner --case lineage_scalar --case lineage_grouped --lineage-rows 100 --repeats 3 --output benchmark-results/lineage.json
 ```
 
 Correctness regressions pin both 100-row derivation digests from the pre-reuse
@@ -160,7 +160,7 @@ This is a synthetic verifier result, not a promised improvement to network or
 model-driven research. Compare the same workload on the target machine:
 
 ```bash
-poetry run python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --profile-dir benchmark-results/profiles-verifier --output benchmark-results/verify-profile.json
+python -m benchmarks.runner --case verify --rows 10000 --repeats 3 --profile-dir benchmark-results/profiles-verifier --output benchmark-results/verify-profile.json
 ```
 
 Profile files add instrumentation overhead; use the report's unprofiled samples
@@ -195,7 +195,7 @@ The offline comparison command reads two saved reports; it does not rerun worklo
 read `.env`, open the research ledger, or contact providers:
 
 ```bash
-poetry run python -m benchmarks.comparison benchmark-results/verify-python.json benchmark-results/verify-profile.json --output benchmark-results/comparison-verifier.json
+python -m benchmarks.comparison benchmark-results/verify-python.json benchmark-results/verify-profile.json --output benchmark-results/comparison-verifier.json
 ```
 
 Matching cases must have the same row count, domain, GC state, relevant fixture
