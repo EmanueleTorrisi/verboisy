@@ -1,16 +1,16 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-<p align="center"><img src="../../logo.png" alt="Verboisy" width="220" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/EmanueleTorrisi/verboisy/main/logo.png" alt="Verboisy" width="220" /></p>
 
 <p align="center">
-  <a href="../../README.md">English</a> ·
-  <a href="README.it.md">Italiano</a> ·
-  <a href="README.de.md">Deutsch</a> ·
-  <a href="README.fr.md">Français</a> ·
-  <a href="README.es.md">Español</a> ·
-  <a href="README.ja.md">日本語</a> ·
-  <a href="README.ko.md">한국어</a> ·
-  <a href="README.zh-CN.md">简体中文</a>
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md">English</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.it.md">Italiano</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.de.md">Deutsch</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.fr.md">Français</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.es.md">Español</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.ja.md">日本語</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.ko.md">한국어</a> ·
+  <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.zh-CN.md">简体中文</a>
 </p>
 
 <h1 align="center">Verboisy</h1>
@@ -24,7 +24,7 @@ Verboisy 是一个研究与数据提取引擎，面向需要结构化信息并�
 
 它也能通过确定性适配器准备本地或声明的 HTTP 数据集，无需调用模型、搜索或浏览器。大型本地文件使用独立流程，通过受限缓冲区和磁盘台账处理。
 
-**源码可供查阅，运行需要单独许可。** [LICENSE](../../LICENSE) 允许源码审查，不授予运行权。测试、修改和部署需要另行书面授权。以下示例描述的是已获授权的使用方式。
+**源码可供查阅，运行需要单独许可。** [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) 允许源码审查，不授予运行权。测试、修改和部署需要另行书面授权。以下示例描述的是已获授权的使用方式。
 
 ## 这种设计的意义
 
@@ -51,30 +51,34 @@ JSON 或表格本身不能说明事实是否被观察到，也不能解释数值
 | 图片、视频及其他文件 | 不可变字节采集、哈希及引用，不自动理解内容 |
 | 时间序列 | 明确的序列与时间戳策略、排序、缺口和重复诊断 |
 
-二进制采集不等同于 OCR 或通用文档理解。OAuth、数据库驱动、应用连接器和 API 分页需要专门集成。请参阅[格式能力](../../docs/formats.md)。
+二进制采集不等同于 OCR 或通用文档理解。OAuth、数据库驱动、应用连接器和 API 分页需要专门集成。请参阅[格式能力](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/formats.md)。
 
 ## 安装与配置
 
-需要 Python **3.11–3.14**、Poetry 和书面运行许可。CI 覆盖 Linux、macOS 和 Windows。模型研究需要兼容配置及凭据；网页采集需要 Chromium 和系统库。本地输入需要明确目录授权和足够磁盘空间。普通安装不需要 C++ 编译器。
+需要 Python **3.11–3.14** 和书面运行许可。Poetry 是开发工具，安装后的命令是 `verboisy`。CI 定义了 Linux、macOS 和 Windows 任务，但仍需核查当前结果。网页研究需要配置提供商、Chromium 和系统库。本地输入需要目录授权及磁盘空间，无需 C++ 编译器。
+
+请在已获授权的源码目录中执行以下命令。安装 pipx 后，可用 `pipx install .` 在项目目录之外使用该命令。经授权发布到 PyPI 后，可用 `pipx install verboisy`。这里不假定软件已在 PyPI 发布。`python examples/local_quickstart.py` 无需模型或浏览器即可核验两条合成记录。
 
 ```bash
-poetry install
-poetry run verboisy --help
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install .
+verboisy --help
 ```
 
-请按照 [.env.example](../../.env.example) 将密钥放在私有环境或 `.env` 中，不要提交真实密钥。Shell 示例采用 POSIX 语法；Windows 请使用等效方法设置环境变量。
+请按照 [.env.example](https://github.com/EmanueleTorrisi/verboisy/blob/main/.env.example) 将密钥放在私有环境或 `.env` 中，不要提交真实密钥。Shell 示例采用 POSIX 语法；Windows 请使用等效方法设置环境变量。
 
 ```bash
-poetry run verboisy setup
-poetry run verboisy model-config
+verboisy setup
+verboisy model-config
 ```
 
-`model-config` 显示设置和凭据是否存在，不显示密钥值。确定性的本地准备无需模型或浏览器。请参阅[提供商](../../docs/providers.md)和[验证](../../docs/validation.md)。
+`model-config` 显示设置和凭据是否存在，不显示密钥值。确定性的本地准备无需模型或浏览器。请参阅[提供商](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/providers.md)和[验证](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/validation.md)。
 
 ## 网页研究与 API
 
 ```bash
-poetry run verboisy run \
+verboisy run \
   --goal "查找研究机构及其明确公开的官方网站" \
   --schema '[名称,网站,国家]' \
   --export 研究机构.json
@@ -99,7 +103,7 @@ print(结果.run_id, 结果.status, 结果.records)
 
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy输入"]'
-poetry run verboisy run \
+verboisy run \
   --dataset-file 'jsonl=/srv/verboisy输入/观测数据.jsonl' \
   --schema 观测模式.json \
   --export 观测数据.json
@@ -110,7 +114,7 @@ poetry run verboisy run \
 ## 大型数据集
 
 ```bash
-poetry run verboisy stream \
+verboisy stream \
   --database 观测流.db \
   --dataset-file 'jsonl=/srv/verboisy输入/观测数据.jsonl' \
   --schema 观测模式.json \
@@ -119,48 +123,69 @@ poetry run verboisy stream \
 
 流式台账保存不可变来源块及事务提交的进度。`stream-status` 列出任务，`stream --resume 任务ID` 恢复已保存任务。`StreamLedger` 提供分页读取。
 
-在 Linux/Python 3.12 的 JSONL 测量中，处理并导出了 **1,000,000 行**、**1,105,888,890 字节**，峰值 RSS 为 **89.15 MiB**，耗时 **130.81 秒**。删除原始来源后的恢复和导出完整性也经过验证。这是一项特定负载的测量，不是普遍速度或内存保证。请参阅[流式处理](../../docs/streaming.md)和[基准测试](../../docs/benchmarks.md)。
+在 Linux/Python 3.12 的 JSONL 测量中，处理并导出了 **1,000,000 行**、**1,105,888,890 字节**，峰值 RSS 为 **89.15 MiB**，耗时 **130.81 秒**。删除原始来源后的恢复和导出完整性也经过验证。这是一项特定负载的测量，不是普遍速度或内存保证。请参阅[流式处理](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/streaming.md)和[基准测试](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/benchmarks.md)。
 
 ## 建议、恢复与证据
 
 ```bash
-poetry run verboisy changes --run-id 运行ID
-poetry run verboisy status --run-id 运行ID
-poetry run verboisy run --resume 运行ID
+verboisy changes --run-id 运行ID
+verboisy status --run-id 运行ID
+verboisy run --resume 运行ID
 ```
 
 `--resume` 保留原要求并拒绝建议；`--okresume` 只接受已保存的确切变更。建议可改变类型、列或搜索范围。恢复不会重置消耗，也不会隐式扩大来源权限。
 
 区间仍是区间：下界不会变成精确值或虚构上界。数值型 min/max 列需要适合的模式。默认显示单位为千克、米，日期为日/月/年；明确的替代设置仍保留原始证据。时间序列诊断不会插补缺失观察，也不会猜测有歧义的本地时间。
 
-可移植导出包含证据、相关事件、输出溯源及适用的已采集材料。分组标明贡献记录。校验和证明与清单的字节一致性，不证明事实正确或独立真实性。请参阅[溯源](../../docs/proof.md)。
+可移植导出包含证据、相关事件、输出溯源及适用的已采集材料。分组标明贡献记录。校验和证明与清单的字节一致性，不证明事实正确或独立真实性。请参阅[溯源](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/proof.md)。
 
 ## 架构与文档
 
 Python 负责流程编排、数据约定、适配器、CLI 和 SQLite 台账。可选 C++17 组件加速特定证据匹配，同时保留 Python 参考实现。测试和 CI 覆盖平台、浏览器、恢复与完整性，要求完整语句及分支覆盖。真实研究质量和提供商兼容性需要独立评估。
 
-[CLI](../../docs/cli.md) · [API](../../docs/api.md) · [数据约定](../../docs/contracts.md) · [身份](../../docs/smartid.md) · [摄取](../../docs/ingestion.md) · [显示](../../docs/presentation.md) · [语义](../../docs/research-semantics.md) · [架构](../../ARCHITECTURE.md) · [版本记录](../../CHANGELOG.md)
+[CLI](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/cli.md) · [API](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/api.md) · [数据约定](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/contracts.md) · [身份](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/smartid.md) · [摄取](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/ingestion.md) · [显示](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/presentation.md) · [语义](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/research-semantics.md) · [架构](https://github.com/EmanueleTorrisi/verboisy/blob/main/ARCHITECTURE.md) · [版本记录](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)
 
 ## 许可、演示与商业联系
 
 Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条款，本译文不改变权限。标识符为 `LicenseRef-Verboisy-Source-Inspection-1.0`。第三方组件保留各自许可证。运行、测试、修改、集成、分发和托管需要单独书面许可。
 
-如需演示、评估、内部或企业许可、投资、合作及潜在有偿工程协作，请联系 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**。说明工作流、来源、规模和环境，不要发送凭据或机密数据。价格、支持和权利逐项商定。请参阅[许可](../../docs/licensing.md)和[商业联系](../../docs/commercial.md)。
+如需演示、评估、内部或企业许可、投资、合作及潜在有偿工程协作，请联系 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**。说明工作流、来源、规模和环境，不要发送凭据或机密数据。价格、支持和权利逐项商定。请参阅[许可](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)和[商业联系](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)。
 
 ## 反馈与合作
 
-**Emanuele Torrisi** 创建并维护 Verboisy，目前是项目唯一开发者。欢迎通过 [GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues) 提交缺陷和功能请求。漏洞请按照[安全政策](../SECURITY.md)私下报告。
+**Emanuele Torrisi** 创建并维护 Verboisy，目前是项目唯一开发者。欢迎通过 [GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues) 提交缺陷和功能请求。漏洞请按照[安全政策](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md)私下报告。
 
-目前不接受未经邀请的代码贡献。有偿合作需事先约定范围、报酬、保密和知识产权。版本变化记录在[更新日志](../../CHANGELOG.md)中；[版本历史](../../docs/development-roadmap.md)说明从 0.1.0 到 1.0.0 的架构演进。请参阅[参与政策](../CONTRIBUTING.md)和[版权](../../COPYRIGHT.md)。
+目前不接受未经邀请的代码贡献。有偿合作需事先约定范围、报酬、保密和知识产权。版本变化记录在[更新日志](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)中；[版本历史](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)说明从 0.1.0 到 1.0.0 的架构演进。请参阅[参与政策](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)和[版权](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)。
 ## 应用工作流示例
 
-[研究机构目录](../../examples/research_catalog/README.md) ·
-[大型本地观测数据处理流程](../../examples/streaming_observations/README.md) ·
-[版本历史：0.1.0–1.0.0](../../docs/development-roadmap.md)
+[研究机构目录](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
+[大型本地观测数据处理流程](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md) ·
+[版本历史：0.1.0–1.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
 
 
 ## 数据契约与验证范围
 
 普通输出中的 `id` 保留给生成的元数据。源 ID 必须显式映射为 `source_id`；嵌套 ID 和流式源 ID 仍可使用。缺失的可选字段保持缺失，显式 null 保留。流式处理逐行验证，并拒绝不支持的数组整体约束。暂停的准备任务返回退出码 2。CI 已配置，但历史测量仅适用于记录的源代码和运行环境。
 
-[Current offline evidence](../../evals/results/offline-validation.json).
+[历史结果不会自动证明当前源码已通过验证](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json).
+
+
+## 为什么选择商业协议？
+
+**从查看源码走向获得授权的实际使用与专业支持。** 商业价值在于约定的使用权，以及另行购买时提供的配置、集成和维护服务。
+
+| 目标 | 需要约定的范围 |
+| --- | --- |
+| 用于日常工作 | 针对约定用户和环境的书面运行及内部使用权 |
+| 集成到产品 | 适用的修改、集成、部署或再分发权利 |
+| 减少初期工作 | 入门指导、模式设计和代表性数据评估 |
+| 在私有基础设施运行 | 部署评估和已授权数据源的集成 |
+| 规划维护和支持 | 合同明确的更新、支持范围及响应时间 |
+
+服务、价格、交付时间和权利均以书面协议为准。下载并不自动附带支持。此仓库没有功能独立的 Pro 版本，也没有激活码服务。托管、定时任务、共享工作区及新连接器属于开发方向，不代表已经可用的功能承诺。
+
+[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)
+
+[安装](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) · [发布与评估](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md)
+
+版本为 `1.0.0`，但完整产品验证仍未完成。矩阵分别记录工程测试、真实任务评估、独立测试和发布负责人审核。
