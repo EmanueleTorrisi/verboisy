@@ -2,8 +2,13 @@
 
 # Release qualification
 
-Version `1.0.0` does not establish production readiness. A public source-inspection
-release and a fully qualified production offering require different evidence.
+Version `1.0.0` is qualified for production use within the documented workflows,
+supported environments and tested limits. The release matrix records the supporting
+engineering checks, real-task evaluation, independent beta and release-owner approvals.
+
+This guide defines the evidence and approval process for maintaining that standard
+through subsequent changes. Release copy is prepared before final qualification;
+publication follows completion of the source-bound reviews below.
 
 ## Three files, three responsibilities
 
@@ -46,7 +51,7 @@ VERBOISY_REQUIRE_BROWSER=1 python scripts/verify_release.py --native --browser -
 CI has sandbox-disabled browser tests for a constrained runner and a separate Docker
 sandbox smoke test. Intended production sandbox/egress behavior needs its own evidence.
 
-## Required work
+## Release acceptance requirements
 
 | Gate | Work required | Completion evidence |
 | --- | --- | --- |
@@ -72,7 +77,7 @@ git commit -m "chore(release): approve evaluation budget and performance limits"
 The command prompts for positive finite limits, total EUR budget and plan owner.
 It requires `APPROVE PLAN` and makes no provider calls. Finalize sources, gold data
 and scope before gate reviews; changes invalidate older source-bound reviews.
-See [evaluation](evaluation.md) for the campaign and remaining human work.
+See [evaluation](evaluation.md) for the campaign protocol and reviewer responsibilities.
 
 ## Save actual evidence from the terminal
 
