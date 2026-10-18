@@ -51,22 +51,80 @@ class CLIUserInterface:
 
     @staticmethod
     def display_results_table(data: list[dict[str, Any]]) -> None:
-        """Display up to five rows and five columns for terminal readability."""
+        """Show every result field and at most five records, fitted to the terminal."""
+        from rich import box
+        from rich.cells import cell_len
+
         if not data:
             console.print("[yellow]No data was extracted during this run.[/yellow]")
             return
 
-        table = Table(show_header=True, header_style="bold magenta")
-        headers = list(data[0].keys())[:5]
+        headers = list(dict.fromkeys(key for row in data for key in row))
+        sample = data[:5]
 
-        for header in headers:
-            table.add_column(Text(header))
+        def display_value(value: Any) -> str:
+            text = "null" if value is None else str(value)
+            return "".join(
+                f"\\u{ord(char):04x}" if ord(char) < 32 or 127 <= ord(char) < 160 else char
+                for char in text
+            )
 
-        for row in data[:5]:
-            row_values = [str(row.get(header, ""))[:50] for header in headers]
-            table.add_row(*(Text(value) for value in row_values))
+        names = [display_value(header) for header in headers]
+        values = [[display_value(row.get(header, "")) for header in headers] for row in sample]
+        contents = [[name, *(row[index] for row in values)] for index, name in enumerate(names)]
+        widths = [
+            max([1, *(cell_len(char) for text in column for char in text)])
+            for column in contents
+        ]
+        desired = [max(1, *(cell_len(text) for text in column)) for column in contents]
+        padding = 1 if len(headers) <= 7 else 0
+        overhead = len(headers) + 1 + 2 * padding * len(headers)
+        if sum(widths) + overhead > console.width:
+            padding = 0
+            overhead = len(headers) + 1
 
-        console.print(table)
+        if not headers:
+            console.print("[yellow]The returned records contain no fields.[/yellow]")
+        elif sum(widths) + overhead > console.width:
+            console.print(
+                "[dim]Terminal too narrow for one table; showing every field by record.[/dim]"
+            )
+            for index, row in enumerate(values, start=1):
+                table = Table(
+                    title=f"Record {index}", header_style="bold magenta", width=console.width
+                )
+                table.add_column("Field", overflow="fold")
+                table.add_column("Value", overflow="fold")
+                for name, value in zip(names, row, strict=True):
+                    table.add_row(Text(name), Text(value))
+                console.print(table)
+        else:
+            remaining = console.width - overhead - sum(widths)
+            while remaining > 0:
+                candidates = [
+                    index for index in range(len(headers)) if widths[index] < desired[index]
+                ]
+                if not candidates:
+                    break
+                index = min(candidates, key=lambda position: (widths[position], position))
+                widths[index] += 1
+                remaining -= 1
+            table = Table(
+                show_header=True,
+                header_style="bold magenta",
+                box=box.SQUARE,
+                show_lines=True,
+                padding=(0, padding),
+                width=sum(widths) + overhead,
+            )
+            for name, width in zip(names, widths, strict=True):
+                table.add_column(
+                    Text(name), width=width, min_width=width, max_width=width,
+                    overflow="fold", no_wrap=False,
+                )
+            for row in values:
+                table.add_row(*(Text(value) for value in row))
+            console.print(table)
 
         if len(data) > 5:
             console.print(f"[dim]... and {len(data) - 5} more rows.[/dim]")
