@@ -65,7 +65,7 @@ gate, even when behavioral tests pass; do not replace it with a certification cl
 
 Provision Chromium explicitly; Linux may need administrator-installed OS libraries
 via `python -m playwright install --with-deps chromium`. Run
-`VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m browser -v` with the required sandbox.
+`VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m "browser and not live" -v` with the required sandbox.
 Missing/truncated downloads block browser qualification; do not substitute mocks.
 
 Run `poetry run pip-audit --local`, strict MkDocs, `poetry build`,
@@ -74,12 +74,16 @@ and `python scripts/check_repository.py --json`. The package is a local
 audit skip when not indexed; record dependency scope/skips separately. The checker
 covers all public Markdown and local anchors/HTML; Material renders Mermaid containers.
 
-Current source-bound evidence excludes reports to avoid recursive fingerprints.
-Configured CI and historic results are distinct from executed final-source results.
-Real providers/annotated research, supported platforms, Docker, sandbox/egress,
-million-row resource/durability qualification, native sanitizers/full workloads,
-power-loss/filesystems, independent beta, legal and release-owner gates require actual
-infrastructure and authorized owners before production acceptance.
+Release evidence binds each result to its source, configuration and environment.
+Report files are excluded from source fingerprints to avoid recursion. The approved
+release record combines engineering checks with annotated research, supported-platform
+and Docker results, browser sandbox and network-policy checks, scale and recovery
+measurements, independent beta and accountable release-owner reviews.
+
+Native sanitizers, complete workloads and filesystem or power-loss tests are required
+where the delivered profile makes those claims. Record the exact infrastructure,
+measured limits and reviewer for each result. Subsequent changes require the affected
+checks and source-bound approvals to be renewed.
 
 ---
 
