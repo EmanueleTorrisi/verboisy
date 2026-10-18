@@ -18,6 +18,8 @@
 <p align="center">Beleggestützte Recherche · Strukturierte Extraktion · Lokale Daten · Portable Provenienz</p>
 
 
+> **Release-Status:** Version `1.0.0` ist innerhalb der dokumentierten Arbeitsabläufe, unterstützten Umgebungen und geprüften Grenzen für den Produktionseinsatz freigegeben. Die [Release-Matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) dokumentiert die technischen Prüfungen, die Bewertung realer Aufgaben, den unabhängigen Betatest und die Freigaben der Release-Verantwortlichen.
+
 ## Das Produkt
 
 Verboisy ist eine Recherche- und Datenextraktionssoftware für strukturierte Informationen mit überprüfbarer Herkunft. Eine Frage, ein Schema und zugelassene Quellen bestimmen den Auftrag. Die Software erfasst Beobachtungen, prüft vorgeschlagene Datensätze und bewahrt Belege sowie Ausgabetransformationen. CLI und Python-API unterstützen wiederholbare Abläufe und die Fortsetzung gespeicherter Arbeit.
@@ -37,6 +39,12 @@ JSON oder eine Tabelle allein zeigen nicht, ob ein Fakt beobachtet wurde oder wi
 - **Explizite Entscheidungen:** Änderungsvorschläge unterbrechen den Ablauf, statt Frage oder Schema unbemerkt zu ersetzen.
 
 Geeignet sind Analyse, Referenzdaten, Datenaufbereitung, interne Informationsabläufe und reproduzierbare Untersuchungen. Wissenschaftliche und regulierte Anwendungen verlangen unabhängige Prüfung von Quellen, Stichproben und Schlussfolgerungen. Das langfristige Ziel ist ein vertrauenswürdiger Standard für beleggestützte Datenextraktion, keine Behauptung bestehender Marktführerschaft.
+
+### KI dort einsetzen, wo Interpretation einen Mehrwert bietet
+
+Verboisy verbindet deterministischen Code mit semantischer KI. Das Einlesen strukturierter Dateien, die Schema-Validierung, der Abgleich beobachteter Belege und der Export erfolgen im Code. Modelle unterstützen Planung und Interpretation, soweit der Arbeitsablauf dies erfordert. Deterministische Schritte verbrauchen keine Modell-Tokens und vermeiden die Inferenzkosten, die bei der Ausführung derselben Schritte durch ein kostenpflichtiges LLM anfallen würden. Lokale Datensätze lassen sich vollständig ohne Modellanbieter aufbereiten.
+
+Das reduziert unnötige Modellaufrufe und macht Ausgaben nachvollziehbar. Die Gesamtersparnis hängt von Aufgabe, Modell, Wiederholungen und Prüfaufwand ab. Ein belastbarer Vergleich verwendet dieselben Quellen, Ausgabeanforderungen und Qualitätskriterien und berücksichtigt auch fehlgeschlagene Versuche. Belegprüfungen verringern nicht gestützte Ausgaben; semantische Korrektheit erfordert geeignete Quellen und eine inhaltliche Prüfung.
 
 ## Abläufe und Formate
 
@@ -149,7 +157,7 @@ Python übernimmt Orchestrierung, Verträge, Adapter, CLI und SQLite-Speicher. O
 
 Verboisy ist proprietäre Software, **kein Open Source**. Maßgeblich ist die englische Lizenz; diese Übersetzung ändert keine Rechte. Kennung: `LicenseRef-Verboisy-Source-Inspection-1.0`. Drittanbieter behalten ihre eigenen Lizenzen. Ausführung, Tests, Änderungen, Integration, Verteilung und Hosting erfordern separate schriftliche Erlaubnis.
 
-Kontakt: **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** für Demos, Evaluationen, interne/Enterprise-Lizenzen, Investitionen, Partnerschaften und mögliche bezahlte Zusammenarbeit. Ablauf, Quellen, Datenvolumen und Umgebung beschreiben; keine vertraulichen Daten oder Schlüssel mitsenden. Preise, Support und Rechte werden individuell vereinbart. Siehe [Lizenzierung](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) und [geschäftliche Anfragen](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
+Kontakt: **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** für Demos, Evaluationen, interne/Enterprise-Lizenzen, Partnerschaften und mögliche bezahlte Zusammenarbeit. Ablauf, Quellen, Datenvolumen und Umgebung beschreiben; keine vertraulichen Daten oder Schlüssel mitsenden. Preise, Support und Rechte werden individuell vereinbart. Siehe [Lizenzierung](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) und [geschäftliche Anfragen](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
 
 ## Feedback und Zusammenarbeit
 
@@ -167,12 +175,16 @@ Unaufgeforderte Codebeiträge werden derzeit nicht angenommen. Bezahlte Zusammen
 
 In gewöhnlichen Ergebnissen ist `id` für erzeugte Metadaten reserviert. Quell-IDs müssen ausdrücklich nach `source_id` projiziert werden; verschachtelte IDs und Streaming-IDs bleiben erhalten. Fehlende optionale Felder bleiben fehlend, explizites null bleibt erhalten. Streaming validiert einzelne Zeilen und lehnt nicht unterstützte Bedingungen auf der Array-Wurzel ab. Ein pausierter Vorbereitungslauf endet mit Code 2. CI ist konfiguriert; historische Messungen gelten nur für ihren dokumentierten Quellstand und Host.
 
-[Historische Ergebnisse; keine automatische Qualifikation des aktuellen Quellcodes](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json).
+[Historische Ergebnisse](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [Release-Nachweise und Freigaben](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
 
 ## Warum eine kommerzielle Vereinbarung?
 
-**Von der Quellcodeprüfung zum autorisierten, betreuten Arbeitsablauf.** Der kommerzielle Wert besteht in vereinbarten Nutzungsrechten und, sofern beauftragt, fachlicher Hilfe bei Einrichtung, Integration und Betrieb.
+Dieses Repository enthält **Verboisys öffentliche Edition zur Einsicht in den Quellcode**. Kommerzielle Kunden erhalten **eine separat gepflegte Edition mit zusätzlichen Funktionen**, die nicht in diesem Repository veröffentlicht werden.
+
+Der [Vergleich der Editionen](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) beschreibt die Funktionen der einzelnen Editionen, unterstützte Bereitstellungsoptionen und verfügbare Dienstleistungen. Das öffentliche Repository wird weiterhin aktualisiert.
+
+Gelieferte Funktionen, Nutzungsrechte, Support, Update-Berechtigung, Vergütung und Liefertermine werden im unterzeichneten Vertrag festgelegt.
 
 | Ziel | Zu vereinbarender Umfang |
 | --- | --- |
@@ -182,10 +194,8 @@ In gewöhnlichen Ergebnissen ist `id` für erzeugte Metadaten reserviert. Quell-
 | Private Infrastruktur nutzen | Bewertung der Bereitstellung und Integration genehmigter Quellen |
 | Wartung und Unterstützung planen | Vertraglich definierte Updates, Leistungen und Reaktionszeiten |
 
-Leistungen, Preise, Termine und Rechte werden schriftlich vereinbart. Ein Download beinhaltet nicht automatisch Support. Dieses Repository enthält weder eine separate Pro-Funktionsstufe noch einen Aktivierungscode-Dienst. Hosting, Zeitplanung, gemeinsame Arbeitsbereiche und neue Konnektoren sind Entwicklungsziele, keine zugesagten verfügbaren Funktionen.
+Edition und Dienstleistungen richten sich nach dem Arbeitsablauf, den Anforderungen an die Bereitstellung und den Abnahmekriterien. Der Vertrag legt Leistungen und Verantwortlichkeiten ausdrücklich fest.
 
 [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)
 
 [Installation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) · [Release und Bewertung](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md)
-
-Die Version lautet `1.0.0`; die vollständige Produktqualifikation steht noch aus. Die Matrix trennt technische Prüfungen, reale Aufgaben, unabhängige Beta und Release-Freigaben.
