@@ -18,6 +18,8 @@
 <p align="center">基于证据的研究 · 结构化提取 · 本地数据 · 可移植溯源</p>
 
 
+> **发布状态：** 版本 `1.0.0` 已具备生产使用条件，适用范围为文档所述的工作流、受支持的环境和经过测试的限制。[发布矩阵](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json)记录了作为依据的工程检查、真实任务评估、独立 Beta 测试以及发布负责人的批准。
+
 ## 产品介绍
 
 Verboisy 是一个研究与数据提取引擎，面向需要结构化信息并希望核查其来源的用户。问题、模式和允许的来源共同定义任务。系统采集观察内容，验证候选记录，保留证据及输出转换过程。CLI 和 Python API 支持可重复的工作流以及已保存任务的恢复。
@@ -37,6 +39,12 @@ JSON 或表格本身不能说明事实是否被观察到，也不能解释数值
 - **明确的决策：** 变更建议会暂停任务，而不会悄悄替换问题或模式。
 
 它适用于分析、参考数据收集、数据准备、内部信息流程和可重复调查。科学研究及受监管用途仍需独立检查来源、抽样和结论。长期目标是成为值得信赖的证据型数据提取标准，而不是声称已经具备市场领导地位。
+
+### 将 AI 用于需要理解和判断的环节
+
+Verboisy 将确定性代码与承担语义理解的 AI 结合使用。结构化文件读取、模式验证、与已观察证据的匹配以及导出由代码执行；模型负责工作流中需要的规划与理解。确定性步骤不消耗模型 token，因此可避免将相同操作交给付费 LLM 所产生的推理费用。本地数据集准备可以完全不使用模型服务。
+
+这种设计减少不必要的模型调用，使支出更易核查。整体节省幅度取决于任务、模型、重试次数和审核工作量。公平比较应采用相同的数据源、输出要求和质量标准，并计入失败的尝试。证据检查可减少缺乏支持的输出；语义正确性仍需要可靠的来源和内容审核。
 
 ## 工作流与格式
 
@@ -149,7 +157,7 @@ Python 负责流程编排、数据约定、适配器、CLI 和 SQLite 台账。�
 
 Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条款，本译文不改变权限。标识符为 `LicenseRef-Verboisy-Source-Inspection-1.0`。第三方组件保留各自许可证。运行、测试、修改、集成、分发和托管需要单独书面许可。
 
-如需演示、评估、内部或企业许可、投资、合作及潜在有偿工程协作，请联系 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**。说明工作流、来源、规模和环境，不要发送凭据或机密数据。价格、支持和权利逐项商定。请参阅[许可](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)和[商业联系](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)。
+如需演示、评估、内部或企业许可、合作及潜在有偿工程协作，请联系 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**。说明工作流、来源、规模和环境，不要发送凭据或机密数据。价格、支持和权利逐项商定。请参阅[许可](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)和[商业联系](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)。
 
 ## 反馈与合作
 
@@ -167,12 +175,16 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 
 普通输出中的 `id` 保留给生成的元数据。源 ID 必须显式映射为 `source_id`；嵌套 ID 和流式源 ID 仍可使用。缺失的可选字段保持缺失，显式 null 保留。流式处理逐行验证，并拒绝不支持的数组整体约束。暂停的准备任务返回退出码 2。CI 已配置，但历史测量仅适用于记录的源代码和运行环境。
 
-[历史结果不会自动证明当前源码已通过验证](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json).
+[历史验证结果](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [发布依据与批准记录](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
 
 ## 为什么选择商业协议？
 
-**从查看源码走向获得授权的实际使用与专业支持。** 商业价值在于约定的使用权，以及另行购买时提供的配置、集成和维护服务。
+此仓库包含 **Verboisy 的公开源代码审阅版**。商业客户获得的是**单独维护、具备额外功能的版本**；这些额外功能不在此仓库中分发。
+
+[版本对比](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)说明各版本的可用功能、受支持的部署方式及可选服务。公开仓库将持续更新。
+
+交付功能、使用权、支持服务、更新权益、费用及交付日期均以签署的协议为准。
 
 | 目标 | 需要约定的范围 |
 | --- | --- |
@@ -182,10 +194,8 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 | 在私有基础设施运行 | 部署评估和已授权数据源的集成 |
 | 规划维护和支持 | 合同明确的更新、支持范围及响应时间 |
 
-服务、价格、交付时间和权利均以书面协议为准。下载并不自动附带支持。此仓库没有功能独立的 Pro 版本，也没有激活码服务。托管、定时任务、共享工作区及新连接器属于开发方向，不代表已经可用的功能承诺。
+根据实际工作流、部署要求和验收标准选择版本与服务。协议明确交付内容及各方责任。
 
 [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)
 
 [安装](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) · [发布与评估](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md)
-
-版本为 `1.0.0`，但完整产品验证仍未完成。矩阵分别记录工程测试、真实任务评估、独立测试和发布负责人审核。
