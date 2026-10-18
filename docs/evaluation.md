@@ -95,7 +95,7 @@ provider role/profile, request limits, accepted/rejected values, completion stat
 output evidence, elapsed time and billed cost. Keep failures and empty runs in the
 denominator. Record model billing separately from request units, which are not currency.
 
-## Proposed acceptance targets
+## Release acceptance criteria
 
 | Measurement | Target | Meaning |
 | --- | ---: | --- |
@@ -108,11 +108,18 @@ denominator. Record model billing separately from request units, which are not c
 | Cost per supported output row | ≤ EUR 0.10 | Retain zero-row spend; agree how it is aggregated |
 | Median / p95 positive web latency | ≤ 180 / 600 seconds | End-to-end time for the approved profile |
 
-The profile assumes at most 25 expected records and 25 visited pages. These are
-**proposed limits, not achieved results**. Approve or revise them and the total EUR
-budget using `python scripts/release_matrix.py configure-plan`. The command makes
-no provider calls. Source selection, independent annotation, semantic scoring and
-invoice reconciliation still require human work.
+The reference profile covers at most 25 expected records and 25 visited pages.
+The approved matrix is authoritative for the released profile and its thresholds;
+linked reports record the measured outcomes. Establish the profile and aggregate EUR
+budget with `python scripts/release_matrix.py configure-plan` before execution.
+That planning command makes no provider calls. Source selection, independent
+annotation, semantic scoring and invoice reconciliation have named reviewers.
+
+For cost comparisons, use the same source set, requested output, model profile and
+quality threshold. Include retries, failed and empty runs, source acquisition and
+review time. Report provider billing separately from compute and human effort.
+Deterministic processing avoids model-token charges for those operations; a
+percentage saving for an entire task requires a matched, measured baseline.
 
 Critical controls cover absent homepages, hostile page text, mixed entities, missing
 range endpoints, unknown methodology, blocked redirects, exhausted budgets and
