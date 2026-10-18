@@ -34,7 +34,7 @@ verboisy run \
 
 ### Research
 
-`--research` expands traversal depth, page limits, and link breadth. It is intentionally incompatible with `--maxrows`, ordering, grouping, and SmartID in this release candidate.
+`--research` expands traversal depth, page limits, and link breadth. It is intentionally incompatible with `--maxrows`, ordering, grouping, and SmartID in this release.
 
 This mode can use substantially more browser requests, search requests, model tokens, time, and provider budget.
 
