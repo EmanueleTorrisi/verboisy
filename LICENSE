@@ -1,83 +1,412 @@
-VERBOISY SOURCE INSPECTION LICENSE 1.0
-SPDX-License-Identifier: LicenseRef-Verboisy-Source-Inspection-1.0
+VERBOISY SOURCE INSPECTION LICENSE 2.0
+SPDX-License-Identifier: LicenseRef-Verboisy-Source-Inspection-2.0
 
 Copyright (c) 2026 Emanuele Torrisi <emanueletorrisi98@gmail.com>
-All rights reserved except as expressly granted below.
+All rights reserved, except as expressly provided in this License or by law.
 
-1. Scope and ownership
+IMPORTANT NOTICE
 
-These terms apply to Verboisy project-authored source code, documentation and
-other material accompanying this license (the "Material"). Emanuele Torrisi is
-the licensor. The Material is proprietary. Source visibility does not make it
-open-source software or grant a general right to use the software.
+Verboisy is proprietary, source-visible software. It is NOT open-source or
+free software. The availability of its source code, including in a public
+repository, does not by itself authorize anyone to execute, build, test,
+modify, distribute, deploy, integrate, train models on, or commercially use
+Verboisy. This License provides only the narrow inspection permissions stated
+below. Additional rights require a separate written agreement with the
+Licensor, subject always to applicable law and independent platform rights.
 
-2. Limited permission for source inspection
+1. DEFINITIONS
 
-You may view and read the Material and retain a local, unmodified copy solely
-for private source inspection, including technical and commercial due diligence.
-Retain this license and all copyright, attribution and third-party notices.
-You may quote limited relevant excerpts in a private report to the licensor.
-These permissions do not authorize executing the software or supplying it to
-another person. No fee is charged for these source-inspection permissions.
+1.1. "Licensor" means Emanuele Torrisi, as identified above, and any lawful
+successor or assignee of the relevant rights.
 
-Where the Material is made public on GitHub, viewing and forking within that
-service are also permitted to the extent required by GitHub's applicable terms.
-Such hosting permissions do not grant execution, modification, redistribution
-outside those service permissions, deployment or commercial exploitation rights.
+1.2. "Verboisy" means the software project identified as Verboisy, including
+its project-authored source code and associated project materials.
 
-3. Separate written permission
+1.3. "Material" means the copyrightable portions of Verboisy that are owned
+or licensable by the Licensor and made available with this License, including,
+as applicable, source files, scripts, configuration, build and deployment
+files, technical documentation, diagrams, samples, and project-authored
+assets. Material does not include a component governed by an independent
+license, or third-party material that the Licensor has no authority to
+license, merely because it appears in the same repository or distribution.
 
-A separate written license from the licensor is required to run, test, modify,
-integrate, deploy, host, redistribute, sublicense or commercially exploit
-Verboisy or a derivative of its project-authored Material. This includes
-internal enterprise use, production use, offering a hosted service, and
-embedding the software in another product. A demo, trial or evaluation may be
-provided under separately agreed terms; none is granted by this notice.
+1.4. "Recipient" or "You" means an individual or legal entity obtaining or
+accessing Material and relying on a permission in this License.
 
-Request licenses, demonstrations or a paid collaboration agreement at:
-    emanueletorrisi98@gmail.com
+1.5. "Inspection" means reading and examining Material for private,
+informational assessment of its design, functionality as expressed in the
+source, provenance, security posture, and technical or commercial suitability,
+without executing it or making an altered version.
 
-An enquiry, issue report, feature suggestion, public fork or receipt of source
-code does not itself establish a license or a commercial agreement.
+1.6. "Separate Agreement" means a distinct, express written authorization
+from the Licensor or an authorized representative identifying the relevant
+Recipient and permitted activities. A commercial, evaluation, development,
+contribution, or enterprise license may be a Separate Agreement.
 
-4. Reserved rights and applicable law
+1.7. "Hosting Platform" means a third-party service on which the Licensor
+has made Material available, including GitHub, and "Platform Terms" means
+the terms applicable to that service and the relevant content.
 
-No patent license, trademark license, ownership transfer or right to use the
-Verboisy name or branding to imply endorsement is granted. All permissions not
-expressly granted are reserved. These terms do not restrict rights that cannot
-lawfully be restricted, statutory exceptions, or rights already granted under
-an applicable separate agreement. Earlier copies licensed under other terms
-remain subject to those terms; this license does not retroactively revoke them.
+2. OWNERSHIP AND CHARACTER OF THIS LICENSE
 
-5. Third-party components
+2.1. All title and intellectual-property rights in the Licensor's Material
+remain with the Licensor or the applicable rights holder. A visible source
+tree, downloadable archive, publicly accessible repository, or statement
+about potential collaboration does not transfer ownership or make the
+Material public domain.
 
-Third-party software, dependency packages, adapted material and assets retain
-their own licenses and notices. These terms do not replace or limit those
-licenses or claim ownership of third-party material. See COPYRIGHT.md and
-component-specific notices, including docker/LICENSE-APACHE-2.0.txt and
-docker/SECCOMP-NOTICE.md. An independent dependency is not restricted merely
-because Verboisy uses it.
+2.2. This is a limited, source-inspection license, not an open-source,
+free-software, trial, evaluation-execution, production, or commercial-use
+license. No right is granted by implication, estoppel, custom, course of
+dealing, or the mere technical ability to access or copy the Material, except
+to the extent applicable law requires otherwise.
 
-6. No warranty or support promise
+2.3. The permissions in this License are non-exclusive, worldwide,
+royalty-free, non-transferable, non-sublicensable, limited to the purposes
+specified here, and conditional on compliance with its terms. They remain
+in effect unless terminated under Section 15.
 
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE MATERIAL IS PROVIDED
-"AS IS", WITHOUT WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, ACCURACY OR NON-INFRINGEMENT. NO WARRANTY OF DATA COMPLETENESS,
-FACTUAL CORRECTNESS, SECURITY OR UNINTERRUPTED OPERATION IS GIVEN.
+2.4. This License limits the rights offered to Recipients. It does not
+restrict the Licensor's own ability to develop, edit, execute, build, test,
+commit, push, distribute, relicense, or commercially exploit Material to
+which the Licensor holds the necessary rights. Repository access privileges
+and contributor authorizations are separate from the public permissions
+specified here.
 
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR IS NOT LIABLE
-FOR INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES OR LOSS OF DATA,
-PROFITS OR BUSINESS ARISING FROM THE MATERIAL. THIS LIMITATION DOES NOT
-EXCLUDE LIABILITY THAT APPLICABLE LAW DOES NOT PERMIT TO BE EXCLUDED.
+3. EXPRESSLY PERMITTED INSPECTION
 
-Support, service levels, fees and permitted usage are established only by a
-separate written agreement. No employment, partnership or investment agreement
-is created by these source-inspection terms.
+Subject to this License, You may:
 
-7. Breach and continuing obligations
+(a) access, display, read, and study Material made lawfully available to You;
 
-If you exceed these permissions, the permissions granted by this license end.
-Cease the unauthorized activity and remove copies held solely under this
-license, except where retention is required by law or authorized separately.
-Ownership, reserved rights, third-party notices and the warranty and liability
-provisions continue to apply to the extent permitted by law.
+(b) download or clone and retain unmodified local copies reasonably necessary
+    for personal, private Inspection, including ordinary technical copies
+    incident to obtaining and storing the Material; and
+
+(c) prepare private notes about that Inspection and quote brief, relevant
+    excerpts in a private communication or report addressed to the Licensor
+    for due diligence, a licensing inquiry, or a vulnerability notification,
+    without publishing or supplying substantial portions of the Material.
+
+These permissions cover inspection of the text and structure of the Material.
+They do not permit running the software or accessing any live service. A copy
+must remain unmodified and must retain the complete license text and existing
+copyright, attribution, patent, trademark, and third-party notices.
+
+No fee is charged for these narrow inspection permissions. They do not grant
+any right to receive future versions, source updates, support, or access to
+non-public parts of the project.
+
+4. PUBLIC REPOSITORIES, GITHUB, AND PLATFORM RIGHTS
+
+4.1. Publishing Material on a Hosting Platform may independently allow acts
+such as viewing, displaying, or forking within that service under applicable
+Platform Terms. This License does not purport to revoke rights that the
+Licensor has granted through those Platform Terms or that cannot lawfully be
+withdrawn. Recipients must comply with the Platform Terms as well as any
+applicable limitations of this License.
+
+4.2. In particular, the permission to fork a public GitHub repository within
+GitHub is not, by itself, an additional license from the Licensor to operate
+Verboisy, distribute copies outside the rights conferred by GitHub, grant
+sublicenses, or exploit the Material commercially. Rights to perform other
+acts through GitHub depend on the Platform Terms and applicable law.
+
+4.3. Hosting services may receive rights from the repository publisher,
+including rights concerning hosting, display, service operation, and use of
+content for certain AI-related purposes. Nothing in this License overrides
+rights validly granted to such services or their affiliates through the
+Platform Terms. Consequently, this License alone cannot ensure that public
+repository content is excluded from a hosting provider's AI-related uses.
+
+4.4. Visibility and cloning are not a promise of continued availability.
+The Licensor may move, make private, archive, or remove a repository, subject
+to rights and obligations already in effect.
+
+5. ACTIVITIES REQUIRING SEPARATE WRITTEN PERMISSION
+
+Except to the extent independently authorized by applicable law, Platform
+Terms, or a Separate Agreement, this License grants no permission to:
+
+(a) execute, install, compile, interpret, build, launch, test, benchmark,
+    debug, profile, emulate, or otherwise operate any part of Verboisy;
+
+(b) edit, translate, port, adapt, refactor, patch, customize, extend, merge,
+    transform, or prepare a derivative or modified version of Material;
+
+(c) use Material in the development or maintenance of another software
+    project, product, service, model, or library, whether proprietary or
+    publicly available;
+
+(d) integrate, link, embed, package, bundle, or combine Verboisy with other
+    software or systems in a manner that uses protected Material;
+
+(e) deploy, host, provide access to, or operate Verboisy in a development,
+    staging, testing, research, production, cloud, on-premises, or other
+    environment, including for internal organizational purposes;
+
+(f) sell, rent, lease, lend, license, sublicense, assign, redistribute,
+    publish, mirror, upload, transmit, or otherwise supply Material, binaries,
+    or modified versions to another party beyond rights expressly granted;
+
+(g) offer Verboisy, a substantial part of it, or a derivative as software as
+    a service, a managed service, an API, an embedded feature, or any other
+    commercial or non-commercial service;
+
+(h) use Material for revenue-generating activity, customer delivery,
+    competitive product development, commercial evaluation by execution, or
+    other commercial exploitation, beyond the private review expressly
+    permitted by Section 3;
+
+(i) incorporate Material into datasets, model-training corpora, benchmark
+    suites, search indexes, embeddings, retrieval systems, or automated
+    code-generation workflows, or use it to train, fine-tune, distill, or
+    evaluate machine-learning or artificial-intelligence systems, except
+    where independently permitted as described above; or
+
+(j) permit a third party to do on Your behalf anything for which You lack
+    permission under this License.
+
+The examples above are illustrative, not an exhaustive surrender of rights.
+No right to an activity is inferred merely because it is not specifically
+listed. A Recipient must obtain express permission for activities outside
+Section 3 unless an independent legal basis authorizes them.
+
+To the extent the applicable law permits reservation of text-and-data-mining
+rights, the Licensor expressly reserves those rights in the Material, including
+for purposes of Article 4(3) of Directive (EU) 2019/790 as implemented by
+applicable national law. This reservation does not override mandatory
+exceptions, valid Platform Terms, or rights granted by the actual owners of
+independently licensed third-party components. Additional machine-readable
+reservations may be provided separately where appropriate.
+
+6. AUTOMATED ACCESS, SECURITY, AND SYSTEM BOUNDARIES
+
+6.1. Automated download or indexing that exceeds ordinary acts expressly
+permitted for private Inspection is not licensed by this notice. Any
+automated access remains subject to applicable Platform Terms and law.
+
+6.2. Reading source code to identify a possible vulnerability is within
+Inspection. This License does not authorize penetration testing, exploitation,
+active scanning of infrastructure, credential use, bypass of access controls,
+or interference with systems, networks, users, or data.
+
+6.3. Material may contain example endpoints, configuration values, or
+references to services and datasets. Their appearance conveys no authority
+to access those resources. Personal data, secrets, accounts, and third-party
+systems remain governed by applicable law and their own access rules.
+
+6.4. Security findings may be reported privately to the Licensor using the
+contact address in Section 17. A report does not authorize testing outside
+this License or create a bug-bounty, reward, employment, or support obligation.
+
+7. REQUIRED NOTICES AND ATTRIBUTION
+
+7.1. Preserve the text of this License and all copyright, attribution,
+third-party licensing, trademark, patent, and provenance notices in every
+copy retained under Section 3.
+
+7.2. You may not misstate the provenance, authorship, affiliation, licensing,
+or approval status of Verboisy. Neither the project name nor the name of its
+author may be used to imply endorsement, sponsorship, certification, or a
+commercial relationship without permission, except for accurate references
+permitted by law.
+
+7.3. Retaining a copy does not create a right to distribute that copy with
+or without notices. Notice preservation is an additional condition of the
+limited permission; it is not an independent redistribution grant.
+
+8. THIRD-PARTY SOFTWARE, ASSETS, AND OTHER RIGHTS
+
+8.1. Third-party libraries, dependencies, vendored packages, adapted source,
+datasets, fonts, media, and other external materials retain their applicable
+licenses and rights. Their inclusion in Verboisy does not convert them to
+proprietary Material, and this License does not remove or narrow rights that
+their own licensors have granted.
+
+8.2. Where a file or component contains both project-authored and
+third-party material, each identifiable portion remains subject to its
+applicable terms. Compliance with a third-party license does not itself
+license separate proprietary Verboisy Material.
+
+8.3. Review COPYRIGHT.md and the relevant file-level and component-specific
+notices, including docker/LICENSE-APACHE-2.0.txt and
+docker/SECCOMP-NOTICE.md where present. Those references help identify
+additional rights and obligations; they are not a representation that every
+external component has been exhaustively enumerated.
+
+8.4. No permission in this License impairs an independent right to use an
+independently obtained component under its own license, or independently
+developed material that does not infringe protected Verboisy Material.
+
+9. PATENTS, TRADEMARKS, AND OTHER INTELLECTUAL PROPERTY
+
+9.1. No express patent license, covenant not to sue, trademark or service-
+mark license, trade-secret license, design-right license, or right to use
+branding is granted, except to the extent such a right is necessarily or
+mandatorily implied by applicable law for the specific acts authorized.
+
+9.2. All intellectual-property rights not expressly granted are reserved.
+Nothing here authorizes use of the Verboisy name, logo, distinctive design,
+or project identity to market or endorse another product or service, subject
+to lawful descriptive or nominative uses.
+
+9.3. Public availability of information is not a representation that it
+constitutes a trade secret, is confidential, or is free of third-party
+rights. Any separate confidentiality obligations must arise from law or an
+applicable separate agreement, not merely from this License.
+
+10. REQUESTS FOR ADDITIONAL LICENSES
+
+10.1. Before carrying out an activity not authorized here, obtain a Separate
+Agreement specifically covering it. That agreement should identify the
+parties, licensed materials and version, permitted uses, users or seats,
+term, territory, fees if any, support, distribution rights, data handling,
+liability, and any other negotiated conditions as appropriate.
+
+10.2. A request for information, pricing, a demonstration, trial access,
+evaluation rights, redistribution rights, commercial collaboration, or
+special authorization may be sent to the address in Section 17.
+
+10.3. Silence, an unanswered inquiry, a repository star or fork, an issue,
+pull request, suggested change, feature request, verbal discussion, or
+receipt of source code does not itself form a Separate Agreement or grant
+additional rights. The Licensor is not obliged to offer or conclude one.
+
+10.4. A Separate Agreement controls over this License only for the people,
+materials, period, and activities it expressly covers. Other rights and
+restrictions continue to be determined by their applicable terms.
+
+11. FEEDBACK, ISSUES, AND CONTRIBUTIONS
+
+11.1. You may send ordinary feedback, factual bug reports, suggestions, or
+licensing inquiries where lawful and permitted by the relevant platform.
+Doing so does not entitle You to compensation, credit, acceptance, access,
+or any continuing relationship.
+
+11.2. This License does not authorize creating or submitting patches,
+modified code, or pull requests containing derivative Material. Permission
+to contribute code must be obtained separately, except to the extent an
+independent platform right or applicable law permits the particular act.
+
+11.3. Contributions may require a separate contribution agreement or
+licensing confirmation. Mere submission does not automatically transfer
+copyright ownership to the Licensor, and this License does not purport to
+assign anyone else's intellectual-property rights. Platform Terms and any
+specific contribution agreement may establish additional permissions.
+
+12. NO WARRANTY, RELIANCE, OR SUPPORT
+
+12.1. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, MATERIAL IS PROVIDED
+"AS IS" AND "AS AVAILABLE", WITHOUT EXPRESS, IMPLIED, OR STATUTORY
+WARRANTIES, INCLUDING WARRANTIES OF MERCHANTABILITY, SATISFACTORY QUALITY,
+FITNESS FOR A PARTICULAR PURPOSE, TITLE, ACCURACY, COMPLETENESS,
+NON-INFRINGEMENT, SECURITY, OR FREEDOM FROM DEFECTS.
+
+12.2. THE LICENSOR DOES NOT WARRANT THAT MATERIAL WILL BUILD, EXECUTE,
+INTEROPERATE, PRODUCE CORRECT RESULTS, BE ERROR-FREE, REMAIN AVAILABLE,
+RECEIVE UPDATES, OR BE SUITABLE FOR ANY REGULATED, SAFETY-CRITICAL,
+PRODUCTION, OR BUSINESS PURPOSE. MATERIAL MAY BE EXPERIMENTAL, INCOMPLETE,
+INSECURE, OUTDATED, OR UNSUPPORTED.
+
+12.3. No support, service level, maintenance, security response time,
+documentation update, roadmap delivery, or other service is promised. Any
+such obligation requires a Separate Agreement.
+
+13. LIMITATION OF LIABILITY
+
+13.1. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR SHALL
+NOT BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR
+CONSEQUENTIAL DAMAGES; LOSS OF PROFITS, REVENUE, BUSINESS OPPORTUNITIES,
+GOODWILL, OR ANTICIPATED SAVINGS; BUSINESS INTERRUPTION; OR LOSS,
+CORRUPTION, OR DISCLOSURE OF DATA, ARISING FROM OR RELATING TO THE MATERIAL
+OR THIS LICENSE, REGARDLESS OF THE LEGAL THEORY OR NOTICE OF POSSIBILITY.
+
+13.2. Nothing in this License excludes or limits liability for fraud, willful
+misconduct, gross negligence, death or personal injury, mandatory consumer
+protections, or any other liability to the extent that applicable law does
+not permit its exclusion or limitation. This Section does not displace any
+different enforceable arrangement in an applicable Separate Agreement.
+
+14. COMPLIANCE WITH LAW AND MANDATORY EXCEPTIONS
+
+14.1. This License neither grants permission to violate applicable law nor
+attempts to waive rights that cannot lawfully be waived. Statutory
+exceptions and limitations, exhaustion rules where applicable, rights under
+other valid licenses, and applicable platform grants remain unaffected.
+
+14.2. In particular, legally protected rights concerning computer-program
+backup copies, observation, study or testing by persons entitled to perform
+the relevant acts, error correction where the law so provides, and limited
+decompilation for interoperability remain available to the extent mandatory
+under applicable law. This License grants no broader independent right to
+execute, decompile, or reverse engineer the Material.
+
+14.3. You remain responsible for compliance with applicable data-protection,
+export-control, sanctions, intellectual-property, and cybersecurity laws
+when exercising whatever rights You independently possess.
+
+15. TERMINATION AND EFFECT OF BREACH
+
+15.1. Permissions granted solely by this License terminate automatically
+when You materially exceed their scope or fail to comply with their
+conditions. No notice or cure period is promised by this public License.
+Termination does not invalidate a separate permission that remains in force.
+
+15.2. Upon termination, cease acts undertaken solely under this License and
+delete or cease possessing copies held solely under its terminated grant,
+except to the extent retention is required by law or otherwise permitted by
+an independent right or Separate Agreement. Copies held under mandatory
+retention obligations must not be used beyond the applicable lawful purpose.
+
+15.3. Termination does not waive accrued claims or prejudice remedies
+available under applicable law. Provisions concerning ownership, notices,
+third-party rights, reserved rights, exclusions of warranty, limitations of
+liability, and other terms that by their nature should survive will survive
+to the extent permitted by law.
+
+16. INTERPRETATION, SEVERABILITY, AND VERSIONING
+
+16.1. This License is the entire public source-inspection permission for
+Material to which it applies; it does not replace valid Separate Agreements,
+independent third-party licenses, Platform Terms, or mandatory legal rights.
+
+16.2. If a provision is invalid or unenforceable in a jurisdiction, it will
+be limited to the minimum extent necessary, or severed if necessary, without
+invalidating the remaining provisions, insofar as applicable law permits.
+
+16.3. Failure or delay by the Licensor to exercise a right does not amount
+to a waiver. A waiver in one case is not a waiver in another. Headings and
+examples assist reading and do not expand the substantive grants.
+
+16.4. The Licensor may publish later versions of this License and may offer
+Material under additional or different terms. A later version does not
+automatically govern copies previously offered under an earlier version,
+and publishing it does not retroactively revoke vested permissions or
+rights validly granted under other terms. No Recipient receives a right to
+use a later license version merely because it exists.
+
+16.5. If particular files carry distinct written terms, those terms govern
+the corresponding files to the extent indicated and legally effective.
+Where terms genuinely conflict, an applicable Separate Agreement controls
+within its stated scope. Nothing in this License claims precedence over
+non-waivable law.
+
+16.6. This License does not create an employment relationship, partnership,
+joint venture, agency, franchise, investment opportunity, fiduciary duty,
+or obligation to negotiate. No Recipient may bind the Licensor.
+
+16.7. No particular governing law, exclusive court, or arbitration forum is
+selected by this public notice. Those issues are determined under applicable
+law unless the parties validly agree otherwise in a Separate Agreement.
+
+17. CONTACT AND LICENSING INQUIRIES
+
+Licensor: Emanuele Torrisi
+Email:    emanueletorrisi98@gmail.com
+
+Use this address to request permission for execution, evaluation, debugging,
+modification, contributions, integration, deployment, hosting, redistribution,
+commercial use, security testing, or another use beyond private Inspection.
+
+END OF VERBOISY SOURCE INSPECTION LICENSE 2.0
