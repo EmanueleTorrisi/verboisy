@@ -18,6 +18,8 @@
 <p align="center">Recherche fondée sur des preuves · Extraction structurée · Données locales · Provenance portable</p>
 
 
+> **État de la version :** la version `1.0.0` est prête pour une utilisation en production dans le cadre des processus documentés, des environnements pris en charge et des limites testées. La [matrice de publication](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) consigne les vérifications techniques, l’évaluation de tâches réelles, la bêta indépendante et les approbations des responsables de la publication.
+
 ## Le produit
 
 Verboisy est un moteur de recherche et d'extraction destiné aux personnes qui ont besoin d'informations structurées et veulent en comprendre l'origine. Une question, un schéma et les sources autorisées définissent le travail. Le système capture les observations, vérifie les enregistrements proposés et conserve preuves et transformations. La CLI et l'API Python permettent des processus reproductibles et la reprise d'un travail enregistré.
@@ -37,6 +39,12 @@ Un JSON ou un tableau ne suffit pas à expliquer si un fait a été observé ou 
 - **Des décisions explicites :** une proposition suspend le travail avant de remplacer la question ou le schéma.
 
 Les usages incluent analyse, données de référence, préparation de jeux de données, systèmes internes et enquêtes reproductibles. Les usages scientifiques ou réglementés nécessitent une revue indépendante des sources, de l'échantillonnage et des conclusions. L'ambition est de devenir un standard fiable d'extraction fondée sur des preuves, pas de revendiquer une position de leader déjà acquise.
+
+### Réserver l’IA aux étapes où l’interprétation apporte une valeur
+
+Verboisy associe code déterministe et IA sémantique. La lecture des fichiers structurés, la validation des schémas, la vérification des correspondances avec les preuves observées et l’export sont exécutés par le code. Les modèles contribuent à la planification et à l’interprétation lorsque le processus le demande. Les étapes déterministes ne consomment aucun token de modèle et évitent les frais d’inférence qu’entraînerait leur traitement par un LLM payant. La préparation de jeux de données locaux peut fonctionner intégralement sans fournisseur de modèles.
+
+Cette approche réduit les appels superflus et rend les dépenses vérifiables. L’économie totale dépend de la tâche, du modèle, des nouvelles tentatives et du travail de contrôle. Une comparaison équitable emploie les mêmes sources, exigences de sortie et critères de qualité, en incluant les échecs. La vérification des preuves réduit les résultats non étayés ; la justesse sémantique dépend toujours des sources et de leur examen.
 
 ## Parcours et formats
 
@@ -149,7 +157,7 @@ Python assure orchestration, contrats, adaptateurs, CLI et registres SQLite. Des
 
 Verboisy est propriétaire, **pas open source**. La licence anglaise fait autorité ; cette traduction ne change pas les permissions. Identifiant : `LicenseRef-Verboisy-Source-Inspection-1.0`. Les composants tiers conservent leurs licences. Exécution, tests, modification, intégration, distribution et hébergement nécessitent des permissions écrites séparées.
 
-Contacter **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** pour une démo, une évaluation, une licence interne/entreprise, un investissement, un partenariat ou une éventuelle collaboration rémunérée. Décrire processus, sources, volume et environnement ; ne pas envoyer de secrets ou de données confidentielles. Prix, support et droits sont convenus individuellement. Voir [licences](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) et [contacts commerciaux](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
+Contacter **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** pour une démo, une évaluation, une licence interne/entreprise, un partenariat ou une éventuelle collaboration rémunérée. Décrire processus, sources, volume et environnement ; ne pas envoyer de secrets ou de données confidentielles. Prix, support et droits sont convenus individuellement. Voir [licences](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) et [contacts commerciaux](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
 
 ## Retours et collaboration
 
@@ -167,12 +175,16 @@ Les contributions de code non sollicitées ne sont pas acceptées. Une collabora
 
 Dans les résultats ordinaires, `id` est réservé aux métadonnées générées. Les identifiants source doivent être projetés explicitement vers `source_id`; les identifiants imbriqués et de streaming restent permis. Les champs optionnels absents restent absents; null explicite est conservé. Le streaming valide chaque ligne et refuse les contraintes de collection non prises en charge. Une préparation en pause retourne le code 2. La CI est configurée; les mesures historiques concernent uniquement leur source et environnement enregistrés.
 
-[Résultats historiques ; ils ne qualifient pas automatiquement le code actuel](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json).
+[Résultats historiques](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [Preuves et approbations de publication](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
 
 ## Pourquoi choisir un accord commercial ?
 
-**Passer de l’inspection du code à un processus autorisé et accompagné.** La valeur commerciale réside dans les droits d’usage convenus et, lorsqu’elles sont achetées, les prestations spécialisées de configuration, d’intégration et de maintenance.
+Ce dépôt contient **l’édition publique de Verboisy destinée à l’inspection du code source**. Les clients commerciaux reçoivent **une édition maintenue séparément, dotée de fonctionnalités supplémentaires** qui ne sont pas distribuées dans ce dépôt.
+
+Le [comparatif des éditions](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) présente les fonctionnalités de chaque édition, les modes de déploiement pris en charge et les services disponibles. Le dépôt public continuera de recevoir des mises à jour.
+
+Les fonctionnalités livrées, droits d’utilisation, prestations d’assistance, droits aux mises à jour, tarifs et dates de livraison sont définis dans l’accord signé.
 
 | Objectif | Périmètre à convenir |
 | --- | --- |
@@ -182,10 +194,8 @@ Dans les résultats ordinaires, `id` est réservé aux métadonnées générées
 | Utiliser une infrastructure privée | Étude du déploiement et intégration des sources autorisées |
 | Planifier maintenance et assistance | Mises à jour, prestations et délais de réponse définis au contrat |
 
-Prestations, prix, délais et droits sont définis par écrit. Un téléchargement n’inclut pas automatiquement l’assistance. Ce dépôt ne contient ni niveau fonctionnel Pro distinct ni service de codes d’activation. Hébergement, planification, espaces partagés et nouveaux connecteurs sont des orientations de développement, pas des fonctions disponibles promises.
+L’édition et les services sont choisis selon le processus métier, les contraintes de déploiement et les critères de réception. Le contrat précise les livrables et les responsabilités.
 
 [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)
 
 [Installation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) · [Publication et évaluation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md)
-
-La version est `1.0.0`, mais la qualification complète reste en attente. La matrice distingue les tests techniques, les tâches réelles, la bêta indépendante et la revue du responsable de publication.
