@@ -191,7 +191,8 @@ fees, term, update entitlement, support, response commitments, data responsibili
 and termination. Obtain qualified review of the actual agreement and prior BSD
 grants. This guide creates no customer contract and revokes no historical rights.
 Sell only available capabilities and services actually included in the agreement;
-[commercial product directions](commercial.md) remain distinct from shipped features.
+[edition comparison](commercial.md) and the signed delivery schedule identify
+what the customer receives.
 
 ## Official references
 
