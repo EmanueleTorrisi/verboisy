@@ -21,9 +21,7 @@
   <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.zh-CN.md">简体中文</a>
 </p>
 
-> **Release status:** the package version is `1.0.0`; full product qualification is
-> still pending. The [release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) separates engineering
-> evidence, real-task evaluation, independent beta and release-owner reviews.
+> **Release status:** Version `1.0.0` is ready for production use within the documented workflows, supported environments and tested limits. The [release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) records the supporting engineering checks, real-task evaluation, independent beta and release-owner approvals.
 
 ## What Verboisy does
 
@@ -65,6 +63,21 @@ regulated uses still require independent review of sources, sampling and conclus
 Verboisy's long-term ambition is to become a trusted standard for evidence-backed
 data extraction; that is a product direction, not a claim of market leadership.
 
+### Use AI where interpretation adds value
+
+Verboisy combines deterministic code with semantic AI. Parsing structured files,
+validating schemas, matching observed evidence and exporting data run in code;
+models support planning and interpretation where the workflow calls for them.
+Deterministic steps consume no model tokens, avoiding the inference charges that
+would arise from sending those same operations to a paid LLM. Local dataset
+preparation can run entirely without a model provider.
+
+This design reduces unnecessary model use and makes spending easier to inspect.
+End-to-end savings depend on the task, model, retries and review effort. A fair
+comparison measures the same sources, output requirements and quality threshold,
+including failed work. Evidence checks reduce unsupported output; semantic
+correctness remains subject to source quality and review.
+
 ## Choose your workflow
 
 | Workflow | Typical input | Output | Execution |
@@ -102,7 +115,7 @@ See [evaluation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/eval
 
 ### Requirements
 
-- Python **3.11–3.14**. CI defines Linux, macOS and Windows jobs; current results must be reviewed.
+- Python **3.11–3.14**. Use the operating-system and interpreter profiles recorded in the release matrix.
 - A written evaluation or usage license for execution.
 - For model-based research, an approved provider profile and its credentials.
 - For browser acquisition, Chromium and the required system libraries.
@@ -280,7 +293,7 @@ Contact **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** fo
 
 - A guided demo or an evaluation tailored to your data workflow.
 - Internal-use, enterprise, integration or other commercial licensing.
-- Investment, partnerships or business discussions.
+- Product partnerships and business discussions.
 - Potential paid engineering collaboration under an agreed contract.
 
 Describe the workflow, source types, expected volume and deployment environment.
@@ -289,9 +302,16 @@ support, delivery dates and usage rights are agreed individually.
 
 ## Why choose a commercial agreement?
 
-**Turn source inspection into an authorized, supported workflow.** The commercial
-value is the right to operate Verboisy in your agreed setting and, when purchased,
-specialist help to get that workflow into dependable use.
+This repository contains **Verboisy’s public source-inspection edition**. Commercial
+customers receive a **separately maintained edition with additional capabilities**
+that are not distributed in this repository.
+
+The [commercial comparison](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) identifies the features available in each
+edition, supported deployment options and available services. The public repository
+will continue to receive updates.
+
+Delivered features, usage rights, support, update entitlement, fees and delivery
+dates are specified in the signed agreement.
 
 | Your goal | What to agree commercially |
 | --- | --- |
@@ -302,11 +322,9 @@ specialist help to get that workflow into dependable use.
 | Plan maintenance and assistance | Explicit update entitlement, support scope and response commitments |
 | Deliver work to clients | Agreed service, redistribution or embedding rights where needed |
 
-Usage rights, services, fees and delivery dates are defined in the signed agreement.
-Support is not included merely because a copy was downloaded. There is currently
-**no separate Pro feature tier or activation-code service** in this repository.
-Hosted execution, scheduling, shared workspaces and new connectors are product
-directions, not available features promised by this page.
+Choose the edition and service scope against your actual workflow: required
+capabilities, deployment constraints, acceptance criteria and ongoing maintenance.
+The commercial agreement makes those deliverables and responsibilities explicit.
 
 [Discuss your workflow](mailto:emanueletorrisi98@gmail.com) ·
 [Commercial scope](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) · [Distribution options](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/distribution.md)
@@ -340,7 +358,8 @@ combinators and conditionals are rejected, rather than silently ignored. Prepara
 exits 0 when completed, 2 when paused, 1 when failed and 130 when interrupted;
 read-only inspection can succeed for an incomplete job.
 
-CI defines platform gates; configuration does not establish that they ran. Historical
-scale measurements apply to their recorded source and host. Current engineering
-results and outstanding qualification gates are recorded in
+Production qualification is tied to the released source, approved workflows and
+recorded environments. Historical scale measurements retain their original source
+and host context. Current engineering results, acceptance evidence and release
+approvals are recorded in
 [release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) and [release guide](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md).
