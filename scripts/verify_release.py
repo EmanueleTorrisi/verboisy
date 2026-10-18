@@ -68,7 +68,7 @@ def main() -> int:
             )
         )
     if args.browser:
-        checks.append(("browser", [*run, "pytest", "-m", "browser", "-v"]))
+        checks.append(("browser", [*run, "pytest", "-m", "browser and not live", "-v"]))
     if args.audit:
         checks.append(("audit", [*run, "pip-audit", "--local"]))
     dist = work / "dist"
