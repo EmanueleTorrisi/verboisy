@@ -1,124 +1,104 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Commercial solutions and partnerships
+# Verboisy editions and commercial delivery
 
-Verboisy brings evidence-backed research and structured data preparation to people
-and organisations whose decisions depend on reliable information. Commercial
-engagements can begin with one research workflow and grow into an integrated data
-operation. Enquiries are handled directly by its creator, **Emanuele Torrisi**, at
-**[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**.
+Verboisy turns permitted web sources and local files into structured datasets with
+inspectable evidence. The commercial offer extends that foundation through a
+separately maintained edition, agreed deployment rights and services selected for
+the customer's actual workflow.
 
-## Who it is for
+## Two editions, a clear delivery agreement
 
-| Audience | Evaluation focus |
+This repository contains **Verboisy’s public source-inspection edition**. Commercial
+customers receive a **separately maintained edition with additional capabilities**
+that are not distributed in this repository. The public repository continues to
+receive updates as a maintained technical reference.
+
+| Area | Public source-inspection edition | Commercial delivery |
+| --- | --- | --- |
+| Core research and data preparation | Inspect the documented research, ingestion, validation and export implementations | Use the delivered, qualified build within the agreed licence scope |
+| Additional commercial capabilities | Not distributed in this repository | Identified by name and version in the commercial release notes and signed delivery schedule |
+| Execution and integration rights | Source inspection under the repository licence; execution requires separate written permission | Rights for the agreed users, environments, integrations and deployments |
+| Deployment | Inspect the documented installation and environment profiles | Supported profiles selected for the customer's environment and recorded in acceptance evidence |
+| Updates | Continuing updates to the public repository | Update entitlement and maintenance period defined in the agreement |
+| Onboarding and specialist engineering | Documentation and published examples | Available as explicitly scoped services with deliverables and acceptance criteria |
+| Support | A download does not create a support entitlement | Agreed contact, coverage, response commitments and escalation process |
+
+Delivered features, usage rights, support, update entitlement, fees and delivery
+dates are specified in the signed agreement. The edition-specific delivery schedule
+names the additional capabilities included in the purchased build; it is the
+reference for a purchase decision. Private source code is not required to make
+that feature inventory, acceptance evidence and service scope clear to a customer.
+
+## Why choose commercial delivery?
+
+The value is a workflow that fits the customer's task and operating environment:
+an identified software edition, permission to use it, measurable acceptance and
+accountable responsibilities for delivery and maintenance.
+
+| Customer objective | What the agreement establishes |
 | --- | --- |
-| Independent professionals and researchers | Repeatable research, traceable results and less manual preparation |
-| Startups and small businesses | Data workflows that fit a small team, a defined budget and existing tools |
-| Developers and technical teams | Python integration, structured contracts, reproducible processing and operational visibility |
-| Agencies and consultancies | Repeatable client delivery, reviewable evidence and agreed usage rights |
-| Enterprises and institutions | Internal sources, deployment requirements, governance and long-term maintenance |
+| Reduce repetitive research and preparation | Representative inputs, required outputs and a measured acceptance exercise |
+| Control model expenditure | Approved provider profiles, request limits, billing visibility and a cost measurement method |
+| Integrate with existing systems | Named interfaces, permitted sources and scoped integration work |
+| Operate on private infrastructure | Deployment profile, network policy, data-handling responsibilities and tested limits |
+| Maintain a dependable workflow | Update entitlement, compatibility expectations, support and recovery procedures |
+| Deliver services or embed the engine | Appropriate client-service, integration, redistribution or deployment rights |
 
-## Commercial engagement
+Predictable operations run in deterministic code without model-token charges.
+Models support planning and interpretation where required. This avoids unnecessary
+inference and makes cost easier to inspect. Whole-task savings are evaluated against
+the same inputs, output requirements and quality criteria, including retries and
+failed work. See [evaluation](evaluation.md) for the measurement protocol.
 
-The current commercial value is permission to operate Verboisy for an agreed use,
-plus services explicitly purchased with that agreement. There is no separate Pro
-feature tier or activation-code service implemented in this repository.
+## Deployment and services
 
-| Customer objective | What a scoped agreement can provide |
-| --- | --- |
-| Move from inspection to daily use | Written execution/internal-use rights for defined users and deployments |
-| Embed the workflow in a product | Appropriate modification, integration and distribution rights |
-| Reduce evaluation and setup effort | Onboarding, schema design and a representative acceptance exercise |
-| Work with approved private sources | Deployment assessment and specifically commissioned integration work |
-| Plan ongoing operation | Explicit update entitlement, maintenance scope and response commitments |
+Choose a delivered wheel or a private registry according to the agreement. Local
+workstation, customer-managed server and private-container deployments are scoped
+to the operating-system, interpreter and infrastructure profiles in the delivery
+record. Hosted operation is available only where it is explicitly included and
+qualified for the contracted service.
 
-These services are not automatically included with a download. Agree delivery dates,
-acceptance criteria and fees in writing. The roadmap below describes possible future
-offerings and must not be presented as delivered functionality.
-
-Contact the maintainer to discuss demonstrations, scoped evaluations, commercial
-usage rights, integration projects or a deployment assessment. An engagement starts
-with representative inputs, target outputs and measurable success criteria.
-Licensing, engineering work, delivery dates and any support commitments are defined
-in a written agreement; a repository listing is not a purchased service entitlement.
-
-A useful proposal describes source types, approximate volume, expected users,
-deployment preferences and the business outcome. Small projects and individual
-users are welcome; an enterprise procurement process is not a prerequisite for an
-enquiry. Pricing is agreed for the scope rather than implied by this page.
-
-## Paid product direction
-
-The commercial roadmap extends beyond permission to execute the software. Its
-focus is reducing the work required to operate, integrate and maintain research
-and data pipelines. The following priorities guide product development and scoped
-commercial discussions; availability and delivery are confirmed in each proposal.
-
-| Product area | Intended customer benefit |
-| --- | --- |
-| Hosted research and managed execution | Submit work without operating research infrastructure |
-| Scheduled workflows and monitoring | Refresh datasets, follow job progress and receive actionable failure notifications |
-| Team workspaces | Share workflows and review results with access controls and audit history |
-| Internal-source integrations | Connect approved databases, APIs, business applications and document repositories |
-| Private deployments | Align execution with customer infrastructure, network and data-handling requirements |
-| High-volume processing | Plan resource limits, workload capacity, recovery and operating costs |
-| Integration interfaces | Embed workflows through APIs, SDKs and application-specific adapters |
-| Quality and provenance tooling | Review source evidence, transformations, coverage and dataset changes |
-| Onboarding and specialist engineering | Adapt schemas, connectors and workflows to a defined use case |
-| Support and maintenance agreements | Establish accountable assistance, upgrade planning and agreed response commitments |
-
-These priorities serve individuals, small teams and larger organisations. Product
-editions, hosting options and service packages will be described as they are
-introduced. No fixed delivery date or universal connector support is implied.
-
-## Public repository and version policy
-
-For initial private sales, deliver a tested wheel and the customer's actual agreement
-through a protected channel. A registry read token may gate later downloads; it does
-not disable installed copies. [Distribution](distribution.md) gives the terminal
-commands for public PyPI uploads, private deliveries and customer installation.
-
-The public repository is intended to remain a maintained technical reference,
-with documented capabilities, examples and versioned changes. Public updates and
-commercial development will proceed alongside one another. Enterprise-specific
-integrations, managed-service infrastructure or contracted extensions may be
-distributed separately under the applicable agreement.
-
-Repository visibility does not alter execution rights. The current
-[source inspection license](licensing.md) remains authoritative. Any future public
-edition, evaluation permission or paid edition will carry explicit terms rather
-than relying on an assumed right to use downloadable code.
-
-## Evaluation and deployment
-
-Evaluate representative inputs and permitted sources against the same schema and
-review criteria. Measure correctness, evidence coverage, completion within the
-declared scope, latency, request usage and billed cost. Include failed and empty
-runs. See [evaluation](evaluation.md) and [workflow examples](examples.md).
+Onboarding, schema design, source integration, private-deployment assessment and
+ongoing assistance are separately scoped services. Each proposal identifies its
+deliverables, dependencies, acceptance criteria and dates. This page does not
+imply universal connectors, a hosted account or an activation-code service.
 
 Local source access and model execution are separate choices. Deterministic local
-preparation can run without a model provider; using a remote model may send
-observations outside the deployment. Ledgers and exports can contain sensitive
-material. Agree filesystem access, network egress, retention, storage limits and
-operational responsibilities before deployment. Review the [security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
+preparation can operate without a model provider. Remote models may receive source
+observations; the deployment agreement defines network access, retention, storage
+and operational responsibilities. Review the [security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
 
-Initial enquiries should contain a short description and shareable examples, not
-credentials or confidential datasets. Sensitive material can be exchanged after
-appropriate confidentiality and data-handling arrangements are agreed.
+## Evaluation, delivery and maintenance
 
-## Partnerships and paid collaboration
+1. Define the task, permitted sources, output contract and operating environment.
+2. Identify the edition and additional capabilities included in the proposed build.
+3. Agree success criteria, deployment responsibilities and an evaluation budget.
+4. Evaluate representative inputs, including missing information, failures and recovery.
+5. Deliver the tested artifacts, release notes, licence agreement and installation instructions.
+6. Establish support contact, update entitlement and the response to a failed release.
 
-Investment, product partnerships and paid engineering enquiries are welcome.
-Verboisy is currently created and maintained by Emanuele Torrisi as its sole
-developer. Any future contracted work requires agreement on scope, compensation,
-confidentiality and intellectual-property ownership before implementation begins.
-Unsolicited code contributions are not currently accepted.
+The customer receives the artifacts that passed acceptance, with their version and
+hashes. Download credentials control access to future downloads; revoking them does
+not disable an already installed copy. [Distribution](distribution.md) describes
+PyPI publication, private delivery and customer installation.
 
-The long-term ambition is to establish Verboisy as a trusted standard for
-evidence-backed research and data extraction: useful to an individual analyst and
-extensible to a larger data operation. Progress is documented through versioned
-changes and demonstrated outcomes.
+Repository visibility does not change the [source-inspection licence](licensing.md).
+The signed commercial agreement provides the applicable execution and delivery rights.
+Third-party components retain their respective terms.
+
+## Discuss a workflow
+
+Contact **[Emanuele Torrisi](mailto:emanueletorrisi98@gmail.com)** with the source types,
+approximate volume, required outputs, deployment preference and the outcome you want
+to improve. Individual professionals, small teams and enterprises are welcome.
+Share representative, non-confidential examples first. Credentials and private
+datasets should only be exchanged through agreed protected channels.
+
+Product partnerships and scoped paid engineering discussions are welcome.
+Collaborative work requires agreement on responsibilities, compensation,
+confidentiality and intellectual-property ownership before implementation.
 
 ---
 
-[Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
+[Overview](index.md) · [Evaluation](evaluation.md) · [Licensing](licensing.md) · [Distribution](distribution.md)
