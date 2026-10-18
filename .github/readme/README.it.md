@@ -18,6 +18,8 @@
 <p align="center">Ricerca con prove · Estrazione strutturata · Dati locali · Provenienza portabile</p>
 
 
+> **Stato del rilascio:** la versione `1.0.0` è pronta per l’uso in produzione nei flussi documentati, negli ambienti supportati e nei limiti verificati. La [matrice di rilascio](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) documenta le verifiche tecniche, la valutazione su attività reali, la beta indipendente e le approvazioni dei responsabili del rilascio.
+
 ## Il prodotto
 
 Verboisy è un motore di ricerca ed estrazione dei dati per chi ha bisogno di informazioni strutturate e vuole capire da dove provengono. Una domanda, uno schema e le fonti consentite definiscono il lavoro: il sistema acquisisce osservazioni, verifica i record proposti e conserva le prove e le trasformazioni che portano al risultato. CLI e API Python permettono flussi ripetibili e ripresa del lavoro salvato.
@@ -37,6 +39,12 @@ Un JSON o una tabella non spiegano, da soli, se un fatto sia stato osservato o c
 - **Decisioni esplicite:** una proposta di cambiamento interrompe il lavoro prima di sostituire domanda o schema.
 
 È utile per analisi, dati di riferimento, preparazione di dataset, sistemi interni e indagini riproducibili. Ricerca scientifica e usi regolamentati richiedono revisione indipendente di fonti, campionamento e conclusioni. L'ambizione è diventare uno standard affidabile per l'estrazione dei dati con prove verificabili, non dichiarare una leadership già raggiunta.
+
+### AI dove l’interpretazione crea valore
+
+Verboisy combina codice deterministico e AI semantica. Lettura dei file strutturati, validazione degli schemi, confronto delle prove osservate ed esportazione vengono eseguiti dal codice; i modelli intervengono nella pianificazione e nell’interpretazione quando richiesto dal flusso. I passaggi deterministici non consumano token del modello ed evitano i costi di inferenza necessari per affidare le stesse operazioni a un LLM a pagamento. La preparazione di dataset locali può avvenire interamente senza provider di modelli.
+
+Questo approccio riduce le chiamate superflue e rende la spesa verificabile. Il risparmio complessivo dipende da attività, modello, tentativi e revisione. Un confronto corretto usa le stesse fonti, gli stessi requisiti di output e la stessa soglia di qualità, includendo i tentativi falliti. I controlli sulle prove riducono gli output non supportati; la correttezza semantica richiede fonti affidabili e revisione.
 
 ## Flussi e formati
 
@@ -149,7 +157,7 @@ Python gestisce orchestrazione, contratti, adattatori, CLI e registri SQLite. Co
 
 Verboisy è software proprietario, **non open source**. La licenza inglese è il testo vincolante; questa traduzione non ne modifica i termini. Identificatore: `LicenseRef-Verboisy-Source-Inspection-1.0`. I componenti di terze parti conservano le proprie licenze. Esecuzione, test, modifica, integrazione, distribuzione e hosting richiedono permessi scritti separati.
 
-Contatta **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** per demo, valutazioni, licenze interne o enterprise, investimenti, partnership o eventuale collaborazione retribuita. Indica flusso, fonti, volume e ambiente; non inviare credenziali o dati riservati. Prezzi, supporto e diritti vengono concordati individualmente. Vedi [licenze](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) e [opportunità commerciali](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
+Contatta **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** per demo, valutazioni, licenze interne o enterprise, partnership o eventuale collaborazione retribuita. Indica flusso, fonti, volume e ambiente; non inviare credenziali o dati riservati. Prezzi, supporto e diritti vengono concordati individualmente. Vedi [licenze](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) e [opportunità commerciali](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
 
 ## Feedback e collaborazione
 
@@ -167,12 +175,16 @@ Non si accettano contributi di codice non richiesti. Le collaborazioni retribuit
 
 Nei risultati ordinari, `id` è riservato ai metadati generati. Gli ID della fonte richiedono una proiezione esplicita a `source_id`; restano validi gli ID annidati e dello streaming. I campi opzionali assenti restano assenti; null esplicito viene conservato. Lo streaming convalida singole righe e rifiuta i vincoli di collezione non supportati. Una preparazione in pausa restituisce il codice 2. La CI è configurata; le misure storiche valgono soltanto per il codice sorgente e l’ambiente registrati.
 
-[Risultati storici; non qualificano automaticamente il codice corrente](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json).
+[Risultati storici](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [Evidenze e approvazioni del rilascio](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
 
 ## Perché scegliere un accordo commerciale?
 
-**Dall’ispezione del codice a un flusso di lavoro autorizzato e assistito.** Il valore commerciale comprende i diritti d’uso concordati e, se acquistati, servizi specialistici per configurare, integrare e mantenere il flusso.
+Questo repository contiene **l’edizione pubblica di Verboisy destinata all’ispezione del codice sorgente**. I clienti commerciali ricevono **un’edizione mantenuta separatamente, con funzionalità aggiuntive** non distribuite in questo repository.
+
+Il [confronto tra le edizioni](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) descrive le funzionalità disponibili in ciascuna edizione, le opzioni di deployment supportate e i servizi disponibili. Il repository pubblico continuerà a ricevere aggiornamenti.
+
+Funzionalità consegnate, diritti d’uso, supporto, diritto agli aggiornamenti, corrispettivi e date di consegna sono definiti nell’accordo sottoscritto.
 
 | Obiettivo | Ambito da concordare |
 | --- | --- |
@@ -182,10 +194,8 @@ Nei risultati ordinari, `id` è riservato ai metadati generati. Gli ID della fon
 | Operare in ambienti privati | Valutazione del deployment e integrazione delle fonti autorizzate |
 | Pianificare manutenzione e supporto | Aggiornamenti, assistenza e tempi di risposta definiti nel contratto |
 
-Servizi, prezzi, scadenze e diritti dipendono dall’accordo scritto. Il download non include automaticamente il supporto. Questo repository non contiene un livello Pro separato né un servizio di attivazione con codici. Hosting, pianificazione, spazi di lavoro condivisi e nuovi connettori sono obiettivi di sviluppo, non funzionalità già promesse.
+L’edizione e i servizi si scelgono in base al flusso operativo, ai requisiti di deployment e ai criteri di accettazione. Il contratto rende espliciti risultati attesi e responsabilità.
 
 [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)
 
 [Installazione](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) · [Rilascio e valutazione](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md)
-
-La versione è `1.0.0`, ma la qualificazione completa è ancora in sospeso. La matrice distingue test tecnici, valutazione su casi reali, beta indipendente e revisione del responsabile del rilascio.
