@@ -18,6 +18,8 @@
 <p align="center">근거 기반 조사 · 구조화 추출 · 로컬 데이터 · 이동 가능한 출처 기록</p>
 
 
+> **릴리스 상태:** 버전 `1.0.0`은 문서화된 워크플로, 지원 환경 및 검증된 한도 내에서 프로덕션 사용이 가능합니다. [릴리스 매트릭스](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json)는 이를 뒷받침하는 기술 검증, 실제 작업 평가, 독립 베타 테스트 및 릴리스 책임자의 승인을 기록합니다.
+
 ## 제품 소개
 
 Verboisy는 구조화된 정보와 그 정보의 출처를 확인하는 방법이 필요한 사용자를 위한 조사·데이터 추출 엔진입니다. 질문, 스키마, 허용된 출처로 작업을 정의합니다. 관찰 내용을 수집하고 제안된 레코드를 검증하며 근거와 출력 변환을 보존합니다. CLI와 Python API로 반복 가능한 작업과 저장된 작업의 재개가 가능합니다.
@@ -37,6 +39,12 @@ JSON이나 표만으로는 사실을 직접 관찰했는지, 값이 어떻게 �
 - **명시적인 결정:** 질문이나 스키마를 몰래 바꾸지 않고 변경안을 제시하여 작업을 일시 중지합니다.
 
 분석, 참조 데이터 수집, 데이터 준비, 내부 정보 업무 및 재현 가능한 조사에 유용합니다. 과학 연구나 규제 대상 용도에서는 출처, 표본, 결론을 독립적으로 검토해야 합니다. 장기 목표는 신뢰할 수 있는 근거 기반 데이터 추출 표준이 되는 것이며, 이미 시장을 선도한다는 주장이 아닙니다.
+
+### 해석이 가치를 더하는 작업에 AI 활용
+
+Verboisy는 결정론적 코드와 의미 해석을 담당하는 AI를 결합합니다. 구조화된 파일 읽기, 스키마 검증, 관찰된 근거와의 대조 및 내보내기는 코드로 실행하고, 워크플로에 필요한 계획과 해석에 모델을 활용합니다. 결정론적 단계는 모델 토큰을 소비하지 않으므로 같은 작업을 유료 LLM에 맡길 때 발생하는 추론 요금을 피할 수 있습니다. 로컬 데이터셋 준비는 모델 제공업체 없이도 완결할 수 있습니다.
+
+이 설계는 불필요한 모델 호출을 줄이고 지출을 확인하기 쉽게 합니다. 전체 비용 절감 폭은 작업, 모델, 재시도 및 검토 노력에 따라 달라집니다. 공정한 비교는 동일한 출처, 출력 요구 사항 및 품질 기준을 적용하고 실패한 시도까지 포함합니다. 근거 검증은 뒷받침되지 않는 출력을 줄이지만, 의미적 정확성을 위해서는 신뢰할 수 있는 출처와 내용 검토가 필요합니다.
 
 ## 작업 흐름과 형식
 
@@ -149,7 +157,7 @@ Python은 오케스트레이션, 계약, 어댑터, CLI 및 SQLite 원장을 담
 
 Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 LICENSE가 공식 조건이며 이 번역은 권리를 변경하지 않습니다. 식별자는 `LicenseRef-Verboisy-Source-Inspection-1.0`입니다. 제삼자 구성 요소는 각자의 라이선스를 유지합니다. 실행, 테스트, 수정, 통합, 배포 및 호스팅에는 별도 서면 허가가 필요합니다.
 
-데모, 평가, 사내·기업 라이선스, 투자, 제휴 및 향후 유급 협업은 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** 으로 문의하세요. 작업 흐름, 출처, 규모, 환경을 설명하고 자격 증명이나 기밀 자료는 보내지 마세요. 가격, 지원 및 권리는 개별 합의합니다. [라이선스](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)와 [상업 문의](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)를 참조하세요.
+데모, 평가, 사내·기업 라이선스, 제휴 및 향후 유급 협업은 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** 으로 문의하세요. 작업 흐름, 출처, 규모, 환경을 설명하고 자격 증명이나 기밀 자료는 보내지 마세요. 가격, 지원 및 권리는 개별 합의합니다. [라이선스](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)와 [상업 문의](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)를 참조하세요.
 
 ## 피드백과 협업
 
@@ -167,12 +175,16 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 
 일반 출력의 `id`는 생성된 메타데이터용입니다. 원본 ID는 명시적으로 `source_id`에 투영해야 하며, 중첩 ID와 스트리밍 ID는 유지됩니다. 누락된 선택 필드는 그대로 누락되고 명시적 null은 유지됩니다. 스트리밍은 개별 행을 검증하고 지원되지 않는 배열 전체 제약은 거부합니다. 일시 중지된 준비 작업은 종료 코드 2를 반환합니다. CI는 구성되어 있지만 과거 측정은 기록된 소스와 실행 환경에만 적용됩니다.
 
-[과거 결과이며 현재 소스의 검증 완료를 자동으로 의미하지 않습니다](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json).
+[과거 검증 결과](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [릴리스 근거 및 승인](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
 
 ## 상업 계약을 선택하는 이유
 
-**소스 열람에서 허가된 운영과 전문 지원으로.** 상업 계약의 가치는 합의된 사용 권한과, 별도로 구매하는 경우 제공되는 설정·통합·유지보수 지원에 있습니다.
+이 저장소에는 **소스 코드를 열람하고 검토하기 위한 Verboisy 공개 에디션**이 포함되어 있습니다. 상업용 고객에게는 **추가 기능을 갖추고 별도로 유지보수되는 에디션**을 제공합니다. 이러한 추가 기능은 이 저장소에서 배포하지 않습니다.
+
+[에디션 비교](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)에는 각 에디션의 기능, 지원하는 배포 방식 및 이용 가능한 서비스가 설명되어 있습니다. 공개 저장소도 계속 업데이트됩니다.
+
+제공 기능, 사용 권한, 지원, 업데이트 제공 범위, 요금 및 납품 일정은 서명된 계약에 명시합니다.
 
 | 목표 | 계약으로 정할 범위 |
 | --- | --- |
@@ -182,10 +194,8 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 | 비공개 인프라에서 운영 | 배포 환경 검토와 허가된 소스 통합 |
 | 유지보수와 지원 계획 | 계약에 명시된 업데이트, 지원 범위, 응답 시간 |
 
-서비스, 가격, 일정과 권한은 서면 계약으로 정합니다. 다운로드만으로 지원이 포함되지는 않습니다. 이 저장소에는 별도 기능을 제공하는 Pro 등급이나 활성화 코드 서비스가 없습니다. 호스팅, 예약 실행, 공유 작업 공간과 새 커넥터는 개발 방향이며 현재 제공되는 기능에 대한 약속이 아닙니다.
+업무 흐름, 배포 요구 사항 및 인수 기준에 맞춰 에디션과 서비스를 선택합니다. 계약은 제공 항목과 책임 범위를 명확하게 정합니다.
 
 [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)
 
 [설치](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) · [릴리스와 평가](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md)
-
-버전은 `1.0.0`이지만 전체 제품 검증은 아직 완료되지 않았습니다. 매트릭스는 기술 시험, 실제 작업 평가, 독립 베타 시험과 릴리스 담당자 검토를 구분합니다.
