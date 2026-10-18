@@ -240,8 +240,9 @@ are limited to 1..1000 rows, with no full-dataset result list.
 Staged export files are flushed/fsynced, directory entries sync where supported, and
 the manifest publishes last. Preparation exits 0/2/1/130 for completed/paused/failed/
 interrupted outcomes. Status inspection can exit 0 for a paused job. Historical million-row
-results apply to their recorded source/host; see the current offline evidence and
-[validation](validation.md) for unqualified resource, platform and durability gates.
+results apply to their recorded source and host. The [release record](release.md)
+identifies qualified resource limits, platforms and recovery behavior. Consult
+[validation](validation.md) for the checks used to maintain that scope.
 
 ---
 
