@@ -109,7 +109,7 @@ def export_stream(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
         for staged in stage:
-            with staged.open("rb") as stream:
+            with staged.open("r+b") as stream:
                 os.fsync(stream.fileno())
         sync_directory(Path(temp))
         # A failed replacement must leave no stale manifest certifying mixed files.

@@ -4,6 +4,8 @@
 """Atomic publication flushes content before rename and syncs directory boundaries."""
 
 import errno
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 from verboisy.storage import exporters
@@ -25,17 +27,28 @@ def test_publication_sync_follows_replace(tmp_path, monkeypatch):
     assert not list(tmp_path.glob("*.tmp"))
 
 
-@pytest.mark.parametrize("code", [errno.EINVAL, errno.EIO])
+@pytest.mark.parametrize("code", [None, errno.EINVAL, errno.EIO])
 def test_directory_sync_only_ignores_unsupported(tmp_path, monkeypatch, code):
-    def fail(_fd):
-        raise OSError(code, "synthetic")
+    fake_os = SimpleNamespace(
+        name="posix",
+        O_RDONLY=0,
+        O_DIRECTORY=0,
+        open=Mock(return_value=42),
+        fsync=Mock(side_effect=OSError(code, "synthetic") if code is not None else None),
+        close=Mock(),
+    )
 
-    monkeypatch.setattr(exporters.os, "fsync", fail)
-    if code == errno.EINVAL:
+    monkeypatch.setattr(exporters, "os", fake_os)
+
+    if code is None:
+        assert exporters.sync_directory(tmp_path) is True
+    elif code == errno.EINVAL:
         assert exporters.sync_directory(tmp_path) is False
     else:
         with pytest.raises(OSError):
             exporters.sync_directory(tmp_path)
+
+    fake_os.close.assert_called_once_with(42)
 
 
 def test_platform_without_directory_sync_is_explicit(tmp_path, monkeypatch):
