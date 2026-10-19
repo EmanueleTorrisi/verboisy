@@ -42,7 +42,11 @@ evaluation or enterprise license, contact [Emanuele Torrisi](mailto:emanueletorr
 
 ## See the CLI in use
 
-[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc)
+<p align="center">
+  <a href="https://asciinema.org/a/kao32h7xRRkFwtkc">
+    <img src=".github/assets/verboisy-demo.gif" alt="Verboisy CLI Demo">
+  </a>
+</p>
 
 ## Why this approach matters
 
