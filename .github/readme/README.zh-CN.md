@@ -30,7 +30,7 @@ Verboisy 是一个研究与数据提取引擎，面向需要结构化信息并�
 
 ## 查看 CLI 操作演示
 
-[观看终端录屏](https://asciinema.org/a/kao32h7xRRkFwtkc).
+[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
 ## 这种设计的意义
 
