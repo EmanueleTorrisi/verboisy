@@ -28,6 +28,14 @@ También prepara conjuntos locales o HTTP declarados con adaptadores determinist
 
 **Código consultable, uso con licencia independiente.** [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) permite inspeccionar el código, no ejecutarlo. Pruebas, modificaciones y despliegue requieren un acuerdo escrito separado. Los ejemplos describen uso autorizado.
 
+## La CLI en funcionamiento
+
+[Ver la grabación del terminal](https://asciinema.org/a/kao32h7xRRkFwtkc).
+
+Sigue el flujo de `verboisy run`, desde la definición del objetivo y el esquema hasta la exportación. El ejemplo de NASA utiliza una captura guardada previamente para mostrar la preparación determinista de un conjunto de datos.
+
+La vista previa del terminal muestra como máximo cinco filas y cinco columnas. Los encabezados y valores largos terminan en `...`; este recorte no modifica los datos exportados.
+
 ## Por qué importa este enfoque
 
 Un JSON o una tabla no explican por sí mismos si un hecho fue observado ni cómo se obtuvo un valor. Verboisy incorpora estas comprobaciones al proceso:
@@ -63,7 +71,7 @@ Capturar binarios no significa OCR ni interpretación universal de documentos. O
 
 ## Instalación y configuración
 
-Se necesitan Python **3.11–3.14** y autorización escrita para ejecutar el software. Poetry es una herramienta de desarrollo; el comando instalado es `verboisy`. La CI define tareas para Linux, macOS y Windows; hay que revisar sus resultados actuales. La investigación web requiere un proveedor configurado, Chromium y bibliotecas del sistema. Las fuentes locales necesitan directorios autorizados y espacio en disco. No se necesita compilador C++.
+Se necesitan Python **3.11–3.14** y autorización escrita para ejecutar el software. Poetry es una herramienta de desarrollo; el comando instalado es `verboisy`. Utiliza los perfiles de sistema operativo e intérprete indicados en la matriz de publicación. La investigación web requiere un proveedor configurado, Chromium y bibliotecas del sistema. Las fuentes locales necesitan directorios autorizados y espacio en disco. No se necesita compilador C++.
 
 Ejecuta los siguientes comandos desde una copia autorizada del repositorio. Con pipx instalado, `pipx install .` permite usar el comando fuera del proyecto. Tras la publicación autorizada en PyPI: `pipx install verboisy`. No se da por supuesta su disponibilidad en PyPI. `python examples/local_quickstart.py` verifica dos registros sintéticos sin modelos ni navegador.
 
@@ -112,8 +120,10 @@ Las aplicaciones asíncronas usan `arun`. La API habitual materializa los regist
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/datos-verboisy"]'
 verboisy run \
+  --goal "Prepara las observaciones locales según el esquema proporcionado conservando los valores de origen" \
   --dataset-file 'jsonl=/srv/datos-verboisy/observaciones.jsonl' \
   --schema esquema-observaciones.json \
+  --mass-unit source --length-unit source --date-format source \
   --export observaciones.json
 ```
 
@@ -155,7 +165,7 @@ Python gestiona orquestación, contratos, adaptadores, CLI y registros SQLite. C
 
 ## Licencias, demos y consultas comerciales
 
-Verboisy es software propietario, **no open source**. La licencia inglesa es la autoridad; esta traducción no altera permisos. Identificador: `LicenseRef-Verboisy-Source-Inspection-1.0`. Los componentes de terceros conservan sus licencias. Ejecución, pruebas, modificación, integración, distribución y hosting requieren permisos escritos separados.
+Verboisy es software propietario, **no open source**. La licencia inglesa es la autoridad; esta traducción no altera permisos. La versión aplicable figura en el archivo [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) entregado con el software. Los componentes de terceros conservan sus licencias. Ejecución, pruebas, modificación, integración, distribución y hosting requieren permisos escritos separados.
 
 Contactar con **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** para demos, evaluaciones, licencias internas o enterprise, asociaciones o posible colaboración remunerada. Describir flujo, fuentes, volumen y entorno; no enviar secretos ni datos confidenciales. Precios, soporte y derechos se acuerdan individualmente. Véanse [licencias](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) y [consultas comerciales](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
 
@@ -164,6 +174,7 @@ Contactar con **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com
 **Emanuele Torrisi** crea y mantiene Verboisy y es actualmente su único desarrollador. [Informes de errores y solicitudes de funciones](https://github.com/EmanueleTorrisi/verboisy/issues) son bienvenidos. Las vulnerabilidades se comunican en privado según la [política de seguridad](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
 
 No se aceptan contribuciones de código no solicitadas. La colaboración remunerada requiere acuerdos previos sobre alcance, compensación, confidencialidad y propiedad intelectual. Los cambios se registran en el [changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md); el [historial](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md) describe la evolución de 0.1.0 a 1.0.0. Consulta [participación](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md) y [derechos](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md).
+
 ## Ejemplos de flujos
 
 [Catálogo de instituciones de investigación](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
@@ -173,7 +184,7 @@ No se aceptan contribuciones de código no solicitadas. La colaboración remuner
 
 ## Contratos de datos y cualificación
 
-En resultados ordinarios, `id` está reservado para metadatos generados. Los IDs de origen requieren una proyección explícita a `source_id`; se conservan los IDs anidados y de streaming. Los campos opcionales ausentes siguen ausentes; null explícito se conserva. Streaming valida filas individuales y rechaza condiciones de colección no compatibles. Una preparación pausada devuelve código 2. CI está configurada; las mediciones históricas corresponden únicamente a su código fuente y entorno registrados.
+En resultados ordinarios, `id` está reservado para metadatos generados. Los IDs de origen requieren una proyección explícita a `source_id`; se conservan los IDs anidados y de streaming. Los campos opcionales ausentes siguen ausentes; null explícito se conserva. Streaming valida filas individuales y rechaza condiciones de colección no compatibles. Una preparación pausada devuelve código 2. Las mediciones históricas corresponden al código fuente y al entorno indicados en cada informe.
 
 [Resultados históricos](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [Evidencias y aprobaciones de publicación](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
@@ -182,7 +193,7 @@ En resultados ordinarios, `id` está reservado para metadatos generados. Los IDs
 
 Este repositorio contiene **la edición pública de Verboisy destinada a la inspección del código fuente**. Los clientes comerciales reciben **una edición mantenida por separado, con funcionalidades adicionales** que no se distribuyen en este repositorio.
 
-La [comparación de ediciones](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) describe las funciones disponibles en cada edición, las opciones de despliegue compatibles y los servicios disponibles. El repositorio público seguirá recibiendo actualizaciones.
+La [comparación de ediciones](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) describe el alcance de las ediciones, las opciones de despliegue y los servicios. Las notas de la versión comercial y el acuerdo firmado identifican las funciones adicionales entregadas. El repositorio público seguirá recibiendo actualizaciones.
 
 Las funcionalidades entregadas, los derechos de uso, la asistencia, el derecho a actualizaciones, los precios y las fechas de entrega se especifican en el acuerdo firmado.
 
