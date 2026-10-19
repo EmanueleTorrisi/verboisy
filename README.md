@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB" alt="Python 3.11–3.14" />
   <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Source%20inspection%20only-7057ff" alt="Source inspection license" /></a>
 </p>
-<p align="center"><a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#what-verboisy-does">Overview</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#getting-started">Getting started</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#documentation">Documentation</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#licensing-demos-and-commercial-enquiries">Demos & licensing</a></p>
+<p align="center"><a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#what-verboisy-does">Overview</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#see-the-cli-in-use">Demo</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#getting-started">Getting started</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#documentation">Documentation</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#licensing-demos-and-commercial-enquiries">Demos & licensing</a></p>
 
 <p align="center">
   <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.it.md">Italiano</a> ·
@@ -30,7 +30,7 @@ information and a way to inspect where it came from. Define a question, a schema
 and permitted sources. Verboisy acquires observations, checks proposed records,
 retains evidence and produces datasets with traceable output transformations.
 
-The same project also prepares existing local and declared HTTP datasets through
+Verboisy also prepares existing local and declared HTTP datasets through
 deterministic adapters. A separate streaming workflow handles large local inputs
 without returning every row in one in-memory list. The CLI and Python API support
 repeatable workflows, saved state and explicit recovery.
@@ -39,6 +39,16 @@ repeatable workflows, saved state and explicit recovery.
 [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE). Running, testing, modifying or deploying Verboisy requires a
 separate written license. The examples below describe authorized use. For a demo,
 evaluation or enterprise license, contact [Emanuele Torrisi](mailto:emanueletorrisi98@gmail.com).
+
+## See the CLI in use
+
+[Watch the terminal recording](https://asciinema.org/a/kao32h7xRRkFwtkc).
+
+Follow `verboisy run` from a goal and schema to exported data. The NASA example
+uses a saved capture to demonstrate deterministic dataset preparation.
+
+The terminal preview shows up to five rows and five columns. Long headings and
+values end with `...`; preview clipping does not change the exported data.
 
 ## Why this approach matters
 
@@ -198,8 +208,10 @@ rows; use the streaming API for large local inputs.
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy-inputs"]'
 verboisy run \
+  --goal "Prepare the local observations using the supplied schema and preserve source values" \
   --dataset-file 'jsonl=/srv/verboisy-inputs/observations.jsonl' \
   --schema observation-schema.json \
+  --mass-unit source --length-unit source --date-format source \
   --export observations.json
 ```
 
@@ -306,8 +318,9 @@ This repository contains **Verboisy’s public source-inspection edition**. Comm
 customers receive a **separately maintained edition with additional capabilities**
 that are not distributed in this repository.
 
-The [commercial comparison](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) identifies the features available in each
-edition, supported deployment options and available services. The public repository
+The [commercial comparison](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) describes edition scope, deployment options and services.
+Commercial release notes and the signed agreement identify the additional features
+delivered to the customer. The public repository
 will continue to receive updates.
 
 Delivered features, usage rights, support, update entitlement, fees and delivery
