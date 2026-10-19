@@ -32,10 +32,6 @@ También prepara conjuntos locales o HTTP declarados con adaptadores determinist
 
 [Ver la grabación del terminal](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
-Sigue el flujo de `verboisy run`, desde la definición del objetivo y el esquema hasta la exportación. El ejemplo de NASA utiliza una captura guardada previamente para mostrar la preparación determinista de un conjunto de datos.
-
-La vista previa del terminal muestra como máximo cinco filas y cinco columnas. Los encabezados y valores largos terminan en `...`; este recorte no modifica los datos exportados.
-
 ## Por qué importa este enfoque
 
 Un JSON o una tabla no explican por sí mismos si un hecho fue observado ni cómo se obtuvo un valor. Verboisy incorpora estas comprobaciones al proceso:
