@@ -78,3 +78,6 @@ benchmark-results/
 example-runs/
 evaluation-results/
 recordings/
+
+# Local terminal recordings
+*.cast
