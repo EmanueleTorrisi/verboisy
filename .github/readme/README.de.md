@@ -32,10 +32,6 @@ Zusätzlich bereitet Verboisy lokale und deklarierte HTTP-Daten mit deterministi
 
 [Terminalaufzeichnung ansehen](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
-Verfolgen Sie den Ablauf mit `verboisy run`: von Ziel und Schema bis zum Datenexport. Das NASA-Beispiel verwendet eine zuvor gespeicherte Datenaufnahme und zeigt die deterministische Aufbereitung eines Datensatzes.
-
-Die Terminalvorschau zeigt höchstens fünf Zeilen und fünf Spalten. Lange Überschriften und Werte enden mit `...`; diese Kürzung verändert die exportierten Daten nicht.
-
 ## Warum dieser Ansatz wichtig ist
 
 JSON oder eine Tabelle allein zeigen nicht, ob ein Fakt beobachtet wurde oder wie ein Wert entstanden ist. Verboisy integriert diese Fragen in den Datenprozess:
