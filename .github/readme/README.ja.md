@@ -28,6 +28,14 @@ Verboisy は、構造化された情報と、その情報がどこから得ら�
 
 **ソースは閲覧可能ですが、実行には別途ライセンスが必要です。** [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) が許可するのはソースの検査です。実行、テスト、変更、配布には別の書面による許可が必要です。以下の例は許可された利用を説明します。
 
+## CLI の実行例
+
+[ターミナルの実行記録を見る](https://asciinema.org/a/kao32h7xRRkFwtkc).
+
+`verboisy run` で目的とスキーマを指定し、データをエクスポートするまでの流れをご覧ください。NASA の例では、以前に保存した取得データを使い、決定論的なデータセット準備を示しています。
+
+ターミナルのプレビューは最大 5 行・5 列です。長い見出しや値は末尾を `...` に省略します。この表示上の省略は、エクスポートするデータに影響しません。
+
 ## この設計の意義
 
 JSON や表だけでは、その事実が実際に観測されたのか、値がどのように変換されたのかは分かりません。Verboisy はその確認を処理の一部にします。
@@ -63,7 +71,7 @@ Web 調査はブラウザーと設定済みモデルを使い、検索による�
 
 ## インストールと設定
 
-Python **3.11–3.14** と書面による実行許可が必要です。Poetry は開発用ツールで、インストール後のコマンドは `verboisy` です。CI には Linux、macOS、Windows のジョブが定義されていますが、現在の結果は別途確認する必要があります。Web 調査にはプロバイダーの設定、Chromium、システムライブラリーが必要です。ローカル入力にはディレクトリーの許可と空き容量が必要です。C++ コンパイラーは不要です。
+Python **3.11–3.14** と書面による実行許可が必要です。Poetry は開発用ツールで、インストール後のコマンドは `verboisy` です。リリースマトリクスに記載された OS とインタープリターの構成を使用してください。Web 調査にはプロバイダーの設定、Chromium、システムライブラリーが必要です。ローカル入力にはディレクトリーの許可と空き容量が必要です。C++ コンパイラーは不要です。
 
 許可されたチェックアウトで以下のコマンドを実行してください。pipx が導入済みなら、`pipx install .` によりプロジェクト外でもコマンドを使えます。許可された PyPI 公開後は `pipx install verboisy` を使えます。現時点での PyPI 公開は前提としていません。`python examples/local_quickstart.py` はモデルやブラウザーなしで 2 件の合成レコードを検証します。
 
@@ -112,8 +120,10 @@ print(結果.run_id, 結果.status, 結果.records)
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy入力"]'
 verboisy run \
+  --goal "指定されたスキーマに従ってローカルの観測データを準備し、元の値を保持してください" \
   --dataset-file 'jsonl=/srv/verboisy入力/観測データ.jsonl' \
   --schema 観測スキーマ.json \
+  --mass-unit source --length-unit source --date-format source \
   --export 観測データ.json
 ```
 
@@ -155,7 +165,7 @@ Python が制御、契約、アダプター、CLI、SQLite 台帳を担当しま
 
 ## ライセンス、デモ、商談
 
-Verboisy は独自ライセンスのソフトウェアで、**オープンソースではありません**。英語の LICENSE が正式な条件で、この翻訳は権利を変更しません。識別子は `LicenseRef-Verboisy-Source-Inspection-1.0` です。第三者のコンポーネントにはそれぞれのライセンスが適用されます。実行、テスト、変更、統合、配布、ホスティングには別の書面による許可が必要です。
+Verboisy は独自ライセンスのソフトウェアで、**オープンソースではありません**。英語の LICENSE が正式な条件で、この翻訳は権利を変更しません。適用される版は、ソフトウェアに付属する [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) に記載されています。第三者のコンポーネントにはそれぞれのライセンスが適用されます。実行、テスト、変更、統合、配布、ホスティングには別の書面による許可が必要です。
 
 デモ、評価、社内・企業ライセンス、提携、将来の有償協力については **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** へ連絡してください。用途、情報源、量、実行環境を説明し、資格情報や機密データは送らないでください。料金、サポート、権利は個別に合意します。[ライセンス](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)と[商談](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)を参照してください。
 
@@ -173,7 +183,7 @@ Verboisy は独自ライセンスのソフトウェアで、**オープンソー
 
 ## データ契約と検証範囲
 
-通常の出力では `id` は生成メタデータ用です。元データの ID は明示的に `source_id` に投影してください。入れ子の ID とストリーミングの ID は保持されます。欠落した任意項目は欠落のままで、明示的な null は保持されます。ストリーミングは各行を検証し、未対応の配列全体の制約を拒否します。一時停止した準備処理の終了コードは 2 です。CI は設定済みですが、過去の計測は記録されたソースと実行環境にのみ適用されます。
+通常の出力では `id` は生成メタデータ用です。元データの ID は明示的に `source_id` に投影してください。入れ子の ID とストリーミングの ID は保持されます。欠落した任意項目は欠落のままで、明示的な null は保持されます。ストリーミングは各行を検証し、未対応の配列全体の制約を拒否します。一時停止した準備処理の終了コードは 2 です。過去の計測結果は、各レポートに記載されたソースコードと実行環境に適用されます。
 
 [過去の検証結果](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [リリースの根拠と承認](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
@@ -182,7 +192,7 @@ Verboisy は独自ライセンスのソフトウェアで、**オープンソー
 
 このリポジトリーには、**ソースコードの閲覧・検査を目的とする Verboisy の公開版**が含まれています。商用のお客様には、**別途保守される追加機能付きのエディション**を提供します。その追加機能は、このリポジトリーでは配布していません。
 
-[エディション比較](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)では、各エディションの機能、対応する配備形態、利用可能なサービスを説明しています。公開リポジトリーの更新も継続します。
+[エディション比較](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)では、各エディションの範囲、配備形態、サービスを説明しています。納品される追加機能は、商用版のリリースノートと締結した契約に明記します。公開リポジトリーの更新も継続します。
 
 納品する機能、利用権、サポート、更新の提供範囲、料金、納期は、締結した契約で定めます。
 
