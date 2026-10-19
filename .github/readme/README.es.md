@@ -30,7 +30,7 @@ También prepara conjuntos locales o HTTP declarados con adaptadores determinist
 
 ## La CLI en funcionamiento
 
-[Ver la grabación del terminal](https://asciinema.org/a/kao32h7xRRkFwtkc).
+[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
 ## Por qué importa este enfoque
 
