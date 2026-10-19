@@ -30,7 +30,7 @@ Verboisy は、構造化された情報と、その情報がどこから得ら�
 
 ## CLI の実行例
 
-[ターミナルの実行記録を見る](https://asciinema.org/a/kao32h7xRRkFwtkc).
+[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
 ## この設計の意義
 
