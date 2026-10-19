@@ -65,8 +65,7 @@ class CLIUserInterface:
 
         def single_line(value: Any) -> str:
             text = "".join(
-                " " if ord(char) < 32 or 127 <= ord(char) < 160 else char
-                for char in str(value)
+                " " if ord(char) < 32 or 127 <= ord(char) < 160 else char for char in str(value)
             )
             return " ".join(text.split())
 
@@ -85,9 +84,7 @@ class CLIUserInterface:
             return "".join(prefix) + suffix
 
         names = [single_line(header) for header in headers]
-        values = [
-            [single_line(row.get(header, "")) for header in headers] for row in data[:5]
-        ]
+        values = [[single_line(row.get(header, "")) for header in headers] for row in data[:5]]
         widths = [
             min(50, max(1, cell_len(name), *(cell_len(row[index]) for row in values)))
             for index, name in enumerate(names)
@@ -106,18 +103,24 @@ class CLIUserInterface:
             widths[index] -= 1
 
         table = Table(
-            show_header=True, header_style="bold magenta", padding=(0, padding),
+            show_header=True,
+            header_style="bold magenta",
+            padding=(0, padding),
             width=sum(widths) + overhead,
         )
         for name, width in zip(names, widths, strict=True):
             table.add_column(
-                Text(shorten(name, width)), width=width, min_width=width, max_width=width,
-                no_wrap=True, overflow="crop",
+                Text(shorten(name, width)),
+                width=width,
+                min_width=width,
+                max_width=width,
+                no_wrap=True,
+                overflow="crop",
             )
         for row in values:
-            table.add_row(*(
-                Text(shorten(value, width)) for value, width in zip(row, widths, strict=True)
-            ))
+            table.add_row(
+                *(Text(shorten(value, width)) for value, width in zip(row, widths, strict=True))
+            )
         console.print(table)
 
         if len(data) > 5:
