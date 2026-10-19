@@ -44,12 +44,6 @@ evaluation or enterprise license, contact [Emanuele Torrisi](mailto:emanueletorr
 
 [Watch the terminal recording](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
-Follow `verboisy run` from a goal and schema to exported data. The NASA example
-uses a saved capture to demonstrate deterministic dataset preparation.
-
-The terminal preview shows up to five rows and five columns. Long headings and
-values end with `...`; preview clipping does not change the exported data.
-
 ## Why this approach matters
 
 A JSON response or a scraped table does not explain whether a fact was observed,
