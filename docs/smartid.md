@@ -44,11 +44,14 @@ The manifest and proof path can record:
 - candidate prior IDs;
 - exact, ambiguous, or unresolved outcome.
 
-## Current limitation
+## Relationship input contract
 
-SmartID currently resolves relationships after extraction. The planned relational research planner will use the previous dataset itself as the input entity set, allowing a new schema such as `[age,nationality]` without repeating identifying columns.
+SmartID resolves relationships after extraction. Include enough identifying fields
+in the new dataset to compare its records with the reference dataset and audit each
+link. When using a declared compound identity, retain every component of that key.
 
-Until that planner is implemented, include enough identifying fields in the researched output for the relationship to be audited safely.
+The reference dataset supplies relationship candidates; it does not automatically
+become the entity list for a new research task.
 
 ## Identifier integrity
 
