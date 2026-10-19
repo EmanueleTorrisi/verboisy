@@ -68,6 +68,7 @@ async def invoke(*responses):
             "llm_retries": 2,
             "llm_min_interval_seconds": 0,
             "max_total_tokens": 1_000_000,
+            "model_request_budget": 1_000_000,
         }
     )
 
