@@ -18,7 +18,18 @@ verboisy run \
 
 `--goal TEXT` describes the dataset to research.
 
-`--schema TEXT` accepts either a simple list such as `[name,price,website]` or a JSON Schema file path.
+`--schema TEXT` accepts a comma-separated list of column names in square brackets
+or a JSON Schema file path. Quote the bracketed list so the shell passes it as one
+argument:
+
+```bash
+--schema '[name,country,website]'
+```
+
+Simple schemas infer nullable scalar types from field names. For exact numeric
+types, nested structures, units or validation constraints, supply a JSON Schema
+file instead. Names alone are not a complete scientific data contract. The ordinary
+output column `id` is generated automatically and must not appear in the list.
 
 `--export PATH` writes CSV or JSON. Repeat it to write multiple formats.
 
@@ -82,6 +93,16 @@ for a cumulative limit. Historical unjournaled requests cannot be counted retros
 
 
 ## Output shaping and display
+
+### Terminal preview
+
+The normal `run` result preview displays the first five columns and at most five
+rows, followed by `... and N more rows.` when additional records are available.
+Generated `id` counts as one of those columns. Long headings and values are
+shortened with `...` to keep the preview compact at the terminal's current width.
+
+This is a display limit. CSV and JSON exports retain all result columns and full
+values. `--maxrows` controls the accepted-record ceiling, not the preview size.
 
 ### Dataset shaping
 
