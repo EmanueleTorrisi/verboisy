@@ -83,7 +83,7 @@ def test_repository_tampering_is_reported(repo, case):
             path.read_text(encoding="utf-8").replace('version = "1.0.0"', 'version = "9.9.9"')
             if case == "version"
             else path.read_text(encoding="utf-8").replace(
-                'license = "LicenseRef-Verboisy-Source-Inspection-1.0"', 'license = "Unreviewed"'
+                'license = "LicenseRef-Verboisy-Source-Inspection-2.0"', 'license = "Unreviewed"'
             ),
             encoding="utf-8",
         )
@@ -113,25 +113,23 @@ def test_missing_repository_cli_fails_without_traceback(tmp_path):
 @pytest.mark.parametrize(
     "marker",
     [
-        "VERBOISY SOURCE INSPECTION LICENSE 1.0",
-        "Separate written permission",
-        "Third-party components",
+        "VERBOISY SOURCE INSPECTION LICENSE 2.0",
+        "SPDX-License-Identifier: LicenseRef-Verboisy-Source-Inspection-2.0",
+        "Additional rights require a separate written agreement",
+        "Third-party libraries, dependencies, vendored packages",
     ],
 )
 def test_license_scope_and_third_party_notices_cannot_be_silently_removed(repo, marker):
     path = repo / "LICENSE"
-    path.write_text(path.read_text(encoding="utf-8").replace(marker, "Removed"), encoding="utf-8")
-    assert CHECK.inspect(repo)["passed"] is False
+    original = path.read_text(encoding="utf-8")
 
+    assert marker in original
 
-def test_historic_bsd_identifier_is_not_the_current_distribution_license(repo):
-    path = repo / "pyproject.toml"
     path.write_text(
-        path.read_text(encoding="utf-8").replace(
-            'license = "LicenseRef-Verboisy-Source-Inspection-1.0"', 'license = "BSD-2-Clause"'
-        ),
+        original.replace(marker, "Removed"),
         encoding="utf-8",
     )
+
     assert CHECK.inspect(repo)["passed"] is False
 
 

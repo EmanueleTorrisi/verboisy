@@ -6,7 +6,7 @@ name = "verboisy"
 version = "1.0.0"
 description = "Evidence-backed research and data extraction with portable provenance."
 readme = "README.md"
-license = "LicenseRef-Verboisy-Source-Inspection-1.0"
+license = "LicenseRef-Verboisy-Source-Inspection-2.0"
 requires-python = ">=3.11,<3.15"
 authors = [
     { name = "Emanuele Torrisi", email = "emanueletorrisi98@gmail.com" },
