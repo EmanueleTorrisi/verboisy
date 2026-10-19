@@ -22,6 +22,11 @@ controls downloading, not copying afterward; revocation does not disable install
 
 ## Prepare tested artifacts
 
+The README and its translations contain the prepared production-release statement.
+Publish them with the reviewed release after the release matrix is complete for the
+exact source revision and evidence. The commands below enforce that requirement
+before uploading to either public package index.
+
 ```bash
 source .venv/bin/activate
 python scripts/verify_release.py --native --audit --package
@@ -49,7 +54,8 @@ committed files or customer deliveries.
 First test the upload. **TestPyPI is public too**:
 
 ```bash
-python scripts/package_release.py upload --target testpypi
+python scripts/release_matrix.py require-complete
+python scripts/package_release.py upload --target testpypi --production
 ```
 
 Type `PUBLIC testpypi` when prompted. Twine uses `__token__` and prompts privately
@@ -69,24 +75,19 @@ python -m venv "$VERBOISY_TEST_DIR/environment"
 "$VERBOISY_TEST_DIR/environment/bin/verboisy" --help
 ```
 
-After reviewing public source-inspection distribution and its claims:
-
-```bash
-python scripts/package_release.py upload --target pypi
-```
-
-Type `PUBLIC pypi` and enter the PyPI token when prompted. This path does not claim
-full product qualification. To require all seven reviews for a production release:
+After the TestPyPI installation rehearsal, publish the exact tested artifacts:
 
 ```bash
 python scripts/release_matrix.py require-complete
 python scripts/package_release.py upload --target pypi --production
 ```
 
-Choose one PyPI upload path, not both. Uploaded filenames cannot be overwritten or
-reused after deletion. New versions must update `pyproject.toml` and
-`src/verboisy/__init__.py` consistently, with separate commits, fresh verification
-and renewed reviews. The retained `1.0.0` metadata does not assert readiness.
+Type `PUBLIC pypi` and enter the PyPI token when prompted. The production upload
+checks the seven current reviews as well as the selected artifact hashes.
+Uploaded filenames cannot be overwritten or reused after deletion. For a new
+version, update `pyproject.toml` and `src/verboisy/__init__.py` consistently, with
+separate commits, fresh verification and renewed reviews. The version identifier,
+release evidence and delivered artifact hashes describe the release together.
 
 After publication, authorized customers can install:
 
@@ -133,8 +134,8 @@ and [new-project setup](https://docs.pypi.org/trusted-publishers/creating-a-proj
 A standard initial process is: agree scope and price, obtain the written license,
 collect payment or satisfy agreed purchase terms, deliver privately, confirm
 installation, retain an order/version/entitlement record. Email may carry a protected
-customer-specific download link and installation notes. This kit does not send email,
-take payment, create an agreement or provision customer accounts.
+customer-specific download link and installation notes. The bundle command prepares delivery files; payment, the signed agreement
+and customer access are managed through the chosen commercial process.
 
 Use the actual agreed customer license PDF:
 
