@@ -28,6 +28,14 @@ Zusätzlich bereitet Verboisy lokale und deklarierte HTTP-Daten mit deterministi
 
 **Quellcode einsehbar, Nutzung separat lizenziert.** [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) erlaubt Quellcodeprüfung, nicht die Ausführung. Tests, Änderungen und Bereitstellung benötigen eine gesonderte schriftliche Vereinbarung. Die Beispiele beschreiben autorisierte Nutzung.
 
+## Die CLI im Einsatz
+
+[Terminalaufzeichnung ansehen](https://asciinema.org/a/kao32h7xRRkFwtkc).
+
+Verfolgen Sie den Ablauf mit `verboisy run`: von Ziel und Schema bis zum Datenexport. Das NASA-Beispiel verwendet eine zuvor gespeicherte Datenaufnahme und zeigt die deterministische Aufbereitung eines Datensatzes.
+
+Die Terminalvorschau zeigt höchstens fünf Zeilen und fünf Spalten. Lange Überschriften und Werte enden mit `...`; diese Kürzung verändert die exportierten Daten nicht.
+
 ## Warum dieser Ansatz wichtig ist
 
 JSON oder eine Tabelle allein zeigen nicht, ob ein Fakt beobachtet wurde oder wie ein Wert entstanden ist. Verboisy integriert diese Fragen in den Datenprozess:
@@ -63,7 +71,7 @@ Binärerfassung bedeutet weder OCR noch universelle Dokumentinterpretation. OAut
 
 ## Installation und Konfiguration
 
-Python **3.11–3.14** und schriftliche Ausführungsrechte sind erforderlich. Poetry dient der Entwicklung; der installierte Befehl heißt `verboisy`. CI definiert Jobs für Linux, macOS und Windows; aktuelle Ergebnisse müssen geprüft werden. Webrecherche benötigt einen konfigurierten Anbieter, Chromium und Systembibliotheken. Lokale Quellen brauchen freigegebene Verzeichnisse und Speicherplatz. Ein C++-Compiler ist nicht erforderlich.
+Python **3.11–3.14** und schriftliche Ausführungsrechte sind erforderlich. Poetry dient der Entwicklung; der installierte Befehl heißt `verboisy`. Verwenden Sie die in der Release-Matrix aufgeführten Betriebssystem- und Interpreterprofile. Webrecherche benötigt einen konfigurierten Anbieter, Chromium und Systembibliotheken. Lokale Quellen brauchen freigegebene Verzeichnisse und Speicherplatz. Ein C++-Compiler ist nicht erforderlich.
 
 Führen Sie die folgenden Befehle in einem autorisierten Checkout aus. Mit installiertem pipx macht `pipx install .` den Befehl auch außerhalb des Projekts verfügbar. Nach autorisierter Veröffentlichung auf PyPI: `pipx install verboisy`. Die Verfügbarkeit auf PyPI wird nicht vorausgesetzt. `python examples/local_quickstart.py` prüft zwei synthetische Datensätze ohne Modell oder Browser.
 
@@ -112,8 +120,10 @@ Asynchrone Anwendungen verwenden `arun`. Die normale API materialisiert angenomm
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy-eingaben"]'
 verboisy run \
+  --goal "Bereite die lokalen Beobachtungen nach dem vorgegebenen Schema auf und erhalte die Quellwerte" \
   --dataset-file 'jsonl=/srv/verboisy-eingaben/beobachtungen.jsonl' \
   --schema beobachtungsschema.json \
+  --mass-unit source --length-unit source --date-format source \
   --export beobachtungen.json
 ```
 
@@ -155,7 +165,7 @@ Python übernimmt Orchestrierung, Verträge, Adapter, CLI und SQLite-Speicher. O
 
 ## Lizenzen, Demos und geschäftliche Anfragen
 
-Verboisy ist proprietäre Software, **kein Open Source**. Maßgeblich ist die englische Lizenz; diese Übersetzung ändert keine Rechte. Kennung: `LicenseRef-Verboisy-Source-Inspection-1.0`. Drittanbieter behalten ihre eigenen Lizenzen. Ausführung, Tests, Änderungen, Integration, Verteilung und Hosting erfordern separate schriftliche Erlaubnis.
+Verboisy ist proprietäre Software, **kein Open Source**. Maßgeblich ist die englische Lizenz; diese Übersetzung ändert keine Rechte. Die maßgebliche Fassung steht in der mitgelieferten Datei [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE). Drittanbieter behalten ihre eigenen Lizenzen. Ausführung, Tests, Änderungen, Integration, Verteilung und Hosting erfordern separate schriftliche Erlaubnis.
 
 Kontakt: **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** für Demos, Evaluationen, interne/Enterprise-Lizenzen, Partnerschaften und mögliche bezahlte Zusammenarbeit. Ablauf, Quellen, Datenvolumen und Umgebung beschreiben; keine vertraulichen Daten oder Schlüssel mitsenden. Preise, Support und Rechte werden individuell vereinbart. Siehe [Lizenzierung](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md) und [geschäftliche Anfragen](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md).
 
@@ -164,6 +174,7 @@ Kontakt: **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** f
 **Emanuele Torrisi** entwickelt und betreut Verboisy derzeit als einziger Entwickler. [Fehlerberichte und Funktionswünsche](https://github.com/EmanueleTorrisi/verboisy/issues) sind willkommen. Sicherheitsprobleme gemäß [Sicherheitsrichtlinie](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md) privat melden.
 
 Unaufgeforderte Codebeiträge werden derzeit nicht angenommen. Bezahlte Zusammenarbeit erfordert vorherige Vereinbarungen zu Umfang, Vergütung, Vertraulichkeit und geistigem Eigentum. Versionsänderungen stehen im [Changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md); die [Versionsgeschichte](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md) beschreibt den Weg von 0.1.0 zu 1.0.0. Siehe [Teilnahme](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md) und [Copyright](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md).
+
 ## Anwendungsbeispiele
 
 [Katalog der Forschungseinrichtungen](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
@@ -173,7 +184,7 @@ Unaufgeforderte Codebeiträge werden derzeit nicht angenommen. Bezahlte Zusammen
 
 ## Datenverträge und Qualifikation
 
-In gewöhnlichen Ergebnissen ist `id` für erzeugte Metadaten reserviert. Quell-IDs müssen ausdrücklich nach `source_id` projiziert werden; verschachtelte IDs und Streaming-IDs bleiben erhalten. Fehlende optionale Felder bleiben fehlend, explizites null bleibt erhalten. Streaming validiert einzelne Zeilen und lehnt nicht unterstützte Bedingungen auf der Array-Wurzel ab. Ein pausierter Vorbereitungslauf endet mit Code 2. CI ist konfiguriert; historische Messungen gelten nur für ihren dokumentierten Quellstand und Host.
+In gewöhnlichen Ergebnissen ist `id` für erzeugte Metadaten reserviert. Quell-IDs müssen ausdrücklich nach `source_id` projiziert werden; verschachtelte IDs und Streaming-IDs bleiben erhalten. Fehlende optionale Felder bleiben fehlend, explizites null bleibt erhalten. Streaming validiert einzelne Zeilen und lehnt nicht unterstützte Bedingungen auf der Array-Wurzel ab. Ein pausierter Vorbereitungslauf endet mit Code 2. Historische Messungen gelten für den Quellstand und die Umgebung des jeweiligen Berichts.
 
 [Historische Ergebnisse](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [Release-Nachweise und Freigaben](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
@@ -182,7 +193,7 @@ In gewöhnlichen Ergebnissen ist `id` für erzeugte Metadaten reserviert. Quell-
 
 Dieses Repository enthält **Verboisys öffentliche Edition zur Einsicht in den Quellcode**. Kommerzielle Kunden erhalten **eine separat gepflegte Edition mit zusätzlichen Funktionen**, die nicht in diesem Repository veröffentlicht werden.
 
-Der [Vergleich der Editionen](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) beschreibt die Funktionen der einzelnen Editionen, unterstützte Bereitstellungsoptionen und verfügbare Dienstleistungen. Das öffentliche Repository wird weiterhin aktualisiert.
+Der [Vergleich der Editionen](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md) beschreibt den Umfang der Editionen, Bereitstellungsoptionen und Dienstleistungen. Die kommerziellen Versionshinweise und der unterzeichnete Vertrag benennen die zusätzlich gelieferten Funktionen. Das öffentliche Repository wird weiterhin aktualisiert.
 
 Gelieferte Funktionen, Nutzungsrechte, Support, Update-Berechtigung, Vergütung und Liefertermine werden im unterzeichneten Vertrag festgelegt.
 
