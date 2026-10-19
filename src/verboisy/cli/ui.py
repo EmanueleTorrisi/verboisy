@@ -75,7 +75,8 @@ class CLIUserInterface:
             suffix = "." * min(3, width)
             remaining = width - len(suffix)
             prefix = []
-            for char in text:
+            # Overlong text must exceed the remaining width before iteration ends.
+            for char in text:  # pragma: no branch
                 size = cell_len(char)
                 if size > remaining:
                     break

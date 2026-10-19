@@ -223,16 +223,17 @@ def inspect(root: Path) -> dict[str, object]:
     if versions != [project["project"]["version"]]:
         issues.append("Package version and public __version__ differ")
     if (
-        project["project"].get("license") != "LicenseRef-Verboisy-Source-Inspection-1.0"
+        project["project"].get("license") != "LicenseRef-Verboisy-Source-Inspection-2.0"
         or not (root / "LICENSE").is_file()
     ):
         issues.append("License identifier and current distribution terms disagree")
     else:
         terms = (root / "LICENSE").read_text(encoding="utf-8")
         required = (
-            "VERBOISY SOURCE INSPECTION LICENSE 1.0",
-            "Separate written permission",
-            "Third-party components",
+            "VERBOISY SOURCE INSPECTION LICENSE 2.0",
+            "SPDX-License-Identifier: LicenseRef-Verboisy-Source-Inspection-2.0",
+            "Additional rights require a separate written agreement",
+            "Third-party libraries, dependencies, vendored packages",
         )
         if not all(marker in terms for marker in required):
             issues.append("Source-inspection license is missing required scope or notices")
