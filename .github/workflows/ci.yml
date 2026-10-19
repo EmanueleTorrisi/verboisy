@@ -3,6 +3,7 @@
 
 
 name: CI
+# Verify Codecov action permissions.
 
 on:
   push:
