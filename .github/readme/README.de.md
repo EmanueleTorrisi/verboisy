@@ -30,7 +30,7 @@ Zusätzlich bereitet Verboisy lokale und deklarierte HTTP-Daten mit deterministi
 
 ## Die CLI im Einsatz
 
-[Terminalaufzeichnung ansehen](https://asciinema.org/a/kao32h7xRRkFwtkc).
+[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
 ## Warum dieser Ansatz wichtig ist
 
