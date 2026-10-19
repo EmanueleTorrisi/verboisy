@@ -30,7 +30,7 @@ Verboisy는 구조화된 정보와 그 정보의 출처를 확인하는 방법�
 
 ## CLI 실행 예시
 
-[터미널 실행 기록 보기](https://asciinema.org/a/kao32h7xRRkFwtkc).
+[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
 ## 이 접근 방식의 가치
 
