@@ -95,3 +95,29 @@ def test_changed_opened_metadata_rejected(tmp_path, monkeypatch):
 def test_invalid_runtime_payload_type_is_safe(payload):
     with pytest.raises(ValueError):
         decode_json(payload)
+
+
+def test_nonregular_opened_descriptor_without_fifo(tmp_path, monkeypatch):
+    import stat
+    from types import SimpleNamespace
+
+    from verboisy.utils import json_payload
+
+    path = tmp_path / "source.json"
+    path.write_bytes(b"{}")
+
+    original_fstat = json_payload.os.fstat
+
+    def nonregular(fd):
+        info = original_fstat(fd)
+        return SimpleNamespace(
+            st_mode=stat.S_IFIFO,
+            st_size=info.st_size,
+            st_mtime_ns=info.st_mtime_ns,
+            st_ctime_ns=info.st_ctime_ns,
+        )
+
+    monkeypatch.setattr(json_payload.os, "fstat", nonregular)
+
+    with pytest.raises(ValueError, match="regular file"):
+        read_bytes(path, max_bytes=2)
