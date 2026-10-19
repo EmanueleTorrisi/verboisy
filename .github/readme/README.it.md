@@ -30,7 +30,11 @@ Il progetto prepara anche dataset locali o HTTP dichiarati tramite adattatori de
 
 ## Guarda la CLI in azione
 
-[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc).
+<p align="center">
+  <a href="https://asciinema.org/a/kao32h7xRRkFwtkc">
+    <img src="../assets/verboisy-demo.gif" alt="Verboisy CLI Demo">
+  </a>
+</p>
 
 ## Perché questo approccio
 
