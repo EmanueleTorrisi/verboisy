@@ -30,7 +30,7 @@ Le projet prépare aussi des données locales ou HTTP déclarées avec des adapt
 
 ## Voir la CLI en action
 
-[Voir l’enregistrement du terminal](https://asciinema.org/a/kao32h7xRRkFwtkc).
+[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
 ## Pourquoi cette approche
 
