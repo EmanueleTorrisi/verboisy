@@ -108,9 +108,73 @@ def test_display_results_table_limits_rows_and_truncates_values(
 
     output = test_console.export_text()
 
-    assert "x" * 50 in output
-    assert "x" * 51 not in output
+    assert "x" * 47 + "..." in output
+    assert "x" * 48 not in output
     assert "... and 2 more rows." in output
+
+
+def test_display_results_table_with_empty_record(monkeypatch) -> None:
+    test_console = make_console()
+    monkeypatch.setattr(ui, "console", test_console)
+
+    CLIUserInterface.display_results_table([{}])
+
+    output = test_console.export_text()
+    assert "The first returned record contains no fields." in output
+
+
+def test_display_results_table_with_wide_characters(monkeypatch) -> None:
+    test_console = make_console()
+    monkeypatch.setattr(ui, "console", test_console)
+
+    CLIUserInterface.display_results_table(
+        [
+            {"name": "界" * 30},
+        ]
+    )
+
+    output = test_console.export_text()
+
+    assert "界" * 23 + "..." in output
+
+
+def test_display_results_table_with_narrow_terminal(monkeypatch) -> None:
+    test_console = Console(
+        record=True,
+        color_system=None,
+        width=25,
+    )
+    monkeypatch.setattr(ui, "console", test_console)
+
+    data = [
+        {f"column_{i}": "long-value" for i in range(5)},
+    ]
+
+    CLIUserInterface.display_results_table(data)
+
+    output = test_console.export_text()
+
+    assert "..." in output
+    assert "Widen the terminal" not in output
+
+
+def test_display_results_table_with_terminal_too_narrow(monkeypatch) -> None:
+    test_console = Console(
+        record=True,
+        color_system=None,
+        width=10,
+    )
+    monkeypatch.setattr(ui, "console", test_console)
+
+    data = [
+        {f"column_{i}": "value" for i in range(5)},
+    ]
+
+    CLIUserInterface.display_results_table(data)
+
+    output = test_console.export_text()
+
+    assert "Widen" in output
 
 
 def test_create_spinner(monkeypatch) -> None:
