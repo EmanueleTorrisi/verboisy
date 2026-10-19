@@ -28,6 +28,14 @@ Verboisy는 구조화된 정보와 그 정보의 출처를 확인하는 방법�
 
 **소스 열람 가능, 실행은 별도 라이선스 필요.** [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE)는 소스 검토를 허용하며 실행은 허용하지 않습니다. 테스트, 수정, 배포에는 별도 서면 허가가 필요합니다. 아래 예시는 허가된 사용을 설명합니다.
 
+## CLI 실행 예시
+
+[터미널 실행 기록 보기](https://asciinema.org/a/kao32h7xRRkFwtkc).
+
+`verboisy run`에서 목표와 스키마를 지정하고 데이터를 내보내는 과정을 확인하세요. NASA 예시는 이전에 저장한 수집 데이터를 사용하여 결정론적인 데이터셋 준비 과정을 보여 줍니다.
+
+터미널 미리보기에는 최대 5행과 5열이 표시됩니다. 긴 제목과 값은 끝을 `...`로 줄여 표시하며, 이 표시 방식은 내보낸 데이터에 영향을 주지 않습니다.
+
 ## 이 접근 방식의 가치
 
 JSON이나 표만으로는 사실을 직접 관찰했는지, 값이 어떻게 변환되었는지 알 수 없습니다. Verboisy는 이를 데이터 처리 과정에 포함합니다.
@@ -63,7 +71,7 @@ Verboisy는 결정론적 코드와 의미 해석을 담당하는 AI를 결합합
 
 ## 설치와 설정
 
-Python **3.11–3.14**와 서면 실행 허가가 필요합니다. Poetry는 개발 도구이며 설치 후 명령은 `verboisy`입니다. CI에는 Linux, macOS, Windows 작업이 정의되어 있지만 현재 결과는 별도로 확인해야 합니다. 웹 조사에는 공급자 설정, Chromium과 시스템 라이브러리가 필요합니다. 로컬 입력에는 디렉터리 허가와 디스크 공간이 필요하며 C++ 컴파일러는 필요하지 않습니다.
+Python **3.11–3.14**와 서면 실행 허가가 필요합니다. Poetry는 개발 도구이며 설치 후 명령은 `verboisy`입니다. 릴리스 매트릭스에 명시된 운영체제와 인터프리터 구성을 사용하세요. 웹 조사에는 공급자 설정, Chromium과 시스템 라이브러리가 필요합니다. 로컬 입력에는 디렉터리 허가와 디스크 공간이 필요하며 C++ 컴파일러는 필요하지 않습니다.
 
 허가된 체크아웃에서 다음 명령을 실행하세요. pipx가 설치되어 있으면 `pipx install .`로 프로젝트 밖에서도 명령을 사용할 수 있습니다. 허가된 PyPI 공개 후에는 `pipx install verboisy`를 사용할 수 있습니다. 현재 PyPI에 공개되어 있다고 가정하지 않습니다. `python examples/local_quickstart.py`는 모델이나 브라우저 없이 합성 레코드 두 개를 검증합니다.
 
@@ -112,8 +120,10 @@ print(결과.run_id, 결과.status, 결과.records)
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy입력"]'
 verboisy run \
+  --goal "제공된 스키마에 따라 로컬 관측 데이터를 준비하고 원본 값을 유지해 주세요" \
   --dataset-file 'jsonl=/srv/verboisy입력/관측데이터.jsonl' \
   --schema 관측스키마.json \
+  --mass-unit source --length-unit source --date-format source \
   --export 관측데이터.json
 ```
 
@@ -155,7 +165,7 @@ Python은 오케스트레이션, 계약, 어댑터, CLI 및 SQLite 원장을 담
 
 ## 라이선스, 데모와 상업 문의
 
-Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 LICENSE가 공식 조건이며 이 번역은 권리를 변경하지 않습니다. 식별자는 `LicenseRef-Verboisy-Source-Inspection-1.0`입니다. 제삼자 구성 요소는 각자의 라이선스를 유지합니다. 실행, 테스트, 수정, 통합, 배포 및 호스팅에는 별도 서면 허가가 필요합니다.
+Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 LICENSE가 공식 조건이며 이 번역은 권리를 변경하지 않습니다. 적용되는 버전은 소프트웨어와 함께 제공되는 [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE)에 명시되어 있습니다. 제삼자 구성 요소는 각자의 라이선스를 유지합니다. 실행, 테스트, 수정, 통합, 배포 및 호스팅에는 별도 서면 허가가 필요합니다.
 
 데모, 평가, 사내·기업 라이선스, 제휴 및 향후 유급 협업은 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)** 으로 문의하세요. 작업 흐름, 출처, 규모, 환경을 설명하고 자격 증명이나 기밀 자료는 보내지 마세요. 가격, 지원 및 권리는 개별 합의합니다. [라이선스](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)와 [상업 문의](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)를 참조하세요.
 
@@ -173,7 +183,7 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 
 ## 데이터 계약과 검증 범위
 
-일반 출력의 `id`는 생성된 메타데이터용입니다. 원본 ID는 명시적으로 `source_id`에 투영해야 하며, 중첩 ID와 스트리밍 ID는 유지됩니다. 누락된 선택 필드는 그대로 누락되고 명시적 null은 유지됩니다. 스트리밍은 개별 행을 검증하고 지원되지 않는 배열 전체 제약은 거부합니다. 일시 중지된 준비 작업은 종료 코드 2를 반환합니다. CI는 구성되어 있지만 과거 측정은 기록된 소스와 실행 환경에만 적용됩니다.
+일반 출력의 `id`는 생성된 메타데이터용입니다. 원본 ID는 명시적으로 `source_id`에 투영해야 하며, 중첩 ID와 스트리밍 ID는 유지됩니다. 누락된 선택 필드는 그대로 누락되고 명시적 null은 유지됩니다. 스트리밍은 개별 행을 검증하고 지원되지 않는 배열 전체 제약은 거부합니다. 일시 중지된 준비 작업은 종료 코드 2를 반환합니다. 과거 측정 결과는 각 보고서에 기록된 소스 코드와 실행 환경에 적용됩니다.
 
 [과거 검증 결과](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [릴리스 근거 및 승인](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
@@ -182,7 +192,7 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 
 이 저장소에는 **소스 코드를 열람하고 검토하기 위한 Verboisy 공개 에디션**이 포함되어 있습니다. 상업용 고객에게는 **추가 기능을 갖추고 별도로 유지보수되는 에디션**을 제공합니다. 이러한 추가 기능은 이 저장소에서 배포하지 않습니다.
 
-[에디션 비교](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)에는 각 에디션의 기능, 지원하는 배포 방식 및 이용 가능한 서비스가 설명되어 있습니다. 공개 저장소도 계속 업데이트됩니다.
+[에디션 비교](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)에는 각 에디션의 범위, 배포 방식 및 서비스가 설명되어 있습니다. 제공되는 추가 기능은 상업용 릴리스 노트와 서명된 계약에 명시합니다. 공개 저장소도 계속 업데이트됩니다.
 
 제공 기능, 사용 권한, 지원, 업데이트 제공 범위, 요금 및 납품 일정은 서명된 계약에 명시합니다.
 
