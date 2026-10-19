@@ -32,10 +32,6 @@ Il progetto prepara anche dataset locali o HTTP dichiarati tramite adattatori de
 
 [Guarda la registrazione del terminale](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
-Segui il flusso `verboisy run`, dalla definizione di obiettivo e schema all’esportazione dei dati. L’esempio NASA usa una copia dei dati acquisita in precedenza per mostrare la preparazione deterministica di un dataset.
-
-L’anteprima nel terminale mostra al massimo cinque righe e cinque colonne. Intestazioni e valori lunghi terminano con `...`; questa abbreviazione non modifica i dati esportati.
-
 ## Perché questo approccio
 
 Un JSON o una tabella non spiegano, da soli, se un fatto sia stato osservato o come sia stato trasformato. Verboisy integra questi controlli nel flusso dei dati:
