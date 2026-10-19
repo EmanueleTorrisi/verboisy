@@ -42,7 +42,7 @@ evaluation or enterprise license, contact [Emanuele Torrisi](mailto:emanueletorr
 
 ## See the CLI in use
 
-[Watch the terminal recording](https://asciinema.org/a/kao32h7xRRkFwtkc).
+[![Verboisy CLI Demo](https://asciinema.org/a/kao32h7xRRkFwtkc.svg)](https://asciinema.org/a/kao32h7xRRkFwtkc)
 
 ## Why this approach matters
 
