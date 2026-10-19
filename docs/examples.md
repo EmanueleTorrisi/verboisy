@@ -32,6 +32,15 @@ locally rather than stored in the repository.
 
 ## Demonstrations
 
+[Watch the Verboisy CLI recording](https://asciinema.org/a/kao32h7xRRkFwtkc) to see the command-line workflow.
+The NASA example prepares a saved capture through the local dataset path. It
+demonstrates schema-driven preparation and export; live web acquisition and model
+interpretation are separate workflows.
+
+The ordinary result preview displays up to five rows and five columns, with `...`
+for clipped text. Exported data retains the full result. See the [CLI reference](cli.md)
+for schema syntax and output options.
+
 A product demonstration can show the same workflows with actual execution and output.
 For a guided session using your sources and schema, contact
 [emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com).
