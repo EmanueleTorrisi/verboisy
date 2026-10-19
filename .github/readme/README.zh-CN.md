@@ -28,6 +28,14 @@ Verboisy 是一个研究与数据提取引擎，面向需要结构化信息并�
 
 **源码可供查阅，运行需要单独许可。** [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) 允许源码审查，不授予运行权。测试、修改和部署需要另行书面授权。以下示例描述的是已获授权的使用方式。
 
+## 查看 CLI 操作演示
+
+[观看终端录屏](https://asciinema.org/a/kao32h7xRRkFwtkc).
+
+查看如何使用 `verboisy run` 指定目标和模式，再导出数据。NASA 示例使用此前保存的采集数据，展示确定性的数据集准备流程。
+
+终端预览最多显示 5 行、5 列。过长的列名和值以 `...` 结尾；预览中的截断不会改变导出的数据。
+
 ## 这种设计的意义
 
 JSON 或表格本身不能说明事实是否被观察到，也不能解释数值如何转换。Verboisy 将这些检查纳入数据流程：
@@ -63,7 +71,7 @@ Verboisy 将确定性代码与承担语义理解的 AI 结合使用。结构化�
 
 ## 安装与配置
 
-需要 Python **3.11–3.14** 和书面运行许可。Poetry 是开发工具，安装后的命令是 `verboisy`。CI 定义了 Linux、macOS 和 Windows 任务，但仍需核查当前结果。网页研究需要配置提供商、Chromium 和系统库。本地输入需要目录授权及磁盘空间，无需 C++ 编译器。
+需要 Python **3.11–3.14** 和书面运行许可。Poetry 是开发工具，安装后的命令是 `verboisy`。请使用发布矩阵列明的操作系统和解释器配置。网页研究需要配置提供商、Chromium 和系统库。本地输入需要目录授权及磁盘空间，无需 C++ 编译器。
 
 请在已获授权的源码目录中执行以下命令。安装 pipx 后，可用 `pipx install .` 在项目目录之外使用该命令。经授权发布到 PyPI 后，可用 `pipx install verboisy`。这里不假定软件已在 PyPI 发布。`python examples/local_quickstart.py` 无需模型或浏览器即可核验两条合成记录。
 
@@ -112,8 +120,10 @@ print(结果.run_id, 结果.status, 结果.records)
 ```bash
 export DATASET_LOCAL_ROOTS='["/srv/verboisy输入"]'
 verboisy run \
+  --goal "按照提供的模式准备本地观测数据并保留原始值" \
   --dataset-file 'jsonl=/srv/verboisy输入/观测数据.jsonl' \
   --schema 观测模式.json \
+  --mass-unit source --length-unit source --date-format source \
   --export 观测数据.json
 ```
 
@@ -155,7 +165,7 @@ Python 负责流程编排、数据约定、适配器、CLI 和 SQLite 台账。�
 
 ## 许可、演示与商业联系
 
-Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条款，本译文不改变权限。标识符为 `LicenseRef-Verboisy-Source-Inspection-1.0`。第三方组件保留各自许可证。运行、测试、修改、集成、分发和托管需要单独书面许可。
+Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条款，本译文不改变权限。适用版本以软件随附的 [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE) 为准。第三方组件保留各自许可证。运行、测试、修改、集成、分发和托管需要单独书面许可。
 
 如需演示、评估、内部或企业许可、合作及潜在有偿工程协作，请联系 **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com)**。说明工作流、来源、规模和环境，不要发送凭据或机密数据。价格、支持和权利逐项商定。请参阅[许可](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/licensing.md)和[商业联系](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)。
 
@@ -164,6 +174,7 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 **Emanuele Torrisi** 创建并维护 Verboisy，目前是项目唯一开发者。欢迎通过 [GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues) 提交缺陷和功能请求。漏洞请按照[安全政策](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md)私下报告。
 
 目前不接受未经邀请的代码贡献。有偿合作需事先约定范围、报酬、保密和知识产权。版本变化记录在[更新日志](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)中；[版本历史](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)说明从 0.1.0 到 1.0.0 的架构演进。请参阅[参与政策](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)和[版权](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)。
+
 ## 应用工作流示例
 
 [研究机构目录](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
@@ -173,7 +184,7 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 
 ## 数据契约与验证范围
 
-普通输出中的 `id` 保留给生成的元数据。源 ID 必须显式映射为 `source_id`；嵌套 ID 和流式源 ID 仍可使用。缺失的可选字段保持缺失，显式 null 保留。流式处理逐行验证，并拒绝不支持的数组整体约束。暂停的准备任务返回退出码 2。CI 已配置，但历史测量仅适用于记录的源代码和运行环境。
+普通输出中的 `id` 保留给生成的元数据。源 ID 必须显式映射为 `source_id`；嵌套 ID 和流式源 ID 仍可使用。缺失的可选字段保持缺失，显式 null 保留。流式处理逐行验证，并拒绝不支持的数组整体约束。暂停的准备任务返回退出码 2。历史测量结果适用于相应报告所记录的源代码和运行环境。
 
 [历史验证结果](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json) · [发布依据与批准记录](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json).
 
@@ -182,7 +193,7 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 
 此仓库包含 **Verboisy 的公开源代码审阅版**。商业客户获得的是**单独维护、具备额外功能的版本**；这些额外功能不在此仓库中分发。
 
-[版本对比](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)说明各版本的可用功能、受支持的部署方式及可选服务。公开仓库将持续更新。
+[版本对比](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/commercial.md)说明各版本的范围、部署方式及服务。具体交付的额外功能由商业版发布说明及签署的协议列明。公开仓库将持续更新。
 
 交付功能、使用权、支持服务、更新权益、费用及交付日期均以签署的协议为准。
 
