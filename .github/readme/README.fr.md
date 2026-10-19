@@ -32,10 +32,6 @@ Le projet prépare aussi des données locales ou HTTP déclarées avec des adapt
 
 [Voir l’enregistrement du terminal](https://asciinema.org/a/kao32h7xRRkFwtkc).
 
-Suivez le parcours `verboisy run`, de la définition de l’objectif et du schéma à l’export des données. L’exemple NASA utilise une capture enregistrée auparavant pour présenter la préparation déterministe d’un jeu de données.
-
-L’aperçu du terminal affiche au plus cinq lignes et cinq colonnes. Les en-têtes et valeurs trop longs se terminent par `...` ; cette abréviation ne modifie pas les données exportées.
-
 ## Pourquoi cette approche
 
 Un JSON ou un tableau ne suffit pas à expliquer si un fait a été observé ou comment un résultat a été transformé. Verboisy intègre ces vérifications au processus :
