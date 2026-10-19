@@ -99,11 +99,11 @@ def inspect_archive(path: Path) -> dict[str, Any]:
     if (
         parsed.get("Name") != "verboisy"
         or parsed.get("Requires-Python") != ">=3.11,<3.15"
-        or parsed.get("License-Expression") != "LicenseRef-Verboisy-Source-Inspection-1.0"
+        or parsed.get("License-Expression") != "LicenseRef-Verboisy-Source-Inspection-2.0"
     ):
         raise ValueError("Distribution metadata disagrees with package contract")
     licenses = [v for k, v in files.items() if k.endswith("LICENSE")]
-    if not licenses or any(b"VERBOISY SOURCE INSPECTION LICENSE 1.0" not in v for v in licenses):
+    if not licenses or any(b"VERBOISY SOURCE INSPECTION LICENSE 2.0" not in v for v in licenses):
         raise ValueError("Missing proprietary license")
     if not modules or "verboisy/__init__.py" not in modules or "verboisy/api.py" not in modules:
         raise ValueError("Missing public Python modules")

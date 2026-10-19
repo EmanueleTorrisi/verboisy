@@ -19,7 +19,7 @@ async def test_cancellation_stops_owned_group(tmp_path, monkeypatch):
     transport = AsyncMock(return_value=process)
     monkeypatch.setattr(provision.asyncio, "create_subprocess_exec", transport)
     kill = Mock()
-    monkeypatch.setattr(provision.os, "killpg", kill)
+    monkeypatch.setattr(provision, "os", SimpleNamespace(name="posix", killpg=kill))
     with pytest.raises(asyncio.CancelledError):
         await provision.ensure_browser(str(path), True)
     assert transport.await_args.kwargs["start_new_session"] is True
@@ -73,6 +73,7 @@ async def test_owned_shutdown_escalation(monkeypatch, platform, lookup, killer_t
     )
     killpg = Mock(side_effect=ProcessLookupError() if lookup else None)
     monkeypatch.setattr(provision, "os", SimpleNamespace(name=platform, killpg=killpg))
+    monkeypatch.setattr(provision, "signal", SimpleNamespace(SIGTERM=15, SIGKILL=9))
     killer = SimpleNamespace(
         wait=AsyncMock(side_effect=[TimeoutError(), 0] if killer_timeout else [0]), kill=Mock()
     )

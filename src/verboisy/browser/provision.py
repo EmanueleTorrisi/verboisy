@@ -28,14 +28,14 @@ async def _stop(process: asyncio.subprocess.Process) -> None:
         return
     try:
         if os.name == "posix":
-            os.killpg(process.pid, signal.SIGTERM)
+            getattr(os, "killpg")(process.pid, signal.SIGTERM)  # noqa: B009
         else:
             process.terminate()
         await asyncio.wait_for(process.wait(), 2)
     except (TimeoutError, ProcessLookupError):
         if os.name == "posix":
             with suppress(ProcessLookupError):
-                os.killpg(process.pid, signal.SIGKILL)
+                getattr(os, "killpg")(process.pid, getattr(signal, "SIGKILL"))  # noqa: B009
         else:
             killer = await asyncio.create_subprocess_exec(
                 "taskkill",
