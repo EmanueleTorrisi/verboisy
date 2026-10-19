@@ -27,13 +27,13 @@ async def _stop(process: asyncio.subprocess.Process) -> None:
     if process.returncode is not None:
         return
     try:
-        if os.name == "posix":
+        if sys.platform != "win32":
             os.killpg(process.pid, signal.SIGTERM)
         else:
             process.terminate()
         await asyncio.wait_for(process.wait(), 2)
     except (TimeoutError, ProcessLookupError):
-        if os.name == "posix":
+        if sys.platform != "win32":
             with suppress(ProcessLookupError):
                 os.killpg(process.pid, signal.SIGKILL)
         else:
