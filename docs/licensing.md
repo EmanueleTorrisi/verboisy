@@ -5,7 +5,9 @@
 Verboisy is proprietary software with limited source-inspection permissions. It is
 **not open source**. The authoritative terms are in the repository's
 [LICENSE](https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE).
-Package metadata identifies `LicenseRef-Verboisy-Source-Inspection-1.0`.
+The applicable licence version is the one supplied with the software. Its
+identifier in package metadata must match that licence; documentation summaries
+do not replace its terms.
 
 ## Permissions at a glance
 
