@@ -29,7 +29,7 @@ dependencies = [
     "rfc3986-validator>=0.1.1,<0.2.0",
     "httpx>=0.28.1,<0.29.0",
     "httpcore>=1.0.9,<1.1.0",
-    "aiohttp>=3.14.3,<4.0",
+    "aiohttp>=3.14.4,<4.0",
 ]
 
 [project.urls]
