@@ -9,7 +9,7 @@ import asyncio
 import hashlib
 import json
 import re
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -292,6 +292,7 @@ async def arun(
     mass_unit: str | None = None,
     length_unit: str | None = None,
     date_format: str | None = None,
+    on_started: Callable[[str, str], None] | None = None,
 ) -> RunResult:
     """Start or resume evidence-backed research using simple or advanced configuration."""
 
@@ -601,6 +602,9 @@ async def arun(
             display = resolve_saved_preferences(display_defaults, saved_display, display_overrides)
         if not saved_display or display_overrides:
             store.event(rid, "presentation_preferences", display.model_dump())
+
+        if on_started is not None:
+            on_started(rid, state["goal"])
 
         if resume:
             offered = offer_saved_range_change(store, rid, saved_evidence=range_evidence)
