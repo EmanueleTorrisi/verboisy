@@ -5,9 +5,11 @@ import copy
 import io
 import json
 
+import pytest
 import verboisy.cli.ui as ui
 from rich.console import Console
 from rich.progress import Progress
+from rich.style import Style
 from verboisy.cli.ui import CLIUserInterface, RunDisplay
 
 
@@ -342,3 +344,72 @@ def test_review_and_error_messages_preserve_actions_without_typing_or_markup(mon
     assert "Accept: --okresume saved" in output
     assert "! Error:" in output and "Resume: --resume saved" in output
     assert "\x1b[2J" not in output and delays == []
+
+
+def test_artifact_link_keeps_white_underline_and_encodes_the_actual_path(monkeypatch, tmp_path):
+    monkeypatch.delenv("WT_SESSION", raising=False)
+    monkeypatch.delenv("WSL_DISTRO_NAME", raising=False)
+    monkeypatch.chdir(tmp_path)
+    relative = "résumé [blue] #1%.csv"
+    captured = []
+    test_console = make_console()
+    monkeypatch.setattr(ui, "console", test_console)
+    monkeypatch.setattr(test_console, "print", lambda text, **_kwargs: captured.append(text))
+    CLIUserInterface.print_artifact("CSV", relative)
+    text = captured[0]
+    assert text.plain == "→    CSV: " + relative
+    assert text.spans[0].style == Style(
+        color="white", underline=True, link=(tmp_path / relative).as_uri()
+    )
+    assert "%20%5Bblue%5D%20%231%25.csv" in text.spans[0].style.link
+
+
+@pytest.mark.parametrize("label", ["CSV", "JSON", "Proof", "Manifest"])
+def test_artifact_link_emits_osc8_only_for_terminal_output(monkeypatch, tmp_path, label):
+    monkeypatch.delenv("WT_SESSION", raising=False)
+    monkeypatch.delenv("WSL_DISTRO_NAME", raising=False)
+    path = tmp_path / "output file.txt"
+    for terminal in (True, False):
+        stream = io.StringIO()
+        test_console = Console(
+            file=stream,
+            force_terminal=terminal,
+            color_system="standard" if terminal else None,
+            width=30,
+        )
+        monkeypatch.setattr(ui, "console", test_console)
+        CLIUserInterface.print_artifact(label, path)
+        output = stream.getvalue()
+        assert str(path) in output
+        assert output.count("\n") == 1
+        if terminal:
+            assert "\x1b]8;" in output and path.as_uri() in output
+            assert "\x1b[4;37m" in output
+        else:
+            assert "\x1b" not in output and "file://" not in output
+
+
+@pytest.mark.parametrize(
+    "platform,terminal,distro,uses_unc",
+    [
+        ("linux", "session", "Ubuntu-24.04", True),
+        ("linux", "session", "Custom distro #1", True),
+        ("linux", "", "Ubuntu", False),
+        ("linux", "session", "", False),
+        ("win32", "session", "Ubuntu", False),
+        ("darwin", "session", "Ubuntu", False),
+    ],
+)
+def test_artifact_link_targets_wsl_share_only_in_windows_terminal(
+    monkeypatch, tmp_path, platform, terminal, distro, uses_unc
+):
+    from urllib.parse import quote, urlsplit
+
+    monkeypatch.setattr(ui.sys, "platform", platform)
+    monkeypatch.setenv("WT_SESSION", terminal)
+    monkeypatch.setenv("WSL_DISTRO_NAME", distro)
+    path = tmp_path / "report #1.csv"
+    expected = path.as_uri()
+    if uses_unc:
+        expected = f"file://wsl.localhost/{quote(distro, safe='')}{urlsplit(expected).path}"
+    assert ui._artifact_uri(path) == expected
