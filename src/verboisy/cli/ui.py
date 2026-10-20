@@ -4,15 +4,19 @@
 """Compact terminal presentation of real run state, records and exported artifacts."""
 
 import json
+import os
+import sys
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote, urlsplit
 
 from rich.cells import cell_len
 from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.style import Style
 from rich.table import Table
 from rich.text import Text
 
@@ -73,6 +77,15 @@ def _shorten(text: str, width: int) -> str:
 
 def _fields(data: list[dict[str, Any]]) -> list[str]:
     return list(dict.fromkeys(key for row in data for key in row))
+
+
+def _artifact_uri(path: str | Path) -> str:
+    uri = Path(path).absolute().as_uri()
+    # Windows Terminal opens links on Windows, so a WSL file needs its UNC address.
+    distro = os.environ.get("WSL_DISTRO_NAME")
+    if sys.platform == "linux" and os.environ.get("WT_SESSION") and distro:
+        return f"file://wsl.localhost/{quote(distro, safe='')}{urlsplit(uri).path}"
+    return uri
 
 
 class RunDisplay:
@@ -256,8 +269,11 @@ class CLIUserInterface:
     @staticmethod
     def print_artifact(label: str, path: str | Path, *, animate: bool = False) -> None:
         text = Text(f"→ {label:>6}: ")
-        text.append(_single_line(path), style="white underline")
-        console.print(text)
+        text.append(
+            _single_line(path),
+            style=Style(color="white", underline=True, link=_artifact_uri(path)),
+        )
+        console.print(text, soft_wrap=True)
         if label in {"CSV", "JSON"}:
             _pause(1, animate)
 
