@@ -231,13 +231,13 @@ def test_cli_submit_inspect_and_no_pending(ledger, tmp_path, monkeypatch):
     monkeypatch.setenv("SQLITE_DB_PATH", str(path))
     cli = CliRunner()
     result = cli.invoke(app, ["changes", "--run-id", rid])
-    assert result.exit_code == 0 and "* No pending" in result.output
+    assert result.exit_code == 0 and "⟡ No pending" in result.output
     file = tmp_path / "change.json"
     file.write_text(json.dumps(request()), encoding="utf-8")
     store.close()
     result = cli.invoke(app, ["changes", "--run-id", rid, "--proposal", str(file)])
     assert result.exit_code == 0, result.output
-    assert "* Proposed changes:" in result.output
+    assert "⟡ Proposed changes:" in result.output
     assert f"--okresume {rid}" in result.output
     result = cli.invoke(app, ["changes", "--run-id", rid, "--database", str(path)])
     assert result.exit_code == 0
