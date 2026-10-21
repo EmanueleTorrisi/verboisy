@@ -51,7 +51,7 @@ classifiers = ["Typing :: Typed"]
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
 pytest-asyncio = "^1.4.0"
-pytest-mock = "^3.14.0"
+pytest-mock = "^3.17.0"
 mypy = "^1.10.0"
 ruff = "^0.4.4"
 mkdocs-material = "^9.5.21"
