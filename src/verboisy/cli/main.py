@@ -5,8 +5,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from functools import wraps
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, ParamSpec, TypeVar
 
 import typer
 from pydantic import ValidationError
@@ -15,7 +17,7 @@ from typer.core import TyperGroup
 from verboisy import __version__
 from verboisy.api import run
 from verboisy.cli.streaming import stream_command, stream_status
-from verboisy.cli.ui import CLIUserInterface
+from verboisy.cli.ui import CLIUserInterface, RunDisplay
 from verboisy.dataset_formats import MIME_TYPES, format_capabilities
 from verboisy.product import SortKey
 from verboisy.utils.config import Settings
@@ -195,7 +197,27 @@ def main() -> None:
     """Verboisy command group."""
 
 
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _interruptible_display(function: Callable[_P, _R]) -> Callable[_P, _R]:
+    @wraps(function)
+    def wrapped(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        try:
+            return function(*args, **kwargs)
+        except KeyboardInterrupt:
+            CLIUserInterface.print_error(
+                "Display interrupted. Completed work remains saved; "
+                "inspect the run before resuming."
+            )
+            raise typer.Exit(130) from None
+
+    return wrapped
+
+
 @app.command("run")
+@_interruptible_display
 def run_agent(
     ctx: typer.Context,
     goal: Annotated[
@@ -375,6 +397,16 @@ def run_agent(
             help="Browser visibility override; default is headless.",
         ),
     ] = None,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", "-v", help="Also show provenance manifest paths.")
+    ] = False,
+    animation: Annotated[
+        bool,
+        typer.Option(
+            "--animation/--no-animation",
+            help="Type and pace interactive output; redirected output is always immediate.",
+        ),
+    ] = True,
 ) -> None:
     """Start or resume an evidence-backed research run."""
 
@@ -383,6 +415,7 @@ def run_agent(
     CLIUserInterface.print_header(
         f"Verboisy {__version__}",
         "Autonomous web research",
+        animate=animation,
     )
 
     sorts = [
@@ -393,6 +426,7 @@ def run_agent(
         )
     ]
 
+    display = RunDisplay(animate=animation)
     try:
         config = Settings()
         setup_logging(config)
@@ -443,9 +477,11 @@ def run_agent(
             length_unit=length_unit,
             date_format=date_format,
             config=config,
+            on_started=display.started,
         )
 
     except KeyboardInterrupt:
+        display.finish("INTERRUPTED")
         CLIUserInterface.print_error(
             "Research interrupted. Committed records remain in SQLite.\n"
             "Resume with: verboisy run --resume"
@@ -453,57 +489,65 @@ def run_agent(
         raise typer.Exit(130) from None
 
     except ValidationError as exc:
+        display.finish("FAILED")
         fields = ", ".join(".".join(map(str, error["loc"])) for error in exc.errors())
         CLIUserInterface.print_error(f"Invalid configuration fields: {fields}")
         raise typer.Exit(1) from None
 
     except (VerboisyError, OSError) as exc:
+        display.finish("FAILED")
         CLIUserInterface.print_error(str(exc))
         raise typer.Exit(1) from None
 
     except Exception as exc:
+        display.finish("FAILED")
         CLIUserInterface.print_error(
             f"Execution failed ({type(exc).__name__}). " "Committed records remain in SQLite."
         )
         raise typer.Exit(1) from None
 
-    typer.echo(f"Run ID:\n{result.run_id}\n")
+    finally:
+        display.close()
 
-    if goal:
-        typer.echo(f"Task:\n{goal.strip()}\n")
+    if display.run_id is None:
+        display.started(result.run_id, goal or "Resume saved research")
+    display.finish(result.status)
 
     for notice in result.notices:
-        typer.echo(notice)
-
-    typer.echo(f"Status: {result.status}; " f"{len(result.records)} accepted rows")
+        CLIUserInterface.print_notice(notice)
 
     dataset_consistency = getattr(result, "dataset_consistency", None)
     if dataset_consistency is not None:
         for gap in dataset_consistency["gaps"]:
-            typer.echo(f"Dataset gap: {gap}")
+            CLIUserInterface.print_notice(f"Dataset gap: {gap}")
         for repair in dataset_consistency["repairs"]:
-            typer.echo(
+            CLIUserInterface.print_notice(
                 f"Repair record {repair['record_id']} "
                 f"at {repair['pointer']}: {repair['reason']}"
             )
 
     show_artifacts = result.completed or bool(result.records)
 
+    has_csv = any(Path(path).suffix.lower() == ".csv" for path in result.export_paths)
+    animate_results = animation and result.completed
+    CLIUserInterface.display_results_table(
+        result.records, label="CSV" if has_csv else "Dataset", animate=animate_results
+    )
+    CLIUserInterface.display_json_preview(result.records, animate=animate_results)
+
     if show_artifacts:
         for path in result.export_paths:
-            typer.echo(f"Dataset: {path}")
-
-        for path in result.manifest_paths:
-            typer.echo(f"Manifest: {path}")
-
+            CLIUserInterface.print_artifact(
+                Path(path).suffix.lstrip(".").upper(), path, animate=animate_results
+            )
         if result.proof_path:
-            typer.echo(f"Proof: {result.proof_path}")
-
-    CLIUserInterface.display_results_table(result.records)
+            CLIUserInterface.print_artifact("Proof", result.proof_path)
+        if verbose:
+            for path in result.manifest_paths:
+                CLIUserInterface.print_artifact("Manifest", path)
 
     if result.completed:
-        CLIUserInterface.print_success("Completed")
-        CLIUserInterface.print_signoff()
+        CLIUserInterface.print_signoff(animate=animation)
 
     else:
         if result.stop_reason == "provider_rate_limit":
@@ -547,12 +591,18 @@ def research_changes(
                 else pending_change(store, run_id)
             )
             if change is None:
-                typer.echo("* No pending proposal. Use --resume to continue this run.")
+                CLIUserInterface.print_notice(
+                    "No pending proposal. Use --resume to continue this run."
+                )
             else:
-                typer.echo("* Proposed changes: " + change.request.description)
+                CLIUserInterface.print_notice("Proposed changes: " + change.request.description)
                 typer.echo(change.model_dump_json(indent=2, by_alias=True))
-                typer.echo(f"* Keep current requirements: verboisy run --resume {run_id}")
-                typer.echo(f"* Accept these changes: verboisy run --okresume {run_id}")
+                CLIUserInterface.print_notice(
+                    f"Keep current requirements: verboisy run --resume {run_id}"
+                )
+                CLIUserInterface.print_notice(
+                    f"Accept these changes: verboisy run --okresume {run_id}"
+                )
     except (VerboisyError, OSError, ValueError):
         CLIUserInterface.print_error("Cannot inspect or save the proposed requirements")
         raise typer.Exit(1) from None
