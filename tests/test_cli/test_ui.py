@@ -374,6 +374,7 @@ def test_artifact_link_emits_osc8_only_for_terminal_output(monkeypatch, tmp_path
         test_console = Console(
             file=stream,
             force_terminal=terminal,
+            legacy_windows=False,
             color_system="standard" if terminal else None,
             width=30,
         )
