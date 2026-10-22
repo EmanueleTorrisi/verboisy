@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING
 from pydantic import ValidationError
 
 from verboisy.evidence.models import Candidate, PageProposal, RangeConflict, Snapshot
+from verboisy.extractor.evidenced import EvidenceExtractor
+from verboisy.extractor.proof_preparation import prepare_candidate_proofs
 from verboisy.extractor.range_changes import ProposedChangesPauseError
 from verboisy.utils.exceptions import LLMResponseError
 
@@ -41,7 +43,23 @@ async def review_page_proposal(
             raise ProposedChangesPauseError
     checked_candidates: list[tuple[Candidate, list[str]]] = []
 
-    for candidate in proposal.candidates:
+    for candidate_index, candidate in enumerate(proposal.candidates):
+        if isinstance(runner.extractor, EvidenceExtractor):
+            prepared, changes = prepare_candidate_proofs(
+                candidate, supplied, runner.extractor.task, runner.extractor.field_semantics
+            )
+            if changes:
+                runner.store.event(
+                    runner.rid,
+                    "evidence_preparation",
+                    {
+                        "snapshot_id": captured.id,
+                        "candidate_index": candidate_index,
+                        "changes": changes,
+                        "candidate": prepared.model_dump(mode="json"),
+                    },
+                )
+            candidate = prepared
         try:
             errors = await runner.extractor.check(
                 candidate,
