@@ -348,7 +348,7 @@ def _ground_source_assessments_base(
         grounded, sources = _citations_are_grounded(
             candidate,
             page,
-            assessment.citations,
+            current.citations,
         )
 
         if not grounded:
@@ -368,7 +368,7 @@ def _ground_source_assessments_base(
             pointer=pointer,
             fitness=_assessment_fitness(
                 candidate,
-                assessment,
+                current,
             ),
             grounded=True,
             reason=None,
