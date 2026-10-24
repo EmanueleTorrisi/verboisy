@@ -35,7 +35,7 @@ async def capture_rendered_page(
     runner: ResearchRunner,
     page: Page,
     canonicalize: Callable[[str], str | None],
-    make_snapshot: Callable[[str, str, int], Snapshot],
+    make_snapshot: Callable[..., Snapshot],
     capture_script: str,
 ) -> tuple[Snapshot, str, str, str]:
     """Check the rendered destination and size before creating source evidence."""
@@ -49,7 +49,19 @@ async def capture_rendered_page(
     html, visible_html = observation["html"], observation["visible_html"]
     if len(html.encode()) > runner.config.max_page_bytes:
         raise NavigationError("Page exceeds configured size limit")
-    captured = make_snapshot(visible_html, url, runner.config.max_snapshot_chars)
+    column_tables = getattr(runner.task, "column_tables", [])
+    if column_tables:
+        try:
+            captured = make_snapshot(
+                visible_html,
+                url,
+                runner.config.max_snapshot_chars,
+                column_tables=column_tables,
+            )
+        except ValueError as error:
+            raise NavigationError("Declared column table rejected: " + str(error)) from error
+    else:
+        captured = make_snapshot(visible_html, url, runner.config.max_snapshot_chars)
     drain = getattr(runner.browser, "drain_policy_failures", None)
     if callable(drain):
         for notice in drain():
