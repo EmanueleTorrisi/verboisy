@@ -9,7 +9,7 @@ import json
 from collections.abc import Iterator
 from typing import Any, BinaryIO
 
-from verboisy.extractor.dataset import SourceRow, parse_dataset
+from verboisy.extractor.dataset import SourceRow, parse_json_record
 from verboisy.streaming.contract import StreamError
 
 
@@ -75,15 +75,15 @@ def source_rows(stream: BinaryIO, fmt: str, ceiling: int) -> Iterator[SourceRow]
                     if not line.strip():
                         lines.used = 0
                         continue
-                    values = (
-                        parse_dataset(line.encode("utf-8"), "jsonl", max_bytes=ceiling)
-                        .rows[0]
-                        .values
-                    )
+                    encoded = parse_json_record(line)
                 else:
-                    values = {"text": line.removesuffix("\n").removesuffix("\r")}
+                    encoded = json.dumps(
+                        {"text": line.removesuffix("\n").removesuffix("\r")},
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    )
                 index += 1
-                yield _row(index, values, lines.number, lines.number, ceiling)
+                yield _bounded_row(index, encoded, lines.number, lines.number, ceiling)
                 lines.used = 0
             if index == 0:
                 raise StreamError("Empty streaming text asset")
@@ -95,6 +95,10 @@ def source_rows(stream: BinaryIO, fmt: str, ceiling: int) -> Iterator[SourceRow]
 
 def _row(index: int, values: dict[str, Any], first: int, last: int, ceiling: int) -> SourceRow:
     encoded = json.dumps(values, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
+    return _bounded_row(index, encoded, first, last, ceiling)
+
+
+def _bounded_row(index: int, encoded: str, first: int, last: int, ceiling: int) -> SourceRow:
     if len(encoded.encode("utf-8")) > ceiling:
         raise StreamError("Streaming decoded record byte limit exceeded")
     return SourceRow(index, None, first, last, encoded)
