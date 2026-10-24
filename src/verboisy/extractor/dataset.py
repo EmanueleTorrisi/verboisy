@@ -66,6 +66,34 @@ def _json(text: str) -> Any:
     return json.loads(text, object_pairs_hook=_object, parse_constant=_constant, parse_float=_float)
 
 
+def _encode_record(value: Any, max_depth: int) -> str:
+    if not isinstance(value, dict):
+        raise DatasetParseError("Dataset rows must be objects")
+    pending: list[tuple[Any, int]] = [(value, 1)]
+    while pending:
+        item, depth = pending.pop()
+        if isinstance(item, dict | list):
+            if depth > max_depth:
+                raise DatasetParseError("Dataset nesting limit exceeded")
+            values = item.values() if isinstance(item, dict) else item
+            pending.extend((child, depth + 1) for child in values)
+    encoded = json.dumps(value, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
+    encoded.encode("utf-8")  # Reject escaped lone Unicode surrogates, including object keys.
+    return encoded
+
+
+def parse_json_record(text: str, *, max_depth: int = 32) -> str:
+    """Decode one object once, using the same finite/unique/depth policy as datasets.
+
+    The caller owns byte and physical-line bounds. This function does not create
+    an asset, hash a line, or decode an already validated canonical record again.
+    """
+    try:
+        return _encode_record(_json(text), max_depth)
+    except (ValueError, RecursionError, UnicodeEncodeError):
+        raise DatasetParseError("Malformed dataset asset") from None
+
+
 def parse_dataset(
     content: bytes,
     dataset_format: DatasetFormat,
@@ -97,16 +125,7 @@ def parse_dataset(
             raise DatasetParseError("Dataset rows must be objects")
         if len(rows) >= max_rows:
             raise DatasetParseError("Dataset row limit exceeded")
-        pending: list[tuple[Any, int]] = [(value, 1)]
-        while pending:
-            item, depth = pending.pop()
-            if isinstance(item, dict | list):
-                if depth > max_depth:
-                    raise DatasetParseError("Dataset nesting limit exceeded")
-                values = item.values() if isinstance(item, dict) else item
-                pending.extend((child, depth + 1) for child in values)
-        encoded = json.dumps(value, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
-        encoded.encode("utf-8")  # Reject escaped lone Unicode surrogates.
+        encoded = _encode_record(value, max_depth)
         rows.append(SourceRow(len(rows) + 1, pointer, first, last, encoded))
 
     if dataset_format == "asset":
