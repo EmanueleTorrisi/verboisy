@@ -9,7 +9,8 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from bs4 import BeautifulSoup, Comment, Tag
 
-from verboisy.evidence.models import Snapshot, Source
+from verboisy.evidence.column_tables import column_table_sources
+from verboisy.evidence.models import ColumnTableSpec, Snapshot, Source
 
 
 def canonical_url(value: str, base: str = "") -> str | None:
@@ -35,7 +36,13 @@ def whitespace(text: str) -> str:
     return " ".join(text.split())
 
 
-def snapshot(html: str, url: str, max_chars: int = 120000) -> Snapshot:
+def snapshot(
+    html: str,
+    url: str,
+    max_chars: int = 120000,
+    *,
+    column_tables: list[ColumnTableSpec] | None = None,
+) -> Snapshot:
     soup = BeautifulSoup(html, "html.parser")
     for node in list(soup.select("script, style, noscript, svg, template, iframe, head")):
         node.decompose()
@@ -47,6 +54,9 @@ def snapshot(html: str, url: str, max_chars: int = 120000) -> Snapshot:
         if "display:none" in style or "visibility:hidden" in style:
             node.decompose()
     container = soup.body or soup
+    excluded, column_sources = column_table_sources(
+        container, column_tables or [], url, canonical_url
+    )
     entity_selector = "article, li, [itemscope], [data-record]"
     entity_ids = {id(n) for n in container.select(entity_selector)}
     scope_nodes = []
@@ -73,6 +83,8 @@ def snapshot(html: str, url: str, max_chars: int = 120000) -> Snapshot:
     used = 0
     truncated = False
     for node in [container, *container.find_all(True)]:
+        if id(node) in excluded:
+            continue
         if node.name == "a" and node.get("href"):
             href = canonical_url(str(node["href"]), url)
             if href is None:
@@ -95,6 +107,13 @@ def snapshot(html: str, url: str, max_chars: int = 120000) -> Snapshot:
             if not text:
                 continue
             item = Source(id=f"e{len(sources)}", kind="text", text=text, scope=scope(node))
+        size = len(item.model_dump_json())
+        if used + size > max_chars:
+            truncated = True
+            continue
+        used += size
+        sources.append(item)
+    for item in column_sources:
         size = len(item.model_dump_json())
         if used + size > max_chars:
             truncated = True
