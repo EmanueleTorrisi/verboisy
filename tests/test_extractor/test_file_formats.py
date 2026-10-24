@@ -60,6 +60,18 @@ def test_registry_and_cli_inspection_make_no_configuration_or_provider_requests(
     forbidden.assert_not_called()
 
 
+def test_capabilities_distinguish_large_dataset_and_time_series_workflows():
+    from verboisy.streaming.contract import FORMATS
+
+    report = format_capabilities()
+    assert {f["format"] for f in report["formats"] if f["streaming_input"]} == FORMATS
+    assert report["large_dataset_preparation"]["input_formats"] == sorted(FORMATS)
+    assert set(report["large_dataset_preparation"]["output_formats"]) == {"csv", "json", "jsonl"}
+    assert report["large_dataset_preparation"]["model_requests"] == 0
+    assert not report["time_series"]["streaming_analysis"]
+    assert not report["time_series"]["interpolation"]
+
+
 def test_unknown_format_is_rejected_before_interpreting_bytes():
     with pytest.raises(DatasetParseError, match="Unsupported dataset format"):
         parse_dataset(b"%PDF-1.7", "pdf")
