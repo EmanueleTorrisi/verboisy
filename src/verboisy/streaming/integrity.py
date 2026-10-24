@@ -27,6 +27,7 @@ from verboisy.streaming.capture import verify_capture
 from verboisy.streaming.contract import FORMATS, StreamError, StreamLimits, validate_stream_schema
 from verboisy.streaming.ledger import ChunkReader, StreamLedger
 from verboisy.streaming.parser import source_rows
+from verboisy.streaming.validation import row_validator
 from verboisy.utils.exceptions import VerboisyError
 from verboisy.utils.json_payload import decode_json
 
@@ -180,12 +181,7 @@ def _row_contract(job: dict[str, Any]) -> tuple[ProjectionPlan | None, Any, int]
         if contract.get("projection") is not None
         else None
     )
-    root = SchemaBuilder.validator(contract["schema"])
-    validator = (
-        root.evolve(schema=contract["schema"]["items"])
-        if contract["schema"]["type"] == "array"
-        else root
-    )
+    validator = row_validator(contract["schema"])
     return plan, validator, contract["limits"]["max_record_bytes"]
 
 
