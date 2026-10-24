@@ -143,7 +143,8 @@ def _write_rows(
         rows = verified_export_rows(ledger, job)
         try:
             for source, value in rows:
-                record = json.loads(value)
+                source_values = source.values
+                record = source_values if value == source.values_json else json.loads(value)
                 if output.suffix.lower() == ".csv":
                     if headers is None:
                         headers = list(record)
@@ -180,7 +181,7 @@ def _write_rows(
                     ).hexdigest(),
                     "line_start": source.line_start,
                     "line_end": source.line_end,
-                    "source_values": source.values,
+                    "source_values": source_values,
                     "output_is_source": value == source.values_json,
                 }
                 if value != source.values_json:
