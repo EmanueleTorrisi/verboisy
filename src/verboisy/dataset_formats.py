@@ -32,6 +32,8 @@ MIME_TYPES: dict[str, tuple[str, ...]] = {
 
 def format_capabilities() -> dict[str, Any]:
     """Report implemented contracts without inferring extraction from an extension."""
+    from verboisy.streaming.contract import FORMATS
+
     outputs = {
         "csv": "Exact header-keyed string records",
         "json": "Array of object records with JSON types",
@@ -54,9 +56,32 @@ def format_capabilities() -> dict[str, Any]:
                 "output": outputs[name],
                 "media_types": list(media),
                 "model_assisted_extraction": False,
+                "streaming_input": name in FORMATS,
             }
             for name, media in MIME_TYPES.items()
         ],
         "automatic_format_detection": False,
         "arbitrary_file_capture_format": "asset",
+        "large_dataset_preparation": {
+            "command": "verboisy stream",
+            "input_formats": sorted(FORMATS),
+            "output_formats": ["csv", "json", "jsonl"],
+            "result_materialization": "bounded pages, counts and disk-backed exports",
+            "resume": "saved byte capture and committed row checkpoints",
+            "model_requests": 0,
+            "global_sorting_or_grouping": False,
+        },
+        "time_series": {
+            "workflow": "explicit policy on accepted research records",
+            "timestamp_policy_required": True,
+            "diagnostics": [
+                "invalid_timestamp",
+                "invalid_series",
+                "duplicate_instant",
+                "missing_observations",
+                "off_grid_intervals",
+            ],
+            "interpolation": False,
+            "streaming_analysis": False,
+        },
     }
