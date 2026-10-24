@@ -269,6 +269,18 @@ def run_agent(
             ),
         ),
     ] = None,
+    column_table: Annotated[
+        list[int] | None,
+        typer.Option(
+            "--column-table",
+            min=1,
+            max=100,
+            help=(
+                "Declare a visible HTML table with entities in columns; first table is 1. "
+                "Requires a blank top-left cell, entity headers and attribute labels; repeatable."
+            ),
+        ),
+    ] = None,
     identity: Annotated[
         list[str] | None,
         typer.Option(
@@ -478,6 +490,18 @@ def run_agent(
             date_format=date_format,
             config=config,
             on_started=display.started,
+            **(
+                {
+                    "task": {
+                        "column_tables": [{"table": n} for n in column_table],
+                        "csv_mode": (
+                            "spreadsheet" if schema and schema.lstrip().startswith("[") else "json"
+                        ),
+                    }
+                }
+                if column_table
+                else {}
+            ),
         )
 
     except KeyboardInterrupt:
