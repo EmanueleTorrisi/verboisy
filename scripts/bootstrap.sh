@@ -5,8 +5,8 @@ set -euo pipefail
 cd -P "$(dirname "$0")/.."
 python3 -c 'import sys; assert (3, 11) <= sys.version_info[:2] < (3, 15), "Use Python 3.11–3.14"'
 python3 -m venv build/release-tools
-build/release-tools/bin/python -m pip install --upgrade pip 'setuptools>=83.0.0'
-build/release-tools/bin/python -m pip install 'poetry==2.5.1' twine pipx
+build/release-tools/bin/python -m pip install --upgrade pip 'setuptools>=84.1.0'
+build/release-tools/bin/python -m pip install 'poetry==2.5.1' twine pipx 'filelock>=4.2.4,<5.0' 'virtualenv>=21.14.10,<22.0'
 unset VIRTUAL_ENV
 export POETRY_VIRTUALENVS_CREATE=true
 export POETRY_VIRTUALENVS_IN_PROJECT=true
@@ -41,6 +41,6 @@ assert Path(sys.argv[1]).resolve() == Path(".venv").resolve(), "Poetry did not s
 PY
 build/release-tools/bin/poetry install
 # Refresh tooling seeded by venv separately from the application dependency lock.
-.venv/bin/python -m pip install --upgrade 'setuptools>=83.0.0'
+.venv/bin/python -m pip install --upgrade 'setuptools>=84.1.0'
 test -x .venv/bin/verboisy
 printf '\nReady. Run: source .venv/bin/activate\nThen: verboisy --help\n'
