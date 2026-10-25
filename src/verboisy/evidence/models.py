@@ -155,9 +155,21 @@ class DatasetSource(StrictModel):
     projection: ProjectionPlan | None = None
 
 
+class ColumnTableSpec(StrictModel):
+    """Declare entities in columns of a numbered visible HTML table.
+
+    The first row supplies unique entity headers, the first column supplies
+    unique attribute labels, and the top-left cell is empty. Spanning or nested
+    tables require a separate adapter and are not silently flattened.
+    """
+
+    table: int = Field(ge=1, le=100, strict=True)
+
+
 class TaskSpec(StrictModel):
     time_series: TimeSeriesSpec | None = None
     dataset_sources: list[DatasetSource] = Field(default_factory=list, max_length=100)
+    column_tables: list[ColumnTableSpec] = Field(default_factory=list, max_length=8)
     seed_urls: list[str] = Field(default_factory=list, max_length=100)
     allowed_hosts: list[str] = Field(default_factory=list, max_length=100)
     avoided_hosts: list[str] = Field(default_factory=list, max_length=100)
@@ -174,6 +186,15 @@ class TaskSpec(StrictModel):
     settle_ms: int = Field(default=750, ge=0, le=10000)
     allow_nulls: bool = True
     csv_mode: Literal["json", "spreadsheet"] = "json"
+
+    @model_validator(mode="after")
+    def unique_column_tables(self) -> "TaskSpec":
+        numbers = [item.table for item in self.column_tables]
+        if len(numbers) != len(set(numbers)):
+            raise ValueError("Column table declarations must have unique table numbers")
+        if self.column_tables and self.dataset_sources:
+            raise ValueError("Column table declarations require HTML sources")
+        return self
 
     @model_validator(mode="after")
     def valid_series_identity(self) -> "TaskSpec":

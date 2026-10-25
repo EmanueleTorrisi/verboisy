@@ -1,0 +1,1034 @@
+{
+  "schema_version": 1,
+  "kind": "offline_cli_acceptance_evidence",
+  "scope": "Synthetic CLI contract checks; not held-out web research or production certification",
+  "passed": true,
+  "source": {
+    "commit": "31274e216454d64c06db6d0aa93b3598022f3c87",
+    "files": {
+      "src/verboisy/__init__.py": "b0d12477fd585fdc4a118706a8cd63adae6a48119a32dbb91586bd1db43cf3de",
+      "src/verboisy/__main__.py": "52671f2b9cd31cc7d02b6cc3a687aa03dce6d10392ca7a25d1cbdce2caba02d6",
+      "src/verboisy/api.py": "defbad5bca0e8586108df91e1a37350bf1fccfa2f193bc04235bf28fc9c68388",
+      "src/verboisy/browser/__init__.py": "bd9b595b40732fdf955826a00b6ed77a830009f2072a4a8bc614bf3e381837d5",
+      "src/verboisy/browser/context.py": "7e000bfeeb67bbac844a0ebed4d0069519965f0a5a1281dd77a33a9bd5b50adf",
+      "src/verboisy/browser/dom_parser.py": "f2e60602ad78b3051764c5b4cd96b836d17c48aa8b8b1c68a08caae7e576b0a1",
+      "src/verboisy/browser/policy.py": "1d87cdce4e87c9ee457a012c218715d7fb88d51b00b18b4eb0b2263d18b42ac3",
+      "src/verboisy/browser/provision.py": "3a2be21de73d81bf1ea044a7a7d2f3147465978db602668c71d38f44a6dd30ac",
+      "src/verboisy/browser/stealth.py": "1c37c73e286833543a1a295eac8c6a8f598628bbb72deeb89b3953877a905b24",
+      "src/verboisy/cli/__init__.py": "867cc3d15eb6ac9d05c59e0ffc480b8eae85a5caa3c4e51fb0579e8f71c5701f",
+      "src/verboisy/cli/main.py": "f3d9d96c900a722fd0500262172a19f3020384160b78b5830a02f4a7940ba5cf",
+      "src/verboisy/cli/streaming.py": "4ead18fa2890039a6747acc634e018bcace6a491857290e5f2bba04f9fc08a31",
+      "src/verboisy/cli/ui.py": "ee6e1e8109b68ec23a57d367cb6dc30702f5f80ffee268f6b920e2ab030df95b",
+      "src/verboisy/core/__init__.py": "51d5d5584af318120e1ce5b5ef3737e51f3f2d4a00fce2da4e40f93ebed9ee53",
+      "src/verboisy/core/assessment_journal.py": "e3d09ed08fd55ca3b609f2d0db08a7e5456483f7ea826dec894c436756ec3c53",
+      "src/verboisy/core/candidate_admission.py": "2daa9ee1f394d7b9490fe70f882525c023908e6167e04e16f51603977c86d671",
+      "src/verboisy/core/dataset_comparison.py": "cf3945a1363867b6980269beddbec4cfc31bbe2c5d62fe72dc8dfff7d65750d8",
+      "src/verboisy/core/dataset_consistency.py": "03f0bf1ce3587241f076a958ed2e8dc2c6b3cb6aa56b49465bf0975025adf6f2",
+      "src/verboisy/core/discovery_replay.py": "4f07e665800d53654983312d8aa28a58f8ced31bd8cfcff32f4a2475f25f033c",
+      "src/verboisy/core/evidence_comparison.py": "fbfc67dbaa5570fc25640a2477b54288e872e9eef37fbba1e019ce593ff60fc7",
+      "src/verboisy/core/fitness.py": "90e66d3c8b14c814dfc028667f26673c981e64d2733dddebcaae999d08e57163",
+      "src/verboisy/core/frontier_discovery.py": "80b3bc5815d12c6e7c96fa226963dfd902d55c92be9be33ac8a3c79842f9ca84",
+      "src/verboisy/core/initial_discovery.py": "3d843314e959824f8af2200356cf6ae90f8da0c771546d89f9e34776f611ff7e",
+      "src/verboisy/core/initial_query_journal.py": "a30af85bb97e2f43cfb47f7b7a190abaac665ca034fb256a07aef5477bceb4fa",
+      "src/verboisy/core/page_batches.py": "6d79efd678e566b81afc6526893e6186a6eb32dd226fddd2ea3c04d2e65ae75f",
+      "src/verboisy/core/page_capture.py": "d163ad0b5b7d3adad1721659dd9c77538a56b37e78a82bf012afa09810c2dd9c",
+      "src/verboisy/core/page_pagination.py": "3d2dfd6a9c02ef3fd5484d02206552cceb0d5c43820c921a5fa09228f2db4ea4",
+      "src/verboisy/core/planner.py": "e17bbb41dd938d27dd094c72a21c9580a6f5621ae99942da495dd91f1fd7343a",
+      "src/verboisy/core/proposal_review.py": "5bff0de167ae08a0d707b9000ce47bb39d92f8d3add9e6a6ac5a6dfd8be896c7",
+      "src/verboisy/core/provenance.py": "1fbf921076b3bb5ae9beb5579505d936aa327eb59a2b1eb5d73fc6b3ac64cf9b",
+      "src/verboisy/core/repair_discovery.py": "a18d397c9ebac9e9329b98d6072a009e9147febb627b17df5aa0de13a77a2b74",
+      "src/verboisy/core/research.py": "8bed3fdb3a3a2b98b6bfa3432e30a49b3ba62dd5ff9ee6d51b6046ef5fbd25bc",
+      "src/verboisy/core/run_outcome.py": "136551fb67d71687e12428d9215005cc53a40c7f7b29cb63bf054fcbf95dca87",
+      "src/verboisy/core/search.py": "020de771335246fe1818ab28fb4f2b1013f7efbc53c2c6aadc05b2c1537defda",
+      "src/verboisy/core/semantic_plan_journal.py": "0761fe18a3a84af84f7a95af5766ae05a6d5c178b6d9749e62c1091e6e894a49",
+      "src/verboisy/core/semantic_planner.py": "be3adfcf94c0d0b3e9915068367f89dff1a44649446a7a4eba0f80997cf9a7cb",
+      "src/verboisy/core/source_assessment.py": "a9a54144cae10e96203ddcc1010c94df8d79729c56cb6a1b2e0f3969acab5e90",
+      "src/verboisy/core/source_batches.py": "4dbef909e5ef8f418d9a948bcc97c8c8105155ed5b0d212a57ae3bdc56013a0c",
+      "src/verboisy/core/source_productivity.py": "1d096eed3e990de9b78fec4e4fd2b08a7a9964ed6237aeaff061f795b248120a",
+      "src/verboisy/core/unit_normalization.py": "d5bb34daec2615a10a6959fb986354ef27c582b9f66ab51fad3f1ad42d8251c2",
+      "src/verboisy/core/units.py": "ea9015f130fe82365d78dcdfab1e67452464c2f85210c670bf799a5be11c51b6",
+      "src/verboisy/dataset_formats.py": "c44c4532c947d39dcdfb0100c7617f79c66d2aa9147919754a6217e8f29326bb",
+      "src/verboisy/evidence/__init__.py": "c80dc9265fe690c7b034ab2b663eefedf09bb4c5ac579b8eb1a03bb9cf8eb208",
+      "src/verboisy/evidence/models.py": "cf0de5d6c8b27f0396c00a6037cb013d51a9a15cb6b2c30263d301a60f4bf6ec",
+      "src/verboisy/evidence/native_configuration.py": "a919daff3534047f625521d8253cfbcfcf4f8a642fe8b0f3a5721729ab9a1e7e",
+      "src/verboisy/evidence/quote_batch.py": "87b2ddf0dcbdc4d22b51658b3f945593e18cf4a96bd73ac015183d38ec0488a2",
+      "src/verboisy/evidence/quote_match.py": "09dbead6650cfdd73b10acd496ae3ef2fbdc9942ab20eec761b9f15a4f816be8",
+      "src/verboisy/evidence/snapshot.py": "f52620ab85b28671ccaecbc19d0ae26494d25489632bb3735b39af3597178ae8",
+      "src/verboisy/evidence/verify.py": "d07e63b299463b6a7e06435ddce75d852154e6e67fc86968b217433ba84ec8f8",
+      "src/verboisy/extractor/__init__.py": "8a02cafb8f237cdcebd8450eb256433d99ffaf6cbcf65e5390e5a76c3af42c1f",
+      "src/verboisy/extractor/dataset.py": "d89c9a80981e3b981a8cc94941aeb3142642338666e2442e21cf8eb84dccf368",
+      "src/verboisy/extractor/dataset_evidence.py": "998919f85030832e80f4a04b686d5af3c9779a86b1fbeb9334cde086288077b9",
+      "src/verboisy/extractor/dataset_journal.py": "4a1e1c64d34ac69fcbdcc6e54d868d893b6aa83a3eed698315a3dbfc3a9a377f",
+      "src/verboisy/extractor/descriptor_projection.py": "aa8057268fd09f059294eb0b4f6e71947b2c4a3739afbe54f53d98f13e1b3bd7",
+      "src/verboisy/extractor/docx.py": "961bc3ecb1ee4d4a2295ed1c5ff40dd35399706eff04281ff9156747d5aae43d",
+      "src/verboisy/extractor/download.py": "d38263634513d6de403e9b2f8011194a5cd5baa52974870cf40989d581a8f7e9",
+      "src/verboisy/extractor/evidenced.py": "27e27c2cc0626406ec264608f0521b583f65a38b3a72ee1f8f8494cfdabbbfee",
+      "src/verboisy/extractor/format_errors.py": "f8f831c78de8f07001fcbd09a2506b6d709c3d627bc5dde14f994e583d613c15",
+      "src/verboisy/extractor/ingestion.py": "68603f146de54f8ae2a6aa055b2aefb847d2da810d8cfba52008b447b19ebaeb",
+      "src/verboisy/extractor/local.py": "9ec8809bca59f8ac6a1ec2bd2c97a8c79c17a325664c2248d68e403df58171dd",
+      "src/verboisy/extractor/mapping.py": "f1d7a91e074ef01168a0311d597f576a346e211e428cd98663aac08560ab6b94",
+      "src/verboisy/extractor/office_package.py": "a5563823d1d6b85a0a7ffcbbaa5c597f220c0c3961bf5f580d6a926fb5de11d9",
+      "src/verboisy/extractor/profile.py": "32c360547190b24216b42d304e46d8bec7b7257af09b2ec9859df1fdaa6f47fd",
+      "src/verboisy/extractor/projection.py": "b927fd87d16f47ba9ce4009315d8ea537cdcd4323624ac7a6f70322fa8fd48e3",
+      "src/verboisy/extractor/proof_preparation.py": "8b25cbb61f6d412c40ae631f61a0e9bd6173c36640eb1c49bc0f533ee6163185",
+      "src/verboisy/extractor/range_changes.py": "825eb566058ea402f22acee5963be5d57498b850ccf474fe36d0208b707e633a",
+      "src/verboisy/extractor/research_changes.py": "21438868089298a74e235015d6d4640387f709db7577071ef005645bb5d8dec8",
+      "src/verboisy/extractor/review.py": "289f53d9f8509af2cc9c8b36c822e5d334c0ab69d7a846b31bcddcd25caa5288",
+      "src/verboisy/extractor/schema_builder.py": "796981aaebca7ac0b610775894d7cac1f8a2de4ea2b9e399f8e94b5c160f80db",
+      "src/verboisy/extractor/schema_cache.py": "4c69e842dac027ed0401ef1997b15ccf8736fd5a2dab372b58b93b925b9c792a",
+      "src/verboisy/extractor/schema_paths.py": "197e226cb5eb3968c6839ff0b0e83acaf5095ab1a5742861407adbb1efb82aae",
+      "src/verboisy/extractor/temporal_projection.py": "f26bc1b04d3031f4a04201f5fb17dd38cfd36bc7c35ecc30d49d6761c2cf7035",
+      "src/verboisy/extractor/transport.py": "871b5ff4b6ad994f49269dd506c44c6dfa71e84053cf1a49b24ac2a2b42cfda5",
+      "src/verboisy/extractor/unit_projection.py": "c73192e751ede8bea51980841dd9c2316fcd2144b16ac54a2e3da90758179778",
+      "src/verboisy/extractor/xlsx.py": "94053a1e6a2281030dff85f72ea0d596614152dd4778a303d495ca76535eacfb",
+      "src/verboisy/llm/__init__.py": "80200112b108f16e438e21db9404e9d783713109853992282a2e3f0582621602",
+      "src/verboisy/llm/client.py": "4050a18a1a552a97b27fde5da9b95aaaf7f3d1b71e09722d0ff8f8f7929005de",
+      "src/verboisy/llm/configuration.py": "266956f677a58205c32388c3e6ea748eebe8227c2e840f4509b42f248d0c3cc2",
+      "src/verboisy/llm/diagnostics.py": "df363c87560309f2df57cae4d6923afd814b6e46a8b5d177dbe36daa50408a0f",
+      "src/verboisy/llm/providers.py": "d89b3f0893c8f3846a951e6f3f9d0e394725ee76698703a45f1160e61411d25a",
+      "src/verboisy/output.py": "e91502dfa0a5c13fccba30b23cc4c64aed292fbbe5961b4885cc7a6c05518698",
+      "src/verboisy/presentation.py": "8acd23a322d5aca141286ab11239f426136f8dc277f98837945c8deee7268bf7",
+      "src/verboisy/presentation_config.py": "bfa3c4a75ab0d051297100b3182eda3ab7964cefb4643d12009a98fb5bde7001",
+      "src/verboisy/product.py": "6db5456b94b17e373f5f6a30568f691c67ae6b998f73972de7cb6ffccf4cdffe",
+      "src/verboisy/provider_config.py": "393d4bbbc9b41be91accf4498ba00d9f7714b5b12b4a5ebb8e5ed6c65e305e34",
+      "src/verboisy/reference_dataset.py": "37c14a9990622a0aff3e73b525305c14abb01c891d0cccf1e219ea2d343e4a00",
+      "src/verboisy/research_contract.py": "508c6d6ec23db8cb0589d938a2ed0b37500352ea1c4186e3978ee91ce27dd242",
+      "src/verboisy/research_summary.py": "822a7910690cb46d3c86c5b51ba4b95cd41c2aaba75a41ca275a369cf1b75462",
+      "src/verboisy/source_config.py": "eaafe06c97415971480a12641506d48f79b5880bee02cb51195034246ca4dace",
+      "src/verboisy/storage/__init__.py": "39c44050edc4410dfba2a21aab8f86e7aba66adea88c1cb129d2c0b6798d6d08",
+      "src/verboisy/storage/admission.py": "7aa6e2bf7e5916f5fecffac94938a59eb31e42eccd3368a9ec3957ebb232e6ad",
+      "src/verboisy/storage/asset_bundle.py": "0df4edc809a77ed0d5d7a2b2b13f58b8af2a56c223e02d0b07935e2ac9189443",
+      "src/verboisy/storage/assets.py": "8052f46a3f5c4c554ea151333f5be0e1cad8722240c95ea95416d4df18b8c893",
+      "src/verboisy/storage/changes.py": "40e78af1368ebbfb4bf4d798bc1dc369fca9898c0da642a4b1fd694d3284577b",
+      "src/verboisy/storage/dataset.py": "e90d22dc6bb9f7a1e287ca15151d287b7f342e470d7c17a4a0f99fe086ecb357",
+      "src/verboisy/storage/diagnostics.py": "d3a264364f8af3efa947836dd39c97aede760a2a72e04f6fc3f2134d411eb7f7",
+      "src/verboisy/storage/event_journal.py": "dff810500f3b56369bc12cca91841d5b20a4337c85264c1e582d1bddedad1262",
+      "src/verboisy/storage/exporters.py": "08b513155eaa2777603bd2b30829840a0ee3119dd31110b20e0468dbb8a66c90",
+      "src/verboisy/storage/frontier_selection.py": "cf56a8291ff360febae0a1f525ab59bbf681aba13abeb42ce7c8204917bf1f02",
+      "src/verboisy/storage/inventory.py": "291fd93a0e2049b03b40b51c06eacfa8340b5128c83f2832db2f7adbaab07ed8",
+      "src/verboisy/storage/json_payload.py": "d8cd109455792ab2d5f42977cbd9bfbc59bdd0acce3988e73df9439db3442aa7",
+      "src/verboisy/storage/ledger_schema.py": "b1ac0b7027992c0c0e93206b7a35ad6d8500870d3e4d32c6b3596598ad2f8a01",
+      "src/verboisy/storage/lineage.py": "4f6bad177baeae41d31d20392dac46f288a082cf9fd6f13f06c27fac6b1bc213",
+      "src/verboisy/storage/numeric_presentation.py": "a56c83a17071e627705c8a7cb1ab5b875f1de4027c9bd523e8345d95c4cbea62",
+      "src/verboisy/storage/path_safety.py": "7d02b8c778613476fad97a64e221ce8261aab142e88f61062d59fbc07ae3e7d1",
+      "src/verboisy/storage/product_options.py": "7c23ff59b21b4599ca1b0f2bcb0bcb3f2887599522cd009cb65ceaa840408136",
+      "src/verboisy/storage/proof.py": "549e062f946959df8ee05da4181f5f2fbcac9558eb32f55eb01a46202ad55ae6",
+      "src/verboisy/storage/record_view.py": "2c2cdc135a8b7781846c154b9936756de9b45bf782924a7edfc2c861cc67c3a7",
+      "src/verboisy/storage/research.py": "7f4ed0c15d952fbc9a58914034a818ec5a57daf25d03f80be9b078e442bfb364",
+      "src/verboisy/storage/saved_evidence.py": "da309f421f700895943623a5b6a3284f58965e23f4ffb32305dae5095c2b349d",
+      "src/verboisy/storage/snapshots.py": "98d55a149763f7c5d0c779de25f8dc2a2ca51c469850cab7929c710fdf19b64a",
+      "src/verboisy/streaming/__init__.py": "498595fe851aa6962c65a3702d3c4171f9ce5390692dd354f58a2dc91791da3e",
+      "src/verboisy/streaming/api.py": "54782cc3198e768f8ef4df49544b309adfc16bd6f86ff0c893c76d046ec41368",
+      "src/verboisy/streaming/capture.py": "84b8c4f68ef8768eb497e08acdbea8e02b8254d0926eafe37f5fda8920d72ce6",
+      "src/verboisy/streaming/contract.py": "c8d0040c77b4ae0ee38702925f1221c7a4e986ef01c94749b1ebc1a6071e1998",
+      "src/verboisy/streaming/export.py": "b51c01d8c0d23e9705c4969ec8c55add9c1f9ce2b03d50de9df03358505a5039",
+      "src/verboisy/streaming/integrity.py": "c17e9768423d4f81501ae870e7ac81f6cd79a4cd2cb4cc5d5f01bd51cc31a7e3",
+      "src/verboisy/streaming/ledger.py": "42b540e4cd2118206bbf86b353e475cd384bd447a012d59b6b9a1f7110f9f552",
+      "src/verboisy/streaming/parser.py": "0897fa25f0e07501cb8c716dd9510e1c22172117ac1882028fc17715dde3a221",
+      "src/verboisy/time_series.py": "4440143f92a5002c8710a650dd42bee6d498c969c5cdc34fa6c1a1a0f40da030",
+      "src/verboisy/time_series_contract.py": "a07e60718926597ac171294e03328ed0356ce952202382dd5901f92fd1481f6a",
+      "src/verboisy/utils/__init__.py": "31a16620af78ef3ac671a3d4ef4e8c19d580b935cdb5bfee133b274e4ae6f8c1",
+      "src/verboisy/utils/config.py": "7e841039903c7e6b1f7efeff23d1359aab0112e9a46bb72afb1f2a011f5f8276",
+      "src/verboisy/utils/exceptions.py": "8b0a818b99ab8a741d3afb6af5806f540ebb4d0e1e695d573a608c315158d0dc",
+      "src/verboisy/utils/json_payload.py": "f465461ff3634a84900a529e3c0a28f07fd8a72c45b6894c32dd3752c26ea9fc",
+      "src/verboisy/utils/logger.py": "02ea06359d752058039d37feb6f285271af7aa153b230e1c0455717ac963179a",
+      "pyproject.toml": "3003832270acca558afeff9b5d8558071722af556442885d8646afb69b0095fb",
+      "poetry.lock": "60753a088bb2c237ec479dbb60c37564010ab58b17dc7f4898a6e207a4768e3c"
+    },
+    "source_digest": "490badfc4855cb80fef5b2bb5b9a8fcb68d08f8bfa98e6232f2cbb317838f186",
+    "tracked_dirty": false
+  },
+  "runner_files": {
+    "CHECKS.txt": "007d6809bce2b2bdf4e52069cdee9e05caf14c4d71922610edd2287e2ad8ee34",
+    "LOCAL-VALIDATION.json": "1fb1e65538c823cf67bfcc2d81b968655dead7968f964a4f9ef1e1c092a3b56c",
+    "fixtures/asset-index.asset": "d3d869e484d4fd40c541c2a5b73d72ff7c83c143566e754e4b35e1b2d6140c17",
+    "fixtures/csv-unicode.csv": "bb53d8b23cd1f5deee613bf7e66a2dbf81582f827d94509054f7e5229ea0f8b7",
+    "fixtures/docx-paragraphs.docx": "5333a28c3df96f201c5f121f7dc69135cd724f6c5a76de77d11c1b0823e19803",
+    "fixtures/formula.xlsx": "242bbbff345796e6ef7c4038162738cd650e312072ba527ef45291cc37728158",
+    "fixtures/json-types.json": "70c16e928783942f4dcca7f6a2d218078931f76680a96e77342842a8fe15933b",
+    "fixtures/jsonl-types.jsonl": "8a23c7686d7c77754409ece14beb2e8002c7bb86fc628e867690c9d74bc00f6c",
+    "fixtures/text-lines.text": "5ab786b9023c60fbb77e6f37d6acf437c30a6e5b1f4df6820c57ec70d928642c",
+    "fixtures/tsv-unicode.tsv": "e06c892456fd310b7d978b848901e7a344d1a82e63e84978e20fba9ac4127b31",
+    "fixtures/xlsx-typed.xlsx": "fab85e05b06d00269f3cf05a177c6319177dd819ef00db4d3bf05115f527f4a0",
+    "plan.json": "ba0a51ff1628dcd634cb77bcb2919f7f5d304d07caff25e4fe8c8e8a588d55c1",
+    "run_free.py": "47798c13236adfcd9fea0feddd1440e994a47683649d887fb9c1ab9345fd25c6",
+    "source-hashes.json": "7f1e8e995ce7205a54f2c08c5e99f73c1bb2c00693aab8e309c753e40455bd4a",
+    "suite.py": "75be5bc39517b576809bf35692e224101d05228b8f5deb37b47bf620d5573bf4",
+    "test_checker.py": "1d657cd09126a207883c9bf68801e8a0bb47b8e468f0dcc3ee7f1afc31321dbe"
+  },
+  "attachment": {
+    "name": "verboisy-offline-acceptance-results-20261023T233046691805Z.zip",
+    "sha256": "8f07e908b92bda77cdd7732d9afe4f7e9599bcc6ec8a4532a9eb210d88c0b735",
+    "bytes": 40438,
+    "member_sha256": {
+      "asset-index/initial.command.json": "d7cc570ae2975f2e51aaf36d368c6fc71f3e9f77d0ea9bbaf2079f0031004518",
+      "asset-index/initial.log": "d4418aa2e40e50bb4e7e1c3110be82b3feb4df262fc3612b654d9507111e1f12",
+      "asset-index/resume-without-source.command.json": "2240a9801651266a137f268ff2a665174eb2649485341be97468fab7ee6c9c94",
+      "asset-index/resume-without-source.log": "4b4959015d8674be456c213d9ced9f009b71c240926751080a700707b2ecb40e",
+      "checker.log": "b919b30c8b9a9ac56a450e719d820dc535c18ebe6b0d68f00e5abcddb023ba0c",
+      "csv-unicode/initial.command.json": "1e0f6ac006d2ada40143b277fc5b43c6157fbeb1f0d8f63e338760dcbd90bfa9",
+      "csv-unicode/initial.log": "b3666fd235c7c8e046c334af0fe7bebadff83ae4c71a1da828dceaca7a797833",
+      "csv-unicode/resume-without-source.command.json": "a23e1b4a6d71b3a4d7ba1fbef3cebda86d16e4ce14054ff1235eb82f44118a48",
+      "csv-unicode/resume-without-source.log": "ac5efd5316c5835e30fd0aff9af6f79f930e07b69c1c0a450349143703b269a8",
+      "docx-paragraphs/initial.command.json": "bd04a2cb807196c057fc84b91538a7da392f0c1da80212663a509ea60d402750",
+      "docx-paragraphs/initial.log": "5711eb6a91026282b1136d4ae016fef6463b2a8e9ebab7cd451fde132b904a99",
+      "docx-paragraphs/resume-without-source.command.json": "85e9d95688352a07b1b649718951b2f1963cdc14579e623b94e3b23fe3985fbe",
+      "docx-paragraphs/resume-without-source.log": "5711eb6a91026282b1136d4ae016fef6463b2a8e9ebab7cd451fde132b904a99",
+      "duplicate-json-key/rejected.command.json": "efa80f9bbf9efd064d45f83c61265742ad2d92893da40e5901dbc63b80fa8044",
+      "duplicate-json-key/rejected.log": "d61240f371bb610a6b145a66af20b9b37edf077b931800405d978f4a0a818f79",
+      "environment.json": "79689941ca692ffe3ccfc2ffbefd86084af8f195c643bd5ccba8b830414458c1",
+      "guard.log": "b27e1595204a43f0f7bc995b57dea9f7836e43e363394b3f71def7deb71e0f1c",
+      "input-overwrite/rejected.command.json": "78559f54902fb4eab3c5db640cfacf04107b31de5e6f63b8ac2324550eccad07",
+      "input-overwrite/rejected.log": "67ac5ee9469fcccdc7f08de4116f8218ea1b9259226e1f2636c742df9ee24973",
+      "json-types/initial.command.json": "972816c74cc442aff3102ea20c19a4ec02cd7689b97fa0de2be7ab5a4677deaa",
+      "json-types/initial.log": "5cc7486d27fd49a0acabc302742176fc85e2c662e8d402b4916557bd81d5292b",
+      "json-types/resume-without-source.command.json": "121d352b426cfb784d3f1a3b9969f6583e7dd9b6099faecd0666352a085a918c",
+      "json-types/resume-without-source.log": "598dcee74c468b4149e160a80d12c55bee763f889a837c545384783c2f799109",
+      "jsonl-types/initial.command.json": "e6916950e443678df00706db5b341131aded231e76b81b1e267b512d2f634982",
+      "jsonl-types/initial.log": "6efe13056619056584dfd6bbb3111d7e102dd379c1bd6bac3b8ccb32fdd64852",
+      "jsonl-types/resume-without-source.command.json": "ae691d8049e87d2d619a6865b861fb6236a2c4433db4fd93eb17fb5fafb94eaa",
+      "jsonl-types/resume-without-source.log": "d34a94e1f8a9da4f1e7b06dc6d5b2df228f00357cbd2e7a152d2bbaf9b789c0a",
+      "qualification.json": "1566e764963f0cfb2f06006984a6782573d3cddc100e77383ee5bb0993ddaeea",
+      "results.json": "41dc2edeea3015cb501ff16974dee186e30e371672e3ed636739d4cd63960528",
+      "spreadsheet-escaping/initial.command.json": "79ecc1cc648dfc2323158ce5ffa3599c222832b4cd507799ee07b3e937dad1ad",
+      "spreadsheet-escaping/initial.log": "0ee72ed32c2e9ec476e018582e8fff37098b0a45f72b9218c12912828cc17fef",
+      "spreadsheet-escaping/json-export.command.json": "2982af6c4ca60c816f1f876b519af5c0288d177cf4d37cbc51e721a16c445b24",
+      "spreadsheet-escaping/json-export.log": "0ee72ed32c2e9ec476e018582e8fff37098b0a45f72b9218c12912828cc17fef",
+      "stream-checkpoint-resume/initial.command.json": "4e1780a31c1698556aa64c0049a28007ccec0c8c8625df94af95608e8d89e7f6",
+      "stream-checkpoint-resume/initial.log": "7cec88b141a6a7b18049b8923182420abe4114ff0dea8200ec7e8deeab363ebb",
+      "stream-checkpoint-resume/resume-without-source.command.json": "adb73a15d3bea062d1c1b03652bf7bd91c689691deccb66ea9c99687aef2dc16",
+      "stream-checkpoint-resume/resume-without-source.log": "14d6a5dba7b6a987cc971a4d92389f3c4b136ba0d32bf82e06f435ffad16227a",
+      "stream-input-limit/rejected.command.json": "203aa35600448bad9c2adb2e6265d8c6adfd7e5f8d33926fe3383b4531ff8d57",
+      "stream-input-limit/rejected.log": "0879aaab9d22a94fa2d7c2d8c41e0a17a18bc1fda6aaa9bb6cf94ddcb1529780",
+      "stream-sigkill-resume/initial.command.json": "657820910999c6c19aae8f52a695a01b4daa981bcddb765657b29769443ed647",
+      "stream-sigkill-resume/initial.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stream-sigkill-resume/resume-without-source.command.json": "dd7931dd499e17a360de7e441c2e1204ba76847b6268cbd000a205045f3dfdaa",
+      "stream-sigkill-resume/resume-without-source.log": "635cf1af8b86925b38e2a3e425fc62a3c420ef7f85003fd260d3ea48487c9a8e",
+      "suite.log": "d4f308490c6a15a83a54551b8c8577176a3f49de3b8301676383ede491da4ba6",
+      "text-lines/initial.command.json": "34e663a771d7bc5e00d9977d708a8bf20871d0cc3b58215a0265eba93e46fdba",
+      "text-lines/initial.log": "1ccfd5f46ba7d80abc6ab32f2cce0ef22cafc6de7ece36bcc25033f0379eb48f",
+      "text-lines/resume-without-source.command.json": "223f0b1c6f54fc1f62395cb8bb695b6876624c53eb49ae86e9b72a8838c946f5",
+      "text-lines/resume-without-source.log": "1ccfd5f46ba7d80abc6ab32f2cce0ef22cafc6de7ece36bcc25033f0379eb48f",
+      "tsv-unicode/initial.command.json": "1df4ce1edab187a38e0189cd8f5155cf1ad0c497002ddac074c655116bb5d28e",
+      "tsv-unicode/initial.log": "c7e220f2ed505399dbd33b505907c27c6b10e92de8ab7898a1a7284fe5e19dad",
+      "tsv-unicode/resume-without-source.command.json": "b702efaacb3e25a0f84dc11bea3d7ab4d9f78e00e2a2b905f5e425374002635a",
+      "tsv-unicode/resume-without-source.log": "e50e6b54dc51fc315b2cd8a5c6f48f950f918f2a36e080fe51418e726fd7c81c",
+      "ungranted-local-file/rejected.command.json": "1b2f17486907dec69f64815fc2068cea779b1e5f7187b9b498d6fbf804126eb9",
+      "ungranted-local-file/rejected.log": "b3673586016bbf9a05b4a6752b66a07154b18a9d140c7c89827bd68358803c6d",
+      "xlsx-formula/rejected.command.json": "0328a3d36a590bc6ff3bd2e003602fe74f24b21d6aef1df21b3fd0ab348c15e9",
+      "xlsx-formula/rejected.log": "ae12c11b5389d668633fe3c1a4e3517d05adbd5f78b9abff5bc402bf90727701",
+      "xlsx-typed/initial.command.json": "31edfbb1d6da34272b758845001098d5169b598597daafa971f85cab73c36019",
+      "xlsx-typed/initial.log": "b31c4f3c10f3fe7a9ddc70c678f7aba058b676739a51378c381be4df19bcddba",
+      "xlsx-typed/resume-without-source.command.json": "7b10913f73ca7e56d27a7e4fff29ded22b1c9b91b91e10acc07fda00029f0ba6",
+      "xlsx-typed/resume-without-source.log": "b31c4f3c10f3fe7a9ddc70c678f7aba058b676739a51378c381be4df19bcddba"
+    }
+  },
+  "attachment_review": {
+    "reviewed_at_utc": "2026-10-23T23:36:21.081457+00:00",
+    "method": "Compared scorecards and logs, expected case inventory, 128 reviewed source/manifest hashes and 16 delivered runner/fixture/report hashes; no tests rerun during this review.",
+    "raw_databases_and_exports_in_attachment": false,
+    "raw_export_values_recomputed_during_attachment_review": false,
+    "original_runner_performed_export_value_and_hash_checks": true,
+    "independent_beta": false
+  },
+  "summary": {
+    "scenarios_passed": 16,
+    "scenarios_failed": 0,
+    "checker_selftests_passed": 7,
+    "local_formats": [
+      "json",
+      "jsonl",
+      "csv",
+      "tsv",
+      "text",
+      "docx",
+      "xlsx",
+      "asset"
+    ],
+    "format_fixture_rows": 38,
+    "declared_top_level_cells": 224,
+    "format_resume_after_source_removal_passed": 8,
+    "forced_stop": {
+      "signal": "SIGKILL",
+      "durable_checkpoint_rows": 512,
+      "resumed_rows": 12000,
+      "source_removed_before_resume": true
+    },
+    "planned_checkpoint": {
+      "durable_checkpoint_rows": 7,
+      "resumed_rows": 40
+    },
+    "input_limit_enforced_bytes": 1000,
+    "formula_capable_csv_strings_escaped": 6,
+    "network_guard_passed": true,
+    "paid_requests": 0,
+    "api_spend_usd": 0,
+    "monetary_ledger_opened": false,
+    "work_directory_bytes_reported": 9315109
+  },
+  "environment": {
+    "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+    "verboisy": "1.0.0",
+    "module": "/home/lele/code/EmanueleTorrisi/verboisy/src/verboisy/__init__.py",
+    "packages": [
+      {
+        "name": "CacheControl",
+        "version": "0.14.4"
+      },
+      {
+        "name": "Jinja2",
+        "version": "3.1.6"
+      },
+      {
+        "name": "Markdown",
+        "version": "3.10.3"
+      },
+      {
+        "name": "MarkupSafe",
+        "version": "3.0.3"
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.3"
+      },
+      {
+        "name": "Pygments",
+        "version": "2.21.0"
+      },
+      {
+        "name": "aiohappyeyeballs",
+        "version": "2.7.1"
+      },
+      {
+        "name": "aiohttp",
+        "version": "3.14.5"
+      },
+      {
+        "name": "aiosignal",
+        "version": "1.4.0"
+      },
+      {
+        "name": "aiosqlite",
+        "version": "0.20.0"
+      },
+      {
+        "name": "annotated-doc",
+        "version": "0.0.5"
+      },
+      {
+        "name": "annotated-types",
+        "version": "0.8.0"
+      },
+      {
+        "name": "anyio",
+        "version": "4.15.1"
+      },
+      {
+        "name": "arrow",
+        "version": "1.4.0"
+      },
+      {
+        "name": "attrs",
+        "version": "26.1.0"
+      },
+      {
+        "name": "babel",
+        "version": "2.18.0"
+      },
+      {
+        "name": "backrefs",
+        "version": "8.0"
+      },
+      {
+        "name": "beautifulsoup4",
+        "version": "4.15.0"
+      },
+      {
+        "name": "boolean.py",
+        "version": "5.0"
+      },
+      {
+        "name": "boto3",
+        "version": "1.43.95"
+      },
+      {
+        "name": "botocore",
+        "version": "1.43.95"
+      },
+      {
+        "name": "build",
+        "version": "1.6.1"
+      },
+      {
+        "name": "certifi",
+        "version": "2026.10.19"
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.1"
+      },
+      {
+        "name": "click",
+        "version": "8.5.0"
+      },
+      {
+        "name": "colorama",
+        "version": "0.4.6"
+      },
+      {
+        "name": "coverage",
+        "version": "7.16.1"
+      },
+      {
+        "name": "cyclonedx-python-lib",
+        "version": "11.12.0"
+      },
+      {
+        "name": "defusedxml",
+        "version": "0.7.1"
+      },
+      {
+        "name": "distro",
+        "version": "1.9.0"
+      },
+      {
+        "name": "fastuuid",
+        "version": "0.14.0"
+      },
+      {
+        "name": "filelock",
+        "version": "3.32.7"
+      },
+      {
+        "name": "fqdn",
+        "version": "1.5.1"
+      },
+      {
+        "name": "frozenlist",
+        "version": "1.8.0"
+      },
+      {
+        "name": "fsspec",
+        "version": "2026.7.0"
+      },
+      {
+        "name": "ghp-import",
+        "version": "2.1.0"
+      },
+      {
+        "name": "greenlet",
+        "version": "3.5.6"
+      },
+      {
+        "name": "h11",
+        "version": "0.16.0"
+      },
+      {
+        "name": "hf-xet",
+        "version": "1.6.0"
+      },
+      {
+        "name": "httpcore",
+        "version": "1.0.9"
+      },
+      {
+        "name": "httpx",
+        "version": "0.28.1"
+      },
+      {
+        "name": "huggingface_hub",
+        "version": "1.31.0"
+      },
+      {
+        "name": "idna",
+        "version": "3.19"
+      },
+      {
+        "name": "importlib_metadata",
+        "version": "8.9.0"
+      },
+      {
+        "name": "iniconfig",
+        "version": "2.3.0"
+      },
+      {
+        "name": "isoduration",
+        "version": "20.11.0"
+      },
+      {
+        "name": "jiter",
+        "version": "0.17.0"
+      },
+      {
+        "name": "jmespath",
+        "version": "1.1.0"
+      },
+      {
+        "name": "jsonpointer",
+        "version": "3.1.1"
+      },
+      {
+        "name": "jsonschema",
+        "version": "4.26.0"
+      },
+      {
+        "name": "jsonschema-specifications",
+        "version": "2025.9.1"
+      },
+      {
+        "name": "lark",
+        "version": "1.3.1"
+      },
+      {
+        "name": "librt",
+        "version": "0.15.0"
+      },
+      {
+        "name": "license-expression",
+        "version": "30.4.4"
+      },
+      {
+        "name": "litellm",
+        "version": "1.101.0"
+      },
+      {
+        "name": "markdown-it-py",
+        "version": "4.2.0"
+      },
+      {
+        "name": "mdurl",
+        "version": "0.1.2"
+      },
+      {
+        "name": "mergedeep",
+        "version": "1.3.4"
+      },
+      {
+        "name": "mkdocs",
+        "version": "1.6.1"
+      },
+      {
+        "name": "mkdocs-get-deps",
+        "version": "0.2.2"
+      },
+      {
+        "name": "mkdocs-material",
+        "version": "9.7.7"
+      },
+      {
+        "name": "mkdocs-material-extensions",
+        "version": "1.3.1"
+      },
+      {
+        "name": "msgpack",
+        "version": "1.2.2"
+      },
+      {
+        "name": "multidict",
+        "version": "6.9.1"
+      },
+      {
+        "name": "mypy",
+        "version": "1.20.2"
+      },
+      {
+        "name": "mypy_extensions",
+        "version": "1.1.0"
+      },
+      {
+        "name": "openai",
+        "version": "2.54.0"
+      },
+      {
+        "name": "packageurl-python",
+        "version": "0.17.6"
+      },
+      {
+        "name": "packaging",
+        "version": "26.3"
+      },
+      {
+        "name": "paginate",
+        "version": "0.5.7"
+      },
+      {
+        "name": "pathspec",
+        "version": "1.1.1"
+      },
+      {
+        "name": "pip",
+        "version": "26.2.2"
+      },
+      {
+        "name": "pip-requirements-parser",
+        "version": "32.0.1"
+      },
+      {
+        "name": "pip_api",
+        "version": "0.0.35"
+      },
+      {
+        "name": "pip_audit",
+        "version": "2.10.1"
+      },
+      {
+        "name": "platformdirs",
+        "version": "4.11.8"
+      },
+      {
+        "name": "playwright",
+        "version": "1.61.0"
+      },
+      {
+        "name": "pluggy",
+        "version": "1.6.0"
+      },
+      {
+        "name": "propcache",
+        "version": "0.5.4"
+      },
+      {
+        "name": "py-serializable",
+        "version": "2.1.0"
+      },
+      {
+        "name": "pydantic",
+        "version": "2.13.5"
+      },
+      {
+        "name": "pydantic-settings",
+        "version": "2.15.0"
+      },
+      {
+        "name": "pydantic_core",
+        "version": "2.46.5"
+      },
+      {
+        "name": "pyee",
+        "version": "13.0.1"
+      },
+      {
+        "name": "pymdown-extensions",
+        "version": "12.0.1"
+      },
+      {
+        "name": "pyparsing",
+        "version": "3.3.3"
+      },
+      {
+        "name": "pyproject_hooks",
+        "version": "1.3.3"
+      },
+      {
+        "name": "pytest",
+        "version": "9.1.1"
+      },
+      {
+        "name": "pytest-asyncio",
+        "version": "1.4.0"
+      },
+      {
+        "name": "pytest-cov",
+        "version": "7.1.0"
+      },
+      {
+        "name": "pytest-mock",
+        "version": "3.15.1"
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0"
+      },
+      {
+        "name": "python-dotenv",
+        "version": "1.2.3"
+      },
+      {
+        "name": "pyyaml_env_tag",
+        "version": "1.1"
+      },
+      {
+        "name": "referencing",
+        "version": "0.37.0"
+      },
+      {
+        "name": "regex",
+        "version": "2026.9.10"
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2"
+      },
+      {
+        "name": "rfc3339-validator",
+        "version": "0.1.4"
+      },
+      {
+        "name": "rfc3986-validator",
+        "version": "0.1.1"
+      },
+      {
+        "name": "rfc3987-syntax",
+        "version": "1.1.0"
+      },
+      {
+        "name": "rich",
+        "version": "13.9.4"
+      },
+      {
+        "name": "rpds-py",
+        "version": "2026.6.3"
+      },
+      {
+        "name": "ruff",
+        "version": "0.4.10"
+      },
+      {
+        "name": "s3transfer",
+        "version": "0.19.2"
+      },
+      {
+        "name": "setuptools",
+        "version": "84.0.0"
+      },
+      {
+        "name": "shellingham",
+        "version": "1.5.4"
+      },
+      {
+        "name": "six",
+        "version": "1.17.0"
+      },
+      {
+        "name": "sniffio",
+        "version": "1.3.1"
+      },
+      {
+        "name": "sortedcontainers",
+        "version": "2.4.0"
+      },
+      {
+        "name": "soupsieve",
+        "version": "2.9.2"
+      },
+      {
+        "name": "structlog",
+        "version": "24.4.0"
+      },
+      {
+        "name": "tiktoken",
+        "version": "0.14.0"
+      },
+      {
+        "name": "tokenizers",
+        "version": "0.23.2"
+      },
+      {
+        "name": "tomli",
+        "version": "2.4.1"
+      },
+      {
+        "name": "tomli_w",
+        "version": "1.2.0"
+      },
+      {
+        "name": "tqdm",
+        "version": "4.70.1"
+      },
+      {
+        "name": "typer",
+        "version": "0.27.2"
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.4"
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "tzdata",
+        "version": "2026.4"
+      },
+      {
+        "name": "uri-template",
+        "version": "1.3.0"
+      },
+      {
+        "name": "urllib3",
+        "version": "2.8.0"
+      },
+      {
+        "name": "verboisy",
+        "version": "1.0.0"
+      },
+      {
+        "name": "watchdog",
+        "version": "6.0.0"
+      },
+      {
+        "name": "webcolors",
+        "version": "25.10.0"
+      },
+      {
+        "name": "yarl",
+        "version": "1.25.1"
+      },
+      {
+        "name": "zipp",
+        "version": "4.1.0"
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "json-types",
+      "passed": true,
+      "detail": {
+        "run_id": "ebd9a4ec-c845-4807-8ea6-e249e2f95ec0",
+        "rows": 7,
+        "declared_cells": 63,
+        "checksummed_files": 8,
+        "source_sha256": "70c16e928783942f4dcca7f6a2d218078931f76680a96e77342842a8fe15933b",
+        "model_request_units": 0,
+        "initial_seconds": 4.578,
+        "resume_seconds": 4.226,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": false,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "jsonl-types",
+      "passed": true,
+      "detail": {
+        "run_id": "96cdaa0a-59d3-4827-b57d-6125f082b450",
+        "rows": 7,
+        "declared_cells": 63,
+        "checksummed_files": 8,
+        "source_sha256": "8a23c7686d7c77754409ece14beb2e8002c7bb86fc628e867690c9d74bc00f6c",
+        "model_request_units": 0,
+        "initial_seconds": 4.377,
+        "resume_seconds": 4.175,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": false,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "csv-unicode",
+      "passed": true,
+      "detail": {
+        "run_id": "151acaac-6d8b-4e20-a4a5-8b7ead57cc18",
+        "rows": 7,
+        "declared_cells": 42,
+        "checksummed_files": 8,
+        "source_sha256": "bb53d8b23cd1f5deee613bf7e66a2dbf81582f827d94509054f7e5229ea0f8b7",
+        "model_request_units": 0,
+        "initial_seconds": 4.476,
+        "resume_seconds": 4.175,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": false,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "tsv-unicode",
+      "passed": true,
+      "detail": {
+        "run_id": "809ea576-1abb-46de-9f99-bf0d52eb00f7",
+        "rows": 7,
+        "declared_cells": 42,
+        "checksummed_files": 8,
+        "source_sha256": "e06c892456fd310b7d978b848901e7a344d1a82e63e84978e20fba9ac4127b31",
+        "model_request_units": 0,
+        "initial_seconds": 4.376,
+        "resume_seconds": 4.177,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": false,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "text-lines",
+      "passed": true,
+      "detail": {
+        "run_id": "740a3f97-1b79-45d9-ac30-09a6162fd947",
+        "rows": 3,
+        "declared_cells": 3,
+        "checksummed_files": 8,
+        "source_sha256": "5ab786b9023c60fbb77e6f37d6acf437c30a6e5b1f4df6820c57ec70d928642c",
+        "model_request_units": 0,
+        "initial_seconds": 4.226,
+        "resume_seconds": 4.075,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": true,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "docx-paragraphs",
+      "passed": true,
+      "detail": {
+        "run_id": "758a4219-e861-482f-93f4-6163bdc56261",
+        "rows": 3,
+        "declared_cells": 3,
+        "checksummed_files": 8,
+        "source_sha256": "5333a28c3df96f201c5f121f7dc69135cd724f6c5a76de77d11c1b0823e19803",
+        "model_request_units": 0,
+        "initial_seconds": 4.174,
+        "resume_seconds": 4.326,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": true,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "xlsx-typed",
+      "passed": true,
+      "detail": {
+        "run_id": "84189c2d-d470-4117-87d9-d1bb44173b1b",
+        "rows": 3,
+        "declared_cells": 6,
+        "checksummed_files": 8,
+        "source_sha256": "fab85e05b06d00269f3cf05a177c6319177dd819ef00db4d3bf05115f527f4a0",
+        "model_request_units": 0,
+        "initial_seconds": 4.577,
+        "resume_seconds": 4.225,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": true,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "asset-index",
+      "passed": true,
+      "detail": {
+        "run_id": "7d497b21-e064-46a9-aeeb-ab5a90dfef17",
+        "rows": 1,
+        "declared_cells": 2,
+        "checksummed_files": 8,
+        "source_sha256": "d3d869e484d4fd40c541c2a5b73d72ff7c83c143566e754e4b35e1b2d6140c17",
+        "model_request_units": 0,
+        "initial_seconds": 4.226,
+        "resume_seconds": 4.124,
+        "resume_after_source_removal": true,
+        "interface": "CLI",
+        "json_bytes_identical_after_resume": false,
+        "comparison": "Exact JSON values, types and row order; object key order is not a semantic difference"
+      }
+    },
+    {
+      "id": "duplicate-json-key",
+      "passed": true,
+      "detail": {
+        "expected_rejection": "duplicate-json-key",
+        "persisted_category": "DatasetParseError",
+        "seconds": 4.173,
+        "model_request_units": 0,
+        "source_preserved": true
+      }
+    },
+    {
+      "id": "ungranted-local-file",
+      "passed": true,
+      "detail": {
+        "expected_rejection": "ungranted-local-file",
+        "persisted_category": "DatasetDownloadError",
+        "seconds": 4.125,
+        "model_request_units": 0,
+        "source_preserved": true
+      }
+    },
+    {
+      "id": "xlsx-formula",
+      "passed": true,
+      "detail": {
+        "expected_rejection": "xlsx-formula",
+        "persisted_category": "DatasetParseError",
+        "seconds": 4.426,
+        "model_request_units": 0,
+        "source_preserved": true
+      }
+    },
+    {
+      "id": "input-overwrite",
+      "passed": true,
+      "detail": {
+        "expected_rejection": "input-overwrite",
+        "persisted_category": "input_alias",
+        "seconds": 4.023,
+        "model_request_units": 0,
+        "source_preserved": true
+      }
+    },
+    {
+      "id": "stream-input-limit",
+      "passed": true,
+      "detail": {
+        "input_bytes": 1456,
+        "limit_bytes": 1000,
+        "processed_rows": 0,
+        "seconds": 4.075
+      }
+    },
+    {
+      "id": "spreadsheet-escaping",
+      "passed": true,
+      "detail": {
+        "rows": 7,
+        "formula_capable_strings_escaped": 6,
+        "json_values_unchanged": true,
+        "seconds": 4.175,
+        "interface": "stream CLI"
+      }
+    },
+    {
+      "id": "stream-checkpoint-resume",
+      "passed": true,
+      "detail": {
+        "job_id": "0e5dd8438d0b47f8ac4dbde9df15c6c5",
+        "rows": 40,
+        "input_bytes": 2324,
+        "durable_checkpoint_rows": 7,
+        "real_sigkill": false,
+        "resume_after_source_removal": true,
+        "seconds": 8.206,
+        "scope": "process recovery; not power-loss, disk-full or scale qualification"
+      }
+    },
+    {
+      "id": "stream-sigkill-resume",
+      "passed": true,
+      "detail": {
+        "job_id": "1bd643c21b984fe19167e2631a87b100",
+        "rows": 12000,
+        "input_bytes": 725830,
+        "durable_checkpoint_rows": 512,
+        "real_sigkill": true,
+        "resume_after_source_removal": true,
+        "seconds": 13.335,
+        "scope": "process recovery; not power-loss, disk-full or scale qualification"
+      }
+    }
+  ],
+  "limitations": [
+    "Fixtures are synthetic and were not independently annotated held-out research.",
+    "JSON object-key ordering changed on resume in five format cases; values, types, row order and accepted evidence remained equal. Byte-identical JSON exports are not established.",
+    "Captured logs used NO_COLOR and --no-animation; this run does not qualify terminal animation timing or clickable hyperlinks.",
+    "SIGKILL recovery is process recovery, not a power-loss or disk-full test.",
+    "12,000 rows are not large-scale performance qualification.",
+    "No model reasoning, web discovery, new provider economics, fresh artifact installation, legal review or independent beta was exercised."
+  ],
+  "release_approval": false,
+  "release_matrix_modified": false,
+  "repository_source_modified": false
+}

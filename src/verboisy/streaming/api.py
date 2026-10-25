@@ -36,6 +36,7 @@ from verboisy.streaming.integrity import (
     verified_resume_rows,
 )
 from verboisy.streaming.ledger import StreamLedger
+from verboisy.streaming.validation import row_validator
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
 from verboisy.utils.json_payload import decode_json
@@ -139,12 +140,7 @@ def stream_dataset(
                 if contract["projection"] is not None
                 else None
             )
-        root_validator = SchemaBuilder.validator(contract["schema"])
-        validator = (
-            root_validator.evolve(schema=contract["schema"]["items"])
-            if contract["schema"]["type"] == "array"
-            else root_validator
-        )
+        validator = row_validator(contract["schema"])
         job = validated_job(ledger, job_id)
         validate_checkpoint_shape(ledger, job)
         positioned = None
