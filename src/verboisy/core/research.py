@@ -38,7 +38,7 @@ from verboisy.core.planner import (
 )
 from verboisy.core.proposal_review import review_page_proposal
 from verboisy.core.repair_discovery import discover_repair_source
-from verboisy.core.run_outcome import exhausted_frontier_outcome
+from verboisy.core.run_outcome import exhausted_frontier_outcome, page_limit_outcome
 from verboisy.core.search import web_search
 from verboisy.core.semantic_plan_journal import journal_field_semantics
 from verboisy.core.semantic_planner import (
@@ -417,8 +417,9 @@ class ResearchRunner:
         )
 
         # Persisted cache hits remain usable when provider credentials are absent.
+        semantics = getattr(self, "field_semantics", None)
         if cached_source_assessment(
-            events, source_assessment_cache_key(page, candidates)
+            events, source_assessment_cache_key(page, candidates, field_semantics=semantics)
         ) is None and not self.model_execution_available("source_assessment"):
             return []
 
@@ -429,6 +430,7 @@ class ResearchRunner:
                 goal=self.goal,
                 page=page,
                 candidates=candidates,
+                field_semantics=semantics,
             )
 
         return await journal_candidate_assessments(
@@ -441,6 +443,7 @@ class ResearchRunner:
                 rows, snapshot, response
             ),
             lambda: tuple(getattr(getattr(self, "task", None), "identity_fields", ())),
+            field_semantics=semantics,
         )
 
     def compare_candidate_evidence(
@@ -516,6 +519,7 @@ class ResearchRunner:
         page_accepted = 0
         page_rejected = 0
         page_duplicates = 0
+        collecting_rows = not self.target_record_count_met()
 
         while True:
             captured, url, html, visible_html = await capture_rendered_page(
@@ -582,6 +586,23 @@ class ResearchRunner:
                             "done",
                         )
                         return
+
+                # Hand a newly filled dataset back to bounded repair discovery.
+                # Pages entered for repair may still inspect all their chunks.
+                if (
+                    collecting_rows
+                    and self.target_record_count_met()
+                    and self.dataset_consistency_gaps()
+                ):
+                    self.record_source_productivity(
+                        work["url"],
+                        accepted=page_accepted,
+                        rejected=page_rejected,
+                        duplicates=page_duplicates,
+                    )
+                    self.discover(captured, work["depth"], priorities, productive=productive)
+                    self.store.mark_page(work["id"], "done", "dataset_repair_required")
+                    return
 
                 if self.adaptive_frontier and self.plan.should_stop_unproductive_page(
                     batches_seen=page_batches,
@@ -712,6 +733,7 @@ class ResearchRunner:
                         status, reason = "COMPLETED", "target_met"
                         break
                     await asyncio.sleep(self.config.action_delay_seconds)
+                status, reason = page_limit_outcome(self, status, reason)
         except ProposedChangesPauseError:
             reason = "proposed_changes"
         except SearchBudgetExceededError:
