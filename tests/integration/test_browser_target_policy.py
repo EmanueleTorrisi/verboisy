@@ -60,13 +60,27 @@ async def test_forbidden_target_has_zero_hits(target, scoped):
     try:
         await manager.navigate_to(origin + "/primary")
         page = await manager.get_page()
+        # Observe the matching terminal event instead of assuming Chromium
+        # has delivered secondary-target policy callbacks within 200 ms.
+        rejected = asyncio.Event()
+
+        def request_failed(request):
+            if request.url in {forbidden, origin + "/redirect"}:
+                rejected.set()
+
+        page.context.on("requestfailed", request_failed)
+        assert manager.drain_policy_failures() == []
         scripts = {
             "popup": "url => window.open(url)",
             "anchor": (
                 'url => {const a=document.createElement("a");a.href=url;'
                 'a.target="_blank";document.body.append(a);a.click()}'
             ),
-            "blank_fetch": 'url => {const p=window.open("about:blank");p.fetch(url).catch(()=>{})}',
+            "blank_fetch": (
+                'async url => {const p=window.open("about:blank");'
+                'if (!p) throw new Error("Popup was not created");'
+                'try {await p.fetch(url); return "resolved";} catch {return "rejected";}}'
+            ),
             "frame": (
                 'url => {const f=document.createElement("iframe");f.src=url;'
                 "document.body.append(f)}"
@@ -75,16 +89,34 @@ async def test_forbidden_target_has_zero_hits(target, scoped):
             "websocket": 'url => {new WebSocket(url.replace("http:","ws:"))}',
             "redirect": "url => {location.href=url}",
         }
-        await page.evaluate(
-            scripts[target], origin + "/redirect" if target == "redirect" else forbidden
-        )
-        await asyncio.sleep(0.2)
+        async with asyncio.timeout(5):
+            result = await page.evaluate(
+                scripts[target], origin + "/redirect" if target == "redirect" else forbidden
+            )
+            if target not in {"worker", "websocket"}:
+                await rejected.wait()
+                assert manager.drain_policy_failures()
+            else:
+                await asyncio.sleep(0.2)
+        if target == "blank_fetch":
+            assert result == "rejected"
         assert not any(host.startswith("127.0.0.1") for host, _ in hits)
         assert ("localhost:" + str(server.server_port), "/primary") in hits
-        if target not in {"worker", "websocket"}:
-            assert manager.drain_policy_failures()
     finally:
         await manager.close()
         server.shutdown()
         server.server_close()
         worker.join(timeout=2)
+
+
+@pytest.mark.parametrize("scoped", [True, False])
+async def test_blank_fetch_waits_for_delayed_policy(monkeypatch, scoped):
+    original_route = BrowserManager._route
+
+    async def delayed_route(self, route):
+        if route.request.url.endswith("/forbidden"):
+            await asyncio.sleep(0.4)
+        await original_route(self, route)
+
+    monkeypatch.setattr(BrowserManager, "_route", delayed_route)
+    await test_forbidden_target_has_zero_hits("blank_fetch", scoped)
