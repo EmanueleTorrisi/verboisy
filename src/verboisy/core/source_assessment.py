@@ -490,6 +490,7 @@ async def assess_source_batch(
     goal: str,
     page: Snapshot,
     candidates: list[Candidate],
+    field_semantics: dict[str, FieldSemantics] | None = None,
 ) -> SourceAssessmentBatchResponse:
     """Assess several candidates with one model call."""
 
@@ -500,6 +501,7 @@ async def assess_source_batch(
         page,
         candidates,
     )
+    requirements = assessment_requirements(candidates, field_semantics)
 
     return await complete_validated_for_role(
         client,
@@ -513,6 +515,8 @@ async def assess_source_batch(
                     {
                         "candidate_index": index,
                         "record": (candidate.record),
+                        "scope": candidate.scope,
+                        "required_comparability": requirements[index],
                         "evidence": {
                             pointer: proof.model_dump()
                             for pointer, proof in candidate.evidence.items()
@@ -532,7 +536,34 @@ async def assess_source_batch(
     )
 
 
-SOURCE_ASSESSMENT_CACHE_VERSION = 3
+SOURCE_ASSESSMENT_CACHE_VERSION = 4
+
+
+def assessment_requirements(
+    candidates: list[Candidate],
+    field_semantics: dict[str, FieldSemantics] | None,
+) -> list[dict[str, list[str]]]:
+    """Request only metadata required for non-null, comparable candidate fields."""
+    result: list[dict[str, list[str]]] = []
+    for candidate in candidates:
+        requirements: dict[str, list[str]] = {}
+        for pointer, value in leaves(candidate.record).items():
+            semantics = semantics_for_pointer(field_semantics or {}, pointer)
+            if value is None or semantics is None or not semantics.comparable_across_rows:
+                continue
+            descriptors = [
+                name
+                for name, required in (
+                    ("unit", semantics.unit_sensitive),
+                    ("definition", semantics.definition_sensitive),
+                    ("methodology_identity", semantics.methodology_sensitive),
+                )
+                if required
+            ]
+            if descriptors:
+                requirements[pointer] = descriptors
+        result.append(requirements)
+    return result
 
 
 def _assessment_sources(
@@ -553,6 +584,8 @@ def _assessment_sources(
 def source_assessment_cache_key(
     page: Snapshot,
     candidates: list[Candidate],
+    *,
+    field_semantics: dict[str, FieldSemantics] | None = None,
 ) -> str:
     """Hash every input that can affect source assessment."""
 
@@ -561,6 +594,7 @@ def source_assessment_cache_key(
         "url": page.url,
         "content_hash": page.content_hash,
         "candidates": [candidate.model_dump(mode="json") for candidate in candidates],
+        "required_comparability": assessment_requirements(candidates, field_semantics),
         "sources": [
             source.model_dump(mode="json")
             for source in _assessment_sources(
@@ -960,8 +994,14 @@ origins.
 """
 
 SOURCE_ASSESSMENT_PROMPT += """
-Optional cross-row comparability metadata:
-For each claim you MAY additionally return any of:
+Cross-row comparability metadata:
+Each candidate's required_comparability maps concrete field pointers to the
+descriptors needed for dataset completion. Inspect the supplied sources for
+each requested descriptor and return it when explicitly supported. A missing
+descriptor must stay absent; a requirement is not evidence and never permits
+inventing a label. You may also return other explicitly supported descriptors.
+
+For each claim the descriptor forms are:
 
 "unit":{
   "label":"literal observed unit label",

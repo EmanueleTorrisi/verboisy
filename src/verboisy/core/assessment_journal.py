@@ -13,6 +13,7 @@ from copy import deepcopy
 
 from pydantic import ValidationError
 
+from verboisy.core.fitness import FieldSemantics
 from verboisy.core.source_assessment import (
     GroundedClaimAssessment,
     SourceAssessmentBatchResponse,
@@ -36,9 +37,11 @@ async def journal_candidate_assessments(
         list[dict[str, GroundedClaimAssessment]],
     ],
     identity_fields: Callable[[], tuple[str, ...]],
+    *,
+    field_semantics: dict[str, FieldSemantics] | None = None,
 ) -> list[dict[str, GroundedClaimAssessment]]:
     """Reuse valid responses, then ground and journal without deciding acceptance."""
-    key = source_assessment_cache_key(page, candidates)
+    key = source_assessment_cache_key(page, candidates, field_semantics=field_semantics)
     response = cached_source_assessment(events, key)
     cache_hit = response is not None
     if response is None:

@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Emanuele Torrisi.
 # See LICENSE for applicable terms.
 
-"""Choose the saved run outcome when no frontier work remains.
+"""Choose the saved run outcome at page limits and frontier exhaustion.
 
 A consistency diagnostic takes precedence over source failures and unresolved
 coverage. Observed scope exhaustion is never a claim of global completeness.
@@ -16,10 +16,9 @@ if TYPE_CHECKING:
     from verboisy.core.research import ResearchRunner
 
 
-def exhausted_frontier_outcome(
+def dataset_consistency_outcome(
     runner: ResearchRunner,
-    summary: dict[str, Any],
-) -> tuple[str, str]:
+) -> tuple[str, str] | None:
     """Journal consistency gaps before returning their pause outcome."""
 
     consistency_gaps: tuple[str, ...] = ()
@@ -59,11 +58,22 @@ def exhausted_frontier_outcome(
             "dataset_consistency_gap",
             diagnostic,
         )
-        status, reason = (
+        return (
             "PAUSED",
             "dataset_consistency_gaps",
         )
-    elif summary["pages"].get("failed"):
+    return None
+
+
+def exhausted_frontier_outcome(
+    runner: ResearchRunner,
+    summary: dict[str, Any],
+) -> tuple[str, str]:
+    """Prefer unresolved consistency evidence over frontier exhaustion."""
+    outcome = dataset_consistency_outcome(runner)
+    if outcome is not None:
+        return outcome
+    if summary["pages"].get("failed"):
         status, reason = (
             "FAILED",
             "source_failures",
@@ -81,4 +91,18 @@ def exhausted_frontier_outcome(
             "observed_scope_exhausted",
         )
 
+    return status, reason
+
+
+def page_limit_outcome(
+    runner: ResearchRunner,
+    status: str,
+    reason: str,
+) -> tuple[str, str]:
+    """Refine only a page-limit pause, retaining every other selected outcome."""
+    if (status, reason) != ("PAUSED", "page_budget"):
+        return status, reason
+    outcome = dataset_consistency_outcome(runner)
+    if outcome is not None:
+        return outcome
     return status, reason
