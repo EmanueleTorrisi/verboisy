@@ -62,7 +62,21 @@ Rules:
 - definition_sensitive means legitimate sources may use materially different definitions.
 - unit_sensitive means comparison requires compatible units/scales.
 - methodology_sensitive means interpretation depends on compatible measurement methods.
-- comparable_across_rows means the dataset should use compatible definitions/methodology/vintage.
+- comparable_across_rows is a task requirement, not an intrinsic property of a field.
+  Set it when the requested use requires compatible definitions, methodology or vintage
+  across rows (for example, comparing or ranking measurements or combining observations
+  under a shared definition). Do not infer it merely from multiple rows, numeric fields,
+  a shared table, or the presence of units.
+- For a task that only asks to transcribe stated values from supplied sources, preserving
+  source units without inference, comparison or normalization, set comparable_across_rows
+  to false unless an explicit field policy requires it. This does not certify that those
+  source measurements are scientifically comparable or independently correct.
+- Classify definition_sensitive, unit_sensitive and methodology_sensitive separately from
+  whether cross-row comparison is requested. Preserve required temporal evidence when the
+  task asks for a reference period, historical observations or a time series.
+- A single supplied source does not waive comparison requirements: a task asking for
+  comparable measurements can require them even within one table. Ambiguous research
+  goals must not be treated as literal transcription merely because a source is supplied.
 
 Temporal intent is FIELD-SCOPED:
 - Unless the user requests a historical period for that field, mutable/current fields default
