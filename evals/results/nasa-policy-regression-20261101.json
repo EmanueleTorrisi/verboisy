@@ -1,0 +1,217 @@
+{
+  "consistency_gaps": [],
+  "evaluated_at_utc": "2026-11-01",
+  "evaluation_id": "nasa-policy-regression-20261101",
+  "evidence_archives": {
+    "free": {
+      "filename": "verboisy-nasa-policy-results-20261101T084016978229Z.zip",
+      "member_hashes": {
+        "budget-before.json": "d5a3a10c14ddc5a81eed5f589d0fe3496a6367bbfa64f00e332d74990d68b15e",
+        "diagnostic-check.json": "8d9952068bbfd5faeaf3a03c5d4d1931fe3a13bc75669e34cd7ab99f2f9e911d",
+        "environment.log": "43474aea8e9f97358a521e35bfb55f55bc546db0806cfd4a73d7de02f627cc1e",
+        "fake-probe.json": "6537361224f7a0202318eb53760c3aa61767ac61a853f7af1eff145c9eb6c4ab",
+        "gateway-probe.json": "335df0ffb79e4d5a08a0dd21355e51a09fffc69fcc927726552cada5618580fc",
+        "gateway-probe.log": "712b43063c9692b9f5bae6f26621abd7bd832d7f3e8b2f8fd854db767a0aafa8",
+        "report.json": "35bd1982d10a58d8299f4cd94d58750ab6f623d26fe6037874deffe9244d37cb",
+        "runtime.json": "8212d752787dd4eb72bb4094e9d9eb63c3a19462fdc92875766254d2c48b5f5b",
+        "saved-result-reader.log": "415a89dfdd001e25241a7cfb66e70b1296b15dc8a92cf6b7ccf2eef37a431323",
+        "source.json": "b219e7c152c72b76b8b5de6fef027042e3e16090d2e778772beab188692e0ef9",
+        "spending-selftests.log": "f1091ebc8b2181590d31b258ded6cc8d0c6dfbdc7dd3fcacaad36dbd3afe0478"
+      },
+      "sha256": "cf97771a238df7c61d805e679ddbe023ae0ce4106294dc6a76d33b74b7beff5a"
+    },
+    "live": {
+      "filename": "verboisy-nasa-policy-results-20261101T084251870613Z.zip",
+      "member_hashes": {
+        "budget-after.json": "ebdc44d9920a2f7028face043d9b8f6f540837e7222584fa03a3e1ad5b569dee",
+        "budget-before.json": "d5a3a10c14ddc5a81eed5f589d0fe3496a6367bbfa64f00e332d74990d68b15e",
+        "cli.log": "f8e9b8878a799da1b5a40475c58ee8b986e1141f91b520eec9f93015fc43f777",
+        "command.json": "95a0ab8765fa8d81e58116646e73043d26cb225c3b410d92bb252e7ac83f2ca6",
+        "environment.log": "43474aea8e9f97358a521e35bfb55f55bc546db0806cfd4a73d7de02f627cc1e",
+        "output.csv": "9d67faf774457e73c64328a20d5bde52048103bf5ce448d49e69bb1f9d8a2d47",
+        "output.json": "02f73d811baaacad32cb7172e0e58af2e78cc75ca691c1d58d32b3067fc36e0e",
+        "output.proof.txt": "e1c9b0f9dac5c90c7cdfcb70c28e64e2f27111e9f6e28f2bce09f0dec13c776d",
+        "report.json": "6f74858489bab7b21b2c3d4781e0b635315ed40973bc849ebcd6bbb364bb1594",
+        "run-summary.json": "1e77ffe1b78b1be3affd99e1d21129b654be41f03cc6e4f0ea5ccacb201e3c46",
+        "runtime.json": "8212d752787dd4eb72bb4094e9d9eb63c3a19462fdc92875766254d2c48b5f5b",
+        "schema.json": "7b8cb2807d5e0df8be2a469cfcb840e277db8ee812782188a03118a187d50be5",
+        "source.json": "b219e7c152c72b76b8b5de6fef027042e3e16090d2e778772beab188692e0ef9",
+        "workflow.json": "80430a8230fd8251c348b3563e9eb86c2d7df9a929ee66b31c9a5718ac9f51e2",
+        "workflow.log": "c8ff8b349a4619328e7b3d5658a0ff0d32f8d1b7fc713ebded7023030049d955"
+      },
+      "sha256": "96db1cdec3c0bba34f24b8a65827fdf2b6d43941d9807f7bfcdef63296c84000"
+    }
+  },
+  "free_preflight": {
+    "actual_sdk_fake_gateway_passed": true,
+    "spending_selftests": 45
+  },
+  "limitations": {
+    "general_accuracy_or_cost_advantage_established": false,
+    "held_out": false,
+    "independent_gold_review": false,
+    "live_site_availability_tested": false,
+    "original_failures_preserved": true,
+    "release_gate_approval": false,
+    "scientific_comparability_certified": false
+  },
+  "measurements": {
+    "additional_requests": 8,
+    "additional_reserved_usd": 0.24,
+    "additional_usage_valuation_usd": 0.0151024,
+    "cli_elapsed_seconds": 36.705,
+    "cumulative_requests": 46,
+    "cumulative_reserved_usd": 1.38,
+    "cumulative_usage_valuation_usd": 0.0920652,
+    "invoice_reconciled": false,
+    "model": "gpt-4.1-mini-2025-04-14",
+    "previous_38_request_records_unchanged": true,
+    "pricing_checked": "2026-11-01",
+    "reservation_ceiling_usd": 1.5
+  },
+  "quality": {
+    "cell_lineage_resolved": true,
+    "column_proofs_replayed": 12,
+    "correct_cells": 12,
+    "csv_json_equal": true,
+    "exact_match": true,
+    "expected_cells": 12,
+    "portable_files_verified": 6,
+    "rows": 3,
+    "status": "COMPLETED"
+  },
+  "read_only_replay": {
+    "cell_lineage_resolved": true,
+    "column_proofs_replayed": 12,
+    "correct_cells": 12,
+    "csv_json_equal": true,
+    "database_sha256": "e7e27f0d457a606cd8e06dfa0a9498e19c7d9c2e089077f5a2369673a324b2e1",
+    "database_unchanged": true,
+    "exact_match": true,
+    "expected_cells": 12,
+    "model_requests": 0,
+    "portable_files_verified": 6,
+    "rows": 3,
+    "run_id": "2dfc0097-dcbb-439c-8eea-04afb803cbeb",
+    "snapshot": {
+      "method": "SQLite backup API from mode=ro source",
+      "portable_export_hashes": {
+        "output.csv": "9d67faf774457e73c64328a20d5bde52048103bf5ce448d49e69bb1f9d8a2d47",
+        "output.csv.events.json": "e36089cf1a05fcd484a4daf13f6b990149ab5b2f6503cdb39f0d6a1ca00afbb1",
+        "output.csv.evidence.json": "4a083c4dace7373263c050064753216a46667398a8ae42e0afc493f68fa209c5",
+        "output.csv.manifest.json": "c6210965eed44aa1ca6671d36c7a0b09216ae0a1fb6de80fe5828df385a4f5c0",
+        "output.json": "02f73d811baaacad32cb7172e0e58af2e78cc75ca691c1d58d32b3067fc36e0e",
+        "output.json.events.json": "e36089cf1a05fcd484a4daf13f6b990149ab5b2f6503cdb39f0d6a1ca00afbb1",
+        "output.json.evidence.json": "4a083c4dace7373263c050064753216a46667398a8ae42e0afc493f68fa209c5",
+        "output.json.manifest.json": "a3a8c8cb3bd6901c932da4c8e822b4d686ae1e2cdf2b5c73e7af82471bbf0cfe",
+        "output.proof.txt": "e1c9b0f9dac5c90c7cdfcb70c28e64e2f27111e9f6e28f2bce09f0dec13c776d"
+      },
+      "quick_check": "ok",
+      "shared_memory_note": "SQLite may maintain its transient SHM read-lock cache during read-only access",
+      "snapshot_bytes": 192512,
+      "snapshot_sha256": "46c9138efdb7e7ed1ff6dac5d21dfb670a86e7c6c1ecaf9c0462f0a41e46b989",
+      "source_data_files": {
+        "run.db": {
+          "bytes": 192512,
+          "sha256": "e7e27f0d457a606cd8e06dfa0a9498e19c7d9c2e089077f5a2369673a324b2e1"
+        },
+        "run.db-journal": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "run.db-wal": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "source_database_and_journal_data_unchanged": true,
+      "source_sidecars_observed": {
+        "run.db-journal": {
+          "bytes": 0,
+          "exists": false
+        },
+        "run.db-shm": {
+          "bytes": 32768,
+          "exists": true
+        },
+        "run.db-wal": {
+          "bytes": 0,
+          "exists": true
+        }
+      }
+    },
+    "status": "COMPLETED"
+  },
+  "result": "PASS",
+  "run_id": "2dfc0097-dcbb-439c-8eea-04afb803cbeb",
+  "saved_semantics": [
+    {
+      "basis": "model",
+      "comparable_across_rows": false,
+      "confidence": 1.0,
+      "definition_sensitive": false,
+      "methodology_sensitive": false,
+      "pointer": "/body",
+      "reference_period": "none",
+      "temporal_class": "static",
+      "temporal_intent": null,
+      "unit_sensitive": false
+    },
+    {
+      "basis": "model",
+      "comparable_across_rows": false,
+      "confidence": 0.9,
+      "definition_sensitive": true,
+      "methodology_sensitive": true,
+      "pointer": "/diameter_km",
+      "reference_period": "none",
+      "temporal_class": "static",
+      "temporal_intent": null,
+      "unit_sensitive": true
+    },
+    {
+      "basis": "model",
+      "comparable_across_rows": false,
+      "confidence": 0.9,
+      "definition_sensitive": true,
+      "methodology_sensitive": true,
+      "pointer": "/gravity_m_s2",
+      "reference_period": "preferred",
+      "temporal_class": "slow_changing",
+      "temporal_intent": {
+        "end_year": null,
+        "mode": "latest",
+        "start_year": null
+      },
+      "unit_sensitive": true
+    },
+    {
+      "basis": "model",
+      "comparable_across_rows": false,
+      "confidence": 0.95,
+      "definition_sensitive": false,
+      "methodology_sensitive": false,
+      "pointer": "/number_of_moons",
+      "reference_period": "preferred",
+      "temporal_class": "mutable",
+      "temporal_intent": {
+        "end_year": null,
+        "mode": "latest",
+        "start_year": null
+      },
+      "unit_sensitive": false
+    }
+  ],
+  "schema_version": 1,
+  "scope": "One live-model regression on a previously used frozen NASA source",
+  "source_capture": {
+    "origin": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+    "sha256": "42bdc3f1dae470b85580c6ac66c353964a05d544ad2ac970a6b7d908337a6c3c"
+  },
+  "tested_source": {
+    "commit": "e18607c36ba40dc5aaa57de71d6f1000c9ec84f4",
+    "qualified_source_files": 408,
+    "source_sha256": "2763b01dd0f88c1cfc0208af929a991d8b7b09837f9129cf5bbe2e24d144f17e",
+    "tree": "a99f8fa684f6ea2fd94c490cb1d5979a5ef0d23b"
+  }
+}
