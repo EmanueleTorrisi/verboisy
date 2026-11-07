@@ -168,7 +168,9 @@ def _verify_row(
             saved["output_json"] if saved["output_json"] is not None else saved["source_json"],
             expected,
         )
-        or not validator.is_valid(decode_json(expected))
+        # Only freshly replayed source values take this path. Saved SQLite
+        # text still passes _same_json, including strict decoding on mismatch.
+        or not validator.is_valid(source.values if plan is None else decode_json(expected))
     ):
         raise StreamError("Streaming row evidence differs from captured source")
     return expected
