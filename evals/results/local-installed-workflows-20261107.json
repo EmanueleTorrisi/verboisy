@@ -1,0 +1,799 @@
+{
+  "baseline": "7d558a0292d55429ce046607e13d2b1fd3b955b1",
+  "cases": [
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.325794494001457
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.377555668997957
+        }
+      ],
+      "capture_sha256": "f4fabc93503dd15e7c2e176b7df9e68e802200ce98af734e1d7e4465c571e73c",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "csv-api",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "6bb08d69-d272-4d9b-bbc7-dcc102d92239",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e217f9625f776fabef8b8a369578e641654a1017a7e56caf375dfc97830c34a9",
+          "wall_seconds": 4.526234209999529
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "083aa26981a2f9c9b36b492799bf8aa71085d502fa94649c46e54e74fe32a0cf",
+          "wall_seconds": 4.425424664001184
+        }
+      ],
+      "capture_sha256": "f4fabc93503dd15e7c2e176b7df9e68e802200ce98af734e1d7e4465c571e73c",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "csv-cli",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "9c17e82f-fcf0-4111-8966-2318dcfa9e11",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.476917831001629
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.226491204000922
+        }
+      ],
+      "capture_sha256": "9f38b0b3f23f37c410e0232ad95ab011fe075b15ed5f4785f7b2d816f1ec92d6",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "tsv-api",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "8ee1e975-4c0e-4f53-92e0-20e9d83fb619",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "c7b6031dfa1b1b2995094321a1aa73729d1c190f67288f665645f9a2e22037e0",
+          "wall_seconds": 4.5289621709998755
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "1ee3d225d04da48e6059af22ba5facf7b991b91c00cc79189d9a569b0069da8a",
+          "wall_seconds": 4.3273529120015155
+        }
+      ],
+      "capture_sha256": "9f38b0b3f23f37c410e0232ad95ab011fe075b15ed5f4785f7b2d816f1ec92d6",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "tsv-cli",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "474b01b7-23ea-4500-9fef-73be1fc2a501",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.529108536997228
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.325378950998129
+        }
+      ],
+      "capture_sha256": "7bed11a85aafdac46047067d32f3f21833275278b78e85cd193f430ebd0c8919",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "json-api",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "a23181a4-0c2e-4165-ae6b-ed28fd8c6b45",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "a86d728bb01ce747d9ac78a2db7ef33005170bfba177644056993142871f9f44",
+          "wall_seconds": 4.578072378997604
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "91dc2c49b6ec1aaa9bb08a47cfba6986bc7f0252778d42f8c72167752394c851",
+          "wall_seconds": 4.4263272610005515
+        }
+      ],
+      "capture_sha256": "7bed11a85aafdac46047067d32f3f21833275278b78e85cd193f430ebd0c8919",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "json-cli",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "778b93e3-0071-4409-8980-16b8542cca6e",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.477230134001729
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.379609173000063
+        }
+      ],
+      "capture_sha256": "ca75e39ee8117a0d3ca508d5da6db02eccbc701315b3c0a90b91569b1b599e1d",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "jsonl-api",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "03201551-db69-40ec-ac14-75cba7758043",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "7fa337b3d56840c9e886ad24a3da211f4adac3289bf28105f4a8abc736692c7c",
+          "wall_seconds": 4.778094625999074
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "a1b5860d0d6d322200ae203470937935a5dd243e69c7c95ba337e531ffa9b3e0",
+          "wall_seconds": 4.532134297998709
+        }
+      ],
+      "capture_sha256": "ca75e39ee8117a0d3ca508d5da6db02eccbc701315b3c0a90b91569b1b599e1d",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "jsonl-cli",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "ed348885-3341-46ef-8d39-a1d11a6c0705",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.376010955998936
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.429124985999806
+        }
+      ],
+      "capture_sha256": "21142935aa43456c6b80c997e5ac5653d1680b616413aadbc0518f56c8c5f4cb",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "text-api",
+      "passed": true,
+      "record_target": 3,
+      "rows": 3,
+      "run_id": "54166676-102d-427d-8532-f2aa56b1f0c7",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "7db3d0b14dcfd3ca22a6a8a1dadbf12c5564cf97bb473cef0e612850b61f856b",
+          "wall_seconds": 4.526344420999521
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "84845290c3500f87e9fccea81c2da026ff66f620b9a2d3e9ca8e8ae1dd7275e4",
+          "wall_seconds": 4.376738082999509
+        }
+      ],
+      "capture_sha256": "21142935aa43456c6b80c997e5ac5653d1680b616413aadbc0518f56c8c5f4cb",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "text-cli",
+      "passed": true,
+      "record_target": 3,
+      "rows": 3,
+      "run_id": "b1b7c64a-4be1-44b6-ba73-1d616cab4776",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.326750682001148
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.226898102999257
+        }
+      ],
+      "capture_sha256": "6563024490d151add414eb03b4f82db2aa4fef67cebd1e82885b5e7918551040",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "docx-api",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "1113e01d-2b27-4aca-8abf-c6783f4b9a0a",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "01a3c6a7d9e412c6ef919d34ea1df0caed8d8b96e22f88a998bc8d2ce3b85ce6",
+          "wall_seconds": 4.528721553000651
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "cffcf52769d40db5ab6fa67e497b26eb017c2c14f52ccf81c48d40d4dff62b27",
+          "wall_seconds": 4.377852539000742
+        }
+      ],
+      "capture_sha256": "6563024490d151add414eb03b4f82db2aa4fef67cebd1e82885b5e7918551040",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "docx-cli",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "004b8660-3441-425f-8a03-254a3a3b09d6",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.5290186460006225
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.326065609999205
+        }
+      ],
+      "capture_sha256": "9d31cb3b4e6ea3208f21d162e60921bcc61e803497cfe4be9aefc54a89c6fa04",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "xlsx-api",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "083b7370-87a8-46d6-a4a7-413c6742ab70",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "5d68e30086a526e5044d9b169cce08c318d61d1db214775193a4f23d91c16b7a",
+          "wall_seconds": 4.578899438998633
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "78b553b3f47629ded107a7b16a71efd3793705ca29dff7065bd3399280dbab38",
+          "wall_seconds": 7.339559438998549
+        }
+      ],
+      "capture_sha256": "9d31cb3b4e6ea3208f21d162e60921bcc61e803497cfe4be9aefc54a89c6fa04",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "xlsx-cli",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "62f5b70c-66ca-4dca-8581-7cec6f15708e",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 10.302158828999382
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 6.036769905000256
+        }
+      ],
+      "capture_sha256": "65558480763a2a201bf85c9a2654e6a0aa749dcfd4d40c9622d03ba3c0666844",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "asset-api",
+      "passed": true,
+      "record_target": 1,
+      "rows": 1,
+      "run_id": "49add269-e234-4d5d-9aa2-88f6000f821a",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "3d1b3fe25f8c8452770e0bc139074ae0baf7bbdb00fb980e160bee0025de7552",
+          "wall_seconds": 7.1399378450005315
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "1c74278bfd3b63442df3cc38051470a6b3e93fe2662d6e41b9f474552b68b07f",
+          "wall_seconds": 5.682976162999694
+        }
+      ],
+      "capture_sha256": "65558480763a2a201bf85c9a2654e6a0aa749dcfd4d40c9622d03ba3c0666844",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "asset-cli",
+      "passed": true,
+      "record_target": 1,
+      "rows": 1,
+      "run_id": "a9a8e1c7-1225-4201-8ce4-d22c1f841a9e",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.636497613999381
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.3865718449997075
+        }
+      ],
+      "capture_sha256": "bd7e6fb2e014210d6dcbb9b22a7510d773c6637f4518a4e226fef5d1b77c032d",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "api",
+      "name": "time-series-api",
+      "passed": true,
+      "record_target": 3,
+      "rows": 3,
+      "run_id": "9b36d974-0288-4c55-8dd8-97f805d3e6a5",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "19165c5bcaa9f1ddc86e964400e662c5217fd31fe415074a73b371fc089944fc",
+          "wall_seconds": 5.38186683800086
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "66666c4ce0ff814d995ae690310f1d6a27e657a3904ea2fc76facf988b4ab2c6",
+          "wall_seconds": 4.631337850001728
+        }
+      ],
+      "capture_sha256": "bd7e6fb2e014210d6dcbb9b22a7510d773c6637f4518a4e226fef5d1b77c032d",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "cli",
+      "name": "time-series-cli",
+      "passed": true,
+      "record_target": 3,
+      "rows": 3,
+      "run_id": "3cdeb52c-0507-4597-baf2-6b575b57b50a",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.88053815999956
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "api",
+      "name": "duplicate-json-api",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 1,
+          "log_sha256": "818745662f34929476fd1d72d65aff383a5a7732bbf6a107247e5fca731917ec",
+          "wall_seconds": 5.329671882002003
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "cli",
+      "name": "duplicate-json-cli",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.433267569002055
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "api",
+      "name": "nonfinite-json-api",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 1,
+          "log_sha256": "689c7e2b75425fc7b0e9b87ae104ba95f6ed0669c13b2a2d5804fd742ca33d02",
+          "wall_seconds": 5.483789704001538
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "cli",
+      "name": "nonfinite-json-cli",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 6.287746714002424
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "api",
+      "name": "ragged-csv-api",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 1,
+          "log_sha256": "69bad555a8a0ccfae7ef6bed94bb59bc59f062b25f84f3104bf03f66580abe0a",
+          "wall_seconds": 5.482684268998128
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "cli",
+      "name": "ragged-csv-cli",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.181222379000246
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "api",
+      "name": "invalid-utf8-api",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 1,
+          "log_sha256": "fc58c348cb2a3d45184c0851169e6f83ea45d582889fc9cbd4b47e46b9885c1b",
+          "wall_seconds": 4.526234385000862
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "cli",
+      "name": "invalid-utf8-cli",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.931037621998257
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "api",
+      "name": "formula-xlsx-api",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 1,
+          "log_sha256": "799cef2ee7d40f07e7bce05c7fe0df75731ddd44f2defec537a572ab58fb411a",
+          "wall_seconds": 7.542000289999123
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "cli",
+      "name": "formula-xlsx-cli",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.1321585240002605
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "api",
+      "name": "missing-grant-api",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 1,
+          "log_sha256": "fa4a316454cd2a82fabc6bc89e1d64c155d5da03746366525abc6c5eb391647f",
+          "wall_seconds": 4.8298606790012855
+        }
+      ],
+      "expected_rejection": true,
+      "interface": "cli",
+      "name": "missing-grant-cli",
+      "passed": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.484267944997555
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 4.577822302999266
+        }
+      ],
+      "capture_sha256": "f4fabc93503dd15e7c2e176b7df9e68e802200ce98af734e1d7e4465c571e73c",
+      "expected_rejection": false,
+      "expected_status": "EXHAUSTED",
+      "interface": "api",
+      "name": "open-ended-csv-api",
+      "passed": true,
+      "record_target": null,
+      "rows": 2,
+      "run_id": "eb250784-e5c0-451a-af4b-f0fae8b144ee",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 2,
+          "log_sha256": "00c849e9289f525380c405dc0b1171d025ba4ca2e5d320023ea1abd20c9c9f71",
+          "wall_seconds": 5.2307260609995865
+        },
+        {
+          "exit_code": 2,
+          "log_sha256": "da6aa0057f4368c8b8a94dbe9123459630a4e921fa58be3c4d604c2b4b5233f8",
+          "wall_seconds": 5.435849642999528
+        }
+      ],
+      "capture_sha256": "f4fabc93503dd15e7c2e176b7df9e68e802200ce98af734e1d7e4465c571e73c",
+      "expected_rejection": false,
+      "expected_status": "EXHAUSTED",
+      "interface": "cli",
+      "name": "open-ended-csv-cli",
+      "passed": true,
+      "record_target": null,
+      "rows": 2,
+      "run_id": "b2a6fc3b-614c-4cf3-870e-02d8dc61d097",
+      "source_deleted_before_replay": true
+    },
+    {
+      "actions": [
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.834878665002179
+        },
+        {
+          "exit_code": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wall_seconds": 5.53327053600151
+        }
+      ],
+      "capture_sha256": "7bed11a85aafdac46047067d32f3f21833275278b78e85cd193f430ebd0c8919",
+      "expected_rejection": false,
+      "expected_status": "COMPLETED",
+      "interface": "async",
+      "name": "json-async",
+      "passed": true,
+      "record_target": 2,
+      "rows": 2,
+      "run_id": "d241f35b-a9ae-4b7c-93b9-0c9372b03e4c",
+      "source_deleted_before_replay": true
+    }
+  ],
+  "engineering": {
+    "offline_deselected": 28,
+    "offline_passed": 5324,
+    "offline_tests": {
+      "cases": 5352,
+      "coverage": {
+        "covered_branches": 3520,
+        "covered_lines": 9804,
+        "excluded_lines": 32,
+        "missing_branches": 0,
+        "missing_lines": 0,
+        "num_branches": 3520,
+        "num_partial_branches": 0,
+        "num_statements": 9804,
+        "percent_branches_covered": 100.0,
+        "percent_branches_covered_display": "100",
+        "percent_covered": 100.0,
+        "percent_covered_display": "100",
+        "percent_statements_covered": 100.0,
+        "percent_statements_covered_display": "100"
+      },
+      "errors": 0,
+      "failures": 0,
+      "skipped": 28
+    },
+    "repository_lint_format_types": "PASS; receipts bound by archive and check-log hashes",
+    "source_changed_after_checks": false,
+    "targeted_tests": {
+      "cases": 12,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    }
+  },
+  "evidence_version": "local-workflows-1",
+  "inputs": "Synthetic fixtures with expected values frozen before the installed-wheel campaign. This is regression/contract acceptance, not held-out research or customer evaluation.",
+  "installation": {
+    "dependency_environment": "existing qualified application environment; no downloads",
+    "file": "verboisy-1.0.0-py3-none-any.whl",
+    "fresh_application_install": true,
+    "fresh_dependency_resolution": false,
+    "sha256": "a5f787ab7fbdd52c51120f5b0cb7bb8c71f6d0873b8e66dd711b9ce1a58f6297"
+  },
+  "limitations": {
+    "all_office_documents_or_time_series_policies_qualified": false,
+    "desktop_qualified": false,
+    "fresh_dependency_resolution": false,
+    "fresh_machine_installation": false,
+    "held_out_web_research_campaign": false,
+    "independent_customer_beta": false,
+    "million_row_or_one_gib_qualification": false,
+    "note": "Passing fixtures qualify these explicit cases and this source/runtime only. Prior failures remain recorded; no release gate is approved.",
+    "release_approval": false,
+    "release_matrix_modified": false,
+    "universal_accuracy_or_llm_cost_superiority": false
+  },
+  "passed": true,
+  "prior_failed_attempts": [
+    {
+      "cause": "Acceptance tasks omitted record targets; bounded contracts corrected and open-ended controls added.",
+      "sha256": "1b54c1ef076b4b53ee19bb117402218ca4fbdbf85a1122c968ffddbe02354bac"
+    },
+    {
+      "cause": "Verifier expected scalar search count; fixed to match per-provider format-3 contract.",
+      "sha256": "5595ad98fab1dcdedd410c313b33c3b37ed295e5287644cec82f1bc2d0d0a9f3"
+    },
+    {
+      "cause": "CLI task option absent despite documentation; repaired in the two qualified commits.",
+      "sha256": "c06daaa9ed803eb0ded9d84fa7c63d4bee0f09f963fbd9864b36f18bf38e454d"
+    }
+  ],
+  "qualified_source_files": 410,
+  "receipts": {
+    "acceptance_archive": {
+      "file": "verboisy-local-acceptance-results-20261107T203511750913Z.zip",
+      "sha256": "c98646ade67bfffdc568286c8b48dfe0ba5e3eee6cfb19277ad4ff8bbf5ab155"
+    },
+    "acceptance_report_sha256": "4dfd83a95ccdb4c950cae607512353fd71fd14971ddab5069b2c727501e703d5",
+    "campaign_sha256": "2ec194d822623f5c99ce33152024c54581bb9f598431edd7a558a28a4b21d0cb",
+    "cli_contract_sha256": "718980ea7a33b48ce164fe73ff0e49ca63fb8eaf86e2162b971e65fa78d2fd32",
+    "cli_repair_archive": {
+      "file": "verboisy-cli-task-results-20261107T201811182442Z.zip",
+      "sha256": "f9189371607e796c44f0581ce0f9d91a2842f552dac94f58504d60f2d22809b8"
+    },
+    "inventory_sha256": "71c2b26d058173b036c9ab6295ac5fec7cc40fd925166d78f1d965d39d98a384",
+    "plan_sha256": "11287edb431ac51f79c5a08eb404ce3f9643ece5f35b774f24da27fd0fe0efa9"
+  },
+  "recorded_date_utc": "2026-11-07",
+  "runtime": {
+    "packages": {
+      "litellm": "1.101.6",
+      "msgpack": "1.2.4",
+      "mypy": "1.20.2",
+      "openai": "2.54.0",
+      "playwright": "1.61.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "pytest": "9.1.1",
+      "ruff": "0.4.10"
+    },
+    "python": "3.11.9",
+    "test_plugins": {
+      "pytest-asyncio": "1.4.0",
+      "pytest-cov": "7.1.0",
+      "pytest-mock": "3.15.1"
+    }
+  },
+  "scope": "Synthetic finite local-file acceptance through a newly installed application wheel; preinstalled qualified dependencies",
+  "source_head": "6339b0dd85314978dd4000d7738bfbf667dbb194",
+  "source_inventory_sha256": "57e69a02150541ef2a6ee4294fe8b9438e4241fef40c629476371dba79c79079",
+  "summary": {
+    "archive_inventory_files_verified": 818,
+    "bounded_completion_cases": 19,
+    "campaign_wall_seconds": 275.60593628300194,
+    "cases": 33,
+    "controlled_invalid_input_rejections": 12,
+    "export_bundles_checked": 84,
+    "installed_application_modules_matched_to_source": 128,
+    "model_calls": 0,
+    "nonrejected_records_per_initial_or_replayed_export": 44,
+    "open_ended_exhaustion_controls": 2,
+    "paid_requests": 0
+  },
+  "verified_checks": [
+    "Exact typed JSON and typed CSV values, columns, order and generated IDs",
+    "All manifest-referenced portable-file hashes and exact source capture bytes",
+    "Per-provider zero search attempts and zero model request units",
+    "Time-series ordering, duplicate-instant and gap diagnostics; original timestamps retained",
+    "Re-export after deleting the original source and removing its grant; same run identity and JSON bytes",
+    "Malformed sources and missing grants do not admit rows or report completion",
+    "Open-ended tasks remain EXHAUSTED with observed_scope_exhausted",
+    "Installed CLI exposes every option used by the campaign, including --task"
+  ],
+  "wheel_module_hashes_sha256": "a78c162166c9374c28d8f39ee692a1512118bf214e030446e19886974a35a704"
+}
