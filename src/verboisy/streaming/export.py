@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
 from verboisy.evidence.models import ProjectionPlan
+from verboisy.extractor.dataset import SourceRow
 from verboisy.storage.exporters import _csv_value, sync_directory
 from verboisy.storage.path_safety import validate_output_paths
 from verboisy.streaming.capture import verify_capture
@@ -133,19 +134,19 @@ def _write_rows(
     _ = plan, ceiling
     headers: list[str] | None = None
     count = 0
+    suffix = output.suffix.lower()
     with (
         output.open("w", encoding="utf-8", newline="") as data,
         evidence.open("w", encoding="utf-8") as proofs,
     ):
         writer = csv.writer(data)
-        if output.suffix.lower() == ".json":
+        if suffix == ".json":
             data.write("[")
         rows = verified_export_rows(ledger, job)
         try:
             for source, value in rows:
-                source_values = source.values
-                record = source_values if value == source.values_json else json.loads(value)
-                if output.suffix.lower() == ".csv":
+                if suffix == ".csv":
+                    record = json.loads(value)
                     if headers is None:
                         headers = list(record)
                         writer.writerow(
@@ -168,29 +169,40 @@ def _write_rows(
                             for key in headers
                         ]
                     )
-                elif output.suffix.lower() == ".json":
+                elif suffix == ".json":
                     data.write(("," if count else "") + value)
                 else:
                     data.write(value + "\n")
                 count += 1
-                proof = {
-                    "output_row": count,
-                    "source_row": source.row_index,
-                    "record_id": hashlib.sha256(
-                        f"verboisy:stream:{job['id']}:{source.row_index}".encode()
-                    ).hexdigest(),
-                    "line_start": source.line_start,
-                    "line_end": source.line_end,
-                    "source_values": source_values,
-                    "output_is_source": value == source.values_json,
-                }
-                if value != source.values_json:
-                    proof["output_values"] = record
-                proofs.write(json.dumps(proof, ensure_ascii=False, separators=(",", ":")) + "\n")
-            if output.suffix.lower() == ".json":
+                proofs.write(_proof_line(source, value, job["id"], count))
+            if suffix == ".json":
                 data.write("]\n")
         finally:
             rows.close()
+
+
+def _proof_line(source: SourceRow, value: str, job_id: str, output_row: int) -> str:
+    """Serialize a row yielded by verified_export_rows, using its verified JSON.
+
+    The replay iterator validates source bytes, saved values, projection, schema
+    and row coordinates before yielding. Reuse those canonical JSON fragments
+    without decoding and re-encoding their nested values. This helper must not
+    receive unverified database strings. EOF is still checked before publication.
+    """
+    metadata = {
+        "output_row": output_row,
+        "source_row": source.row_index,
+        "record_id": hashlib.sha256(
+            f"verboisy:stream:{job_id}:{source.row_index}".encode()
+        ).hexdigest(),
+        "line_start": source.line_start,
+        "line_end": source.line_end,
+    }
+    prefix = json.dumps(metadata, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
+    prefix = prefix[:-1] + ',"source_values":' + source.values_json
+    if value == source.values_json:
+        return prefix + ',"output_is_source":true}\n'
+    return prefix + ',"output_is_source":false,"output_values":' + value + "}\n"
 
 
 def _digest(path: Path) -> str:
