@@ -633,72 +633,177 @@ def test_job_inventory_and_cli_status_remain_bounded(tmp_path, prepare):
     )
 
 
-def test_hard_process_termination_recovers_committed_rows(tmp_path):
+@pytest.mark.parametrize(
+    ("fault", "row_count"), [("after_commit", 100000), ("before_commit", 2049)]
+)
+def test_hard_process_termination_recovers_committed_rows(tmp_path, fault, row_count):
     import os
     import subprocess
     import sys
     import time
 
     source = tmp_path / "input.jsonl"
-    source.write_bytes(
-        b'{"pad":"' + b"x" * 200 + b'"}\n' + (b'{"pad":"' + b"y" * 200 + b'"}\n') * 99999
-    )
+    raw = b'{"pad":"' + b"x" * 200 + b'"}\n'
+    raw += (b'{"pad":"' + b"y" * 200 + b'"}\n') * (row_count - 1)
+    source.write_bytes(raw)
+    expected_hash = hashlib.sha256(raw).hexdigest()
     database = tmp_path / "stream.db"
-    code = (
-        "from pathlib import Path; from verboisy import stream_dataset; "
-        "from verboisy.utils.config import Settings; stream_dataset(database=Path("
-        + repr(str(database))
-        + "),source=Path("
-        + repr(str(source))
-        + '),dataset_format="jsonl",config=Settings(_env_file=None,dataset_local_roots=['
-        + repr(str(tmp_path))
-        + "]))"
-    )
+    signal_path = tmp_path / "phase.json"
+    stderr_path = tmp_path / "child.stderr"
+    code = r"""
+import importlib
+import json
+import os
+from pathlib import Path
+import sys
+import time
+
+streaming = importlib.import_module("verboisy.streaming.api")
+from verboisy.utils.config import Settings
+
+database, source, root = map(Path, sys.argv[1:4])
+fault = sys.argv[4]
+signal_path = root / "phase.json"
+
+def signal(phase, **details):
+    temporary = root / "phase.tmp"
+    with temporary.open("w", encoding="utf-8") as stream:
+        json.dump({"phase": phase, **details}, stream)
+        stream.flush()
+        os.fsync(stream.fileno())
+    temporary.replace(signal_path)
+
+def wait_for_kill():
+    # Safety bound, not a performance assertion. The parent must kill us.
+    deadline = time.monotonic() + 90
+    while time.monotonic() < deadline:
+        time.sleep(0.01)
+    raise RuntimeError("Parent did not terminate the fault-injection child")
+
+original_capture = streaming.capture_file
+original_commit = streaming._commit
+commits = 0
+
+class BeforeCommit:
+    def __init__(self, connection, job_id):
+        self.connection = connection
+        self.job_id = job_id
+
+    def __enter__(self):
+        return self.connection.__enter__()
+
+    def __exit__(self, kind, value, traceback):
+        if kind is None:
+            # Production _commit has executed its INSERT and checkpoint UPDATE,
+            # but SQLite has not committed this second transaction.
+            assert self.connection.in_transaction
+            signal("fault_ready", job_id=self.job_id, fault="before_commit")
+            wait_for_kill()
+        return self.connection.__exit__(kind, value, traceback)
+
+    def __getattr__(self, name):
+        return getattr(self.connection, name)
+
+def capture(*args, **kwargs):
+    original_capture(*args, **kwargs)
+    signal("captured")
+
+def commit(ledger, job_id, batch):
+    global commits
+    commits += 1
+    if fault == "before_commit" and commits == 2:
+        ledger.db = BeforeCommit(ledger.db, job_id)
+    original_commit(ledger, job_id, batch)
+    if fault == "after_commit" and commits == 1:
+        assert not ledger.connection.in_transaction
+        signal("fault_ready", job_id=job_id, fault="after_commit")
+        wait_for_kill()
+
+streaming.capture_file = capture
+streaming._commit = commit
+signal("engine_ready")
+result = streaming.stream_dataset(
+    database=database, source=source, dataset_format="jsonl",
+    config=Settings(_env_file=None, dataset_local_roots=[str(root)]),
+)
+raise RuntimeError("Child returned before injected termination: " + repr(result))
+"""
     env = dict(os.environ)
     env["PYTHONPATH"] = os.pathsep.join(
         str(Path(p).resolve()) for p in env.get("PYTHONPATH", "").split(os.pathsep) if p
     )
-    child = subprocess.Popen(
-        [sys.executable, "-c", code], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
-    checkpoint = None
-    try:
-        deadline = time.monotonic() + 20
-        while time.monotonic() < deadline and child.poll() is None:
-            try:
-                with closing(StreamLedger(database, read_only=True)) as ledger:
-                    jobs = ledger.jobs(limit=1)
-                if jobs and 0 < jobs[0]["processed"] < 100000:
-                    checkpoint = jobs[0]
-                    break
-            except StreamError:
-                pass
-            time.sleep(0.02)
-        assert checkpoint is not None, "No intermediate committed checkpoint observed"
-        child.kill()
-        child.wait(timeout=10)
-        source.unlink()
-        # Process exit can precede completion of Windows handle cleanup. Retry
-        # only lock contention, with a fixed deadline; other failures stay visible.
-        deadline = time.monotonic() + 10
-        while True:
-            try:
-                resumed = stream_dataset(database=database, resume=checkpoint["id"])
-                break
-            except StreamError as error:
-                if (
-                    str(error) != "Streaming ledger is already in use"
-                    or time.monotonic() >= deadline
-                ):
-                    raise
-                time.sleep(0.05)
-        assert resumed.status == "COMPLETED" and resumed.processed_rows == 100000
-        with closing(StreamLedger(database, read_only=True)) as ledger:
-            assert (
-                ledger.connection.execute("SELECT COUNT(*) FROM stream_rows").fetchone()[0]
-                == 100000
+    with stderr_path.open("wb") as stderr:
+        child = subprocess.Popen(
+            [sys.executable, "-c", code, str(database), str(source), str(tmp_path), fault],
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=stderr,
+        )
+        try:
+            # Separate phase deadlines expose slow startup/capture instead of
+            # confusing them with the correctness of a committed checkpoint.
+            phase = "launch"
+            deadline = time.monotonic() + 30
+            overall_deadline = time.monotonic() + 90
+            state = {}
+            while child.poll() is None:
+                now = time.monotonic()
+                if signal_path.exists():
+                    state = json.loads(signal_path.read_text(encoding="utf-8"))
+                    if state["phase"] != phase:
+                        phase = state["phase"]
+                        deadline = now + 30
+                    if phase == "fault_ready":
+                        break
+                if now >= deadline or now >= overall_deadline:
+                    pytest.fail(f"Recovery child stalled in phase {phase}: {state}")
+                time.sleep(0.02)
+            assert phase == "fault_ready", (
+                f"Recovery child exited {child.poll()} in {phase}: "
+                + stderr_path.read_text(errors="replace")[-4000:]
             )
-    finally:
-        if child.poll() is None:
+            assert state["fault"] == fault
+            with closing(StreamLedger(database, read_only=True)) as ledger:
+                checkpoint = ledger.jobs(limit=1)[0]
+                committed = ledger.connection.execute(
+                    "SELECT COUNT(*) FROM stream_rows"
+                ).fetchone()[0]
+            # Both cases must expose only the first durable batch. In the
+            # second case the next batch and its checkpoint remain uncommitted.
+            assert checkpoint["id"] == state["job_id"]
+            assert checkpoint["processed"] == committed == 512
+            assert 0 < committed < row_count
             child.kill()
             child.wait(timeout=10)
+            assert child.returncode != 0
+            source.unlink()
+            deadline = time.monotonic() + 10
+            while True:
+                try:
+                    resumed = stream_dataset(database=database, resume=checkpoint["id"])
+                    break
+                except StreamError as error:
+                    if (
+                        str(error) != "Streaming ledger is already in use"
+                        or time.monotonic() >= deadline
+                    ):
+                        raise
+                    time.sleep(0.05)
+            assert resumed.status == "COMPLETED" and resumed.processed_rows == row_count
+            assert resumed.source_sha256 == expected_hash
+            with closing(StreamLedger(database, read_only=True)) as ledger:
+                actual = 0
+                rows = ledger.connection.execute(
+                    "SELECT ordinal,source_json,output_json FROM stream_rows ORDER BY ordinal"
+                )
+                for actual, row in enumerate(rows, start=1):
+                    expected = {"pad": ("x" if actual == 1 else "y") * 200}
+                    assert row["ordinal"] == actual
+                    assert json.loads(row["source_json"]) == expected
+                    if row["output_json"] is not None:
+                        assert json.loads(row["output_json"]) == expected
+                assert actual == row_count
+        finally:
+            if child.poll() is None:
+                child.kill()
+                child.wait(timeout=10)

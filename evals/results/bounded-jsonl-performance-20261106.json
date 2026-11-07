@@ -1,0 +1,336 @@
+{
+  "evaluation_id": "bounded-jsonl-performance-20261106",
+  "limitations": [
+    "Synthetic JSONL only; no live research or independent gold review.",
+    "50,000 rows do not qualify the one-million-row / 1 GiB workload.",
+    "No before/after baseline; no speedup or LLM cost/accuracy advantage established.",
+    "Pause and resume after source deletion; no SIGKILL, power-loss or disk-full test.",
+    "Release gates, independent beta, legal and commercial reviews remain separate."
+  ],
+  "measured_at_utc": "2026-11-06T22:23:41.984336+00:00",
+  "measurement_scope": {
+    "cleanup": "generated datasets/databases removed after each invocation",
+    "disk": "final workload bytes and separately sampled peak, not a filesystem quota",
+    "fresh_process_wall_time": "includes isolation startup, imports, generation, pipeline and verification",
+    "peak_rss": "worker high-water RSS, including imports and independent verification",
+    "pipeline_excludes": "imports, synthetic generation and independent output verification",
+    "pipeline_timing": "capture, admission, checkpoint, resume and portable JSONL export",
+    "repetitions": "three fresh processes per row count; min, median, max; no p95 claim",
+    "warmup": "1000-row run retained but excluded from summaries"
+  },
+  "paid_requests": 0,
+  "release_approval": false,
+  "result": "MEASURED_WITH_EXACT_VALUE_AND_PROOF_CHECKS",
+  "runtime": {
+    "allowed_logical_cpus": 4,
+    "env_read": false,
+    "kernel": "6.18.54.1-microsoft-standard-WSL2",
+    "logical_cpus": 4,
+    "machine": "x86_64",
+    "os": "Linux",
+    "packages": {
+      "litellm": "1.101.6",
+      "msgpack": "1.2.4",
+      "mypy": "1.20.2",
+      "openai": "2.54.0",
+      "playwright": "1.61.0",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "pytest": "9.1.1",
+      "ruff": "0.4.10"
+    },
+    "paid_requests": 0,
+    "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+    "source": {
+      "application_baseline": "e18607c36ba40dc5aaa57de71d6f1000c9ec84f4",
+      "benchmark_sha256": "017872a4324c92411d47b8748f2901d3a96600d309f461595196959326438cd5",
+      "head": "763682dbfea74c110e2342e65f48e6dbcfe9194c",
+      "qualified_source_files": 408,
+      "source_sha256": "2763b01dd0f88c1cfc0208af929a991d8b7b09837f9129cf5bbe2e24d144f17e"
+    }
+  },
+  "samples": [
+    {
+      "exit_code": 0,
+      "fresh_process_wall_seconds_including_setup_and_verification": 5.994993031999911,
+      "log_path": "warmup.log",
+      "log_sha256": "8eb8348a4101a89fa6a58cc62a9f28eb5ef8030a400b53d0e00ce4960ae0caa5",
+      "measurement": {
+        "all_output_rows_and_proofs_checked": true,
+        "generation_seconds": 0.01834485299696098,
+        "independent_verification_seconds": 0.06956977899972117,
+        "input_bytes": 196410,
+        "input_sha256": "67342d2231f9c321f34200587418f038ba258c35288227952e6b8f89dd0a2464",
+        "measurement_version": "efficiency-1",
+        "model_requests": 0,
+        "output_sha256": "67342d2231f9c321f34200587418f038ba258c35288227952e6b8f89dd0a2464",
+        "peak_rss_bytes": 88608768,
+        "platform": "linux",
+        "prepare_resume_export_seconds": 0.5746137270034524,
+        "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+        "resume_after_source_deletion": true,
+        "rows": 1000,
+        "rows_per_second": 1740.2995316782467,
+        "scope": "Deterministic synthetic JSONL regression; not live research or independent acceptance",
+        "temporary_files_bytes": 1314125
+      },
+      "name": "warmup",
+      "peak_observed_temporary_bytes": 797405,
+      "report_path": "samples/warmup/measurement.json",
+      "report_sha256": "82894c43ae4cf2ed60571feba15eb0ba8c0dccaf4cfd761b89c262c895905c80",
+      "rows": 1000,
+      "validated": true
+    },
+    {
+      "exit_code": 0,
+      "fresh_process_wall_seconds_including_setup_and_verification": 9.194224293001753,
+      "log_path": "10000-repeat-1.log",
+      "log_sha256": "7b6ed86f93ffdf64a53e0491de7a4546c82533d06c96f2376a5ff56c69dc5544",
+      "measurement": {
+        "all_output_rows_and_proofs_checked": true,
+        "generation_seconds": 0.1868718670011731,
+        "independent_verification_seconds": 0.7075143389993173,
+        "input_bytes": 1993987,
+        "input_sha256": "68b1cb89f42d510de461f77e6b80ef8928aa3bcabbfdace96f938d66acf339a6",
+        "measurement_version": "efficiency-1",
+        "model_requests": 0,
+        "output_sha256": "68b1cb89f42d510de461f77e6b80ef8928aa3bcabbfdace96f938d66acf339a6",
+        "peak_rss_bytes": 95854592,
+        "platform": "linux",
+        "prepare_resume_export_seconds": 3.9216312110002036,
+        "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+        "resume_after_source_deletion": true,
+        "rows": 10000,
+        "rows_per_second": 2549.95930569655,
+        "scope": "Deterministic synthetic JSONL regression; not live research or independent acceptance",
+        "temporary_files_bytes": 12976526
+      },
+      "name": "10000-repeat-1",
+      "peak_observed_temporary_bytes": 12976526,
+      "report_path": "samples/10000-repeat-1/measurement.json",
+      "report_sha256": "5da482188a2ed445b408b9ebf4b5addf5a1fad2615db772fe0f8db7d93f408e3",
+      "rows": 10000,
+      "validated": true
+    },
+    {
+      "exit_code": 0,
+      "fresh_process_wall_seconds_including_setup_and_verification": 27.84898605700073,
+      "log_path": "50000-repeat-1.log",
+      "log_sha256": "47a763bce5e93bde99ccc973ace76613b9b4bd28553ef637852295f8bc4a7029",
+      "measurement": {
+        "all_output_rows_and_proofs_checked": true,
+        "generation_seconds": 0.8399323400008143,
+        "independent_verification_seconds": 3.5183307099978265,
+        "input_bytes": 10103218,
+        "input_sha256": "1d852bd88c5aa1ecd98bfa17cae64e035f745d3948ca60faf7839815c4801953",
+        "measurement_version": "efficiency-1",
+        "model_requests": 0,
+        "output_sha256": "1d852bd88c5aa1ecd98bfa17cae64e035f745d3948ca60faf7839815c4801953",
+        "peak_rss_bytes": 102686720,
+        "platform": "linux",
+        "prepare_resume_export_seconds": 19.069874561002507,
+        "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+        "resume_after_source_deletion": true,
+        "rows": 50000,
+        "rows_per_second": 2621.936491509438,
+        "scope": "Deterministic synthetic JSONL regression; not live research or independent acceptance",
+        "temporary_files_bytes": 65789020
+      },
+      "name": "50000-repeat-1",
+      "peak_observed_temporary_bytes": 65789020,
+      "report_path": "samples/50000-repeat-1/measurement.json",
+      "report_sha256": "d028e7c3ba5e5c0a66030b9a299dd8caa1cf440824cd3716b4482b6c03c06498",
+      "rows": 50000,
+      "validated": true
+    },
+    {
+      "exit_code": 0,
+      "fresh_process_wall_seconds_including_setup_and_verification": 9.291892356999597,
+      "log_path": "10000-repeat-2.log",
+      "log_sha256": "c66bd58b240996e59448591cf2940e53071decc50a4e9b671b2771a49c7236ec",
+      "measurement": {
+        "all_output_rows_and_proofs_checked": true,
+        "generation_seconds": 0.16446397300023818,
+        "independent_verification_seconds": 0.713185467000585,
+        "input_bytes": 1993987,
+        "input_sha256": "68b1cb89f42d510de461f77e6b80ef8928aa3bcabbfdace96f938d66acf339a6",
+        "measurement_version": "efficiency-1",
+        "model_requests": 0,
+        "output_sha256": "68b1cb89f42d510de461f77e6b80ef8928aa3bcabbfdace96f938d66acf339a6",
+        "peak_rss_bytes": 96817152,
+        "platform": "linux",
+        "prepare_resume_export_seconds": 3.9828548609984864,
+        "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+        "resume_after_source_deletion": true,
+        "rows": 10000,
+        "rows_per_second": 2510.7618401874274,
+        "scope": "Deterministic synthetic JSONL regression; not live research or independent acceptance",
+        "temporary_files_bytes": 12976526
+      },
+      "name": "10000-repeat-2",
+      "peak_observed_temporary_bytes": 12976526,
+      "report_path": "samples/10000-repeat-2/measurement.json",
+      "report_sha256": "ef59a3d2e77515d30718f9163c194cf3a0880fc72edba7d7fa43cc0f81f09e9f",
+      "rows": 10000,
+      "validated": true
+    },
+    {
+      "exit_code": 0,
+      "fresh_process_wall_seconds_including_setup_and_verification": 28.09618616499938,
+      "log_path": "50000-repeat-2.log",
+      "log_sha256": "afb85dc6bd8d0322356e42aba955879cc1939fc393d9ef17959c0313227882a8",
+      "measurement": {
+        "all_output_rows_and_proofs_checked": true,
+        "generation_seconds": 0.8777917980005441,
+        "independent_verification_seconds": 3.539895960002468,
+        "input_bytes": 10103218,
+        "input_sha256": "1d852bd88c5aa1ecd98bfa17cae64e035f745d3948ca60faf7839815c4801953",
+        "measurement_version": "efficiency-1",
+        "model_requests": 0,
+        "output_sha256": "1d852bd88c5aa1ecd98bfa17cae64e035f745d3948ca60faf7839815c4801953",
+        "peak_rss_bytes": 102723584,
+        "platform": "linux",
+        "prepare_resume_export_seconds": 19.25778252499731,
+        "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+        "resume_after_source_deletion": true,
+        "rows": 50000,
+        "rows_per_second": 2596.3529256339957,
+        "scope": "Deterministic synthetic JSONL regression; not live research or independent acceptance",
+        "temporary_files_bytes": 65789020
+      },
+      "name": "50000-repeat-2",
+      "peak_observed_temporary_bytes": 65789020,
+      "report_path": "samples/50000-repeat-2/measurement.json",
+      "report_sha256": "ea308c145ef8d35d0ec8cec6e93e0bcd04753739b31ce27ab11f0b9abe17ed70",
+      "rows": 50000,
+      "validated": true
+    },
+    {
+      "exit_code": 0,
+      "fresh_process_wall_seconds_including_setup_and_verification": 9.352764871000545,
+      "log_path": "10000-repeat-3.log",
+      "log_sha256": "56450d827cc4856ffadad0697c8c02f3e34750ea176ba331bfda8a97ebec4c12",
+      "measurement": {
+        "all_output_rows_and_proofs_checked": true,
+        "generation_seconds": 0.18231012600153917,
+        "independent_verification_seconds": 0.7084990549992654,
+        "input_bytes": 1993987,
+        "input_sha256": "68b1cb89f42d510de461f77e6b80ef8928aa3bcabbfdace96f938d66acf339a6",
+        "measurement_version": "efficiency-1",
+        "model_requests": 0,
+        "output_sha256": "68b1cb89f42d510de461f77e6b80ef8928aa3bcabbfdace96f938d66acf339a6",
+        "peak_rss_bytes": 96022528,
+        "platform": "linux",
+        "prepare_resume_export_seconds": 4.046404201999394,
+        "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+        "resume_after_source_deletion": true,
+        "rows": 10000,
+        "rows_per_second": 2471.329976144953,
+        "scope": "Deterministic synthetic JSONL regression; not live research or independent acceptance",
+        "temporary_files_bytes": 12976526
+      },
+      "name": "10000-repeat-3",
+      "peak_observed_temporary_bytes": 12976526,
+      "report_path": "samples/10000-repeat-3/measurement.json",
+      "report_sha256": "f52df71adce138e3dd21c5136283cdcdd4a46c9577c4f8ae5be27887ed4c245b",
+      "rows": 10000,
+      "validated": true
+    },
+    {
+      "exit_code": 0,
+      "fresh_process_wall_seconds_including_setup_and_verification": 27.452314469999692,
+      "log_path": "50000-repeat-3.log",
+      "log_sha256": "7428cbc3954af97e1fed87b1dd446059fd902552f83b73aaf893455550931d87",
+      "measurement": {
+        "all_output_rows_and_proofs_checked": true,
+        "generation_seconds": 0.8506989380002778,
+        "independent_verification_seconds": 3.504055714001879,
+        "input_bytes": 10103218,
+        "input_sha256": "1d852bd88c5aa1ecd98bfa17cae64e035f745d3948ca60faf7839815c4801953",
+        "measurement_version": "efficiency-1",
+        "model_requests": 0,
+        "output_sha256": "1d852bd88c5aa1ecd98bfa17cae64e035f745d3948ca60faf7839815c4801953",
+        "peak_rss_bytes": 102617088,
+        "platform": "linux",
+        "prepare_resume_export_seconds": 18.65089099599936,
+        "python": "3.11.9 (main, Sep 16 2026, 02:26:39) [GCC 13.3.0]",
+        "resume_after_source_deletion": true,
+        "rows": 50000,
+        "rows_per_second": 2680.837071576101,
+        "scope": "Deterministic synthetic JSONL regression; not live research or independent acceptance",
+        "temporary_files_bytes": 65789020
+      },
+      "name": "50000-repeat-3",
+      "peak_observed_temporary_bytes": 65789020,
+      "report_path": "samples/50000-repeat-3/measurement.json",
+      "report_sha256": "a9646290a54d435b1414d585262a7814e56fff67a7c34303915e39bd036152f9",
+      "rows": 50000,
+      "validated": true
+    }
+  ],
+  "schema_version": 1,
+  "source": {
+    "application_baseline": "e18607c36ba40dc5aaa57de71d6f1000c9ec84f4",
+    "benchmark_sha256": "017872a4324c92411d47b8748f2901d3a96600d309f461595196959326438cd5",
+    "head": "763682dbfea74c110e2342e65f48e6dbcfe9194c",
+    "qualified_source_files": 408,
+    "source_sha256": "2763b01dd0f88c1cfc0208af929a991d8b7b09837f9129cf5bbe2e24d144f17e"
+  },
+  "source_columns": 8,
+  "summary": [
+    {
+      "all_peak_rss_at_most_192_mib": true,
+      "median_pipeline_at_least_5000_rows_per_second": false,
+      "peak_rss_bytes": {
+        "max": 96817152,
+        "median": 96022528,
+        "min": 95854592
+      },
+      "prepare_resume_export_seconds": {
+        "max": 4.046404201999394,
+        "median": 3.9828548609984864,
+        "min": 3.9216312110002036
+      },
+      "qualifies_million_row_or_one_gib_target": false,
+      "repetitions": 3,
+      "rows": 10000,
+      "rows_per_second": {
+        "max": 2549.95930569655,
+        "median": 2510.7618401874274,
+        "min": 2471.329976144953
+      },
+      "temporary_files_bytes": {
+        "max": 12976526,
+        "median": 12976526,
+        "min": 12976526
+      }
+    },
+    {
+      "all_peak_rss_at_most_192_mib": true,
+      "median_pipeline_at_least_5000_rows_per_second": false,
+      "peak_rss_bytes": {
+        "max": 102723584,
+        "median": 102686720,
+        "min": 102617088
+      },
+      "prepare_resume_export_seconds": {
+        "max": 19.25778252499731,
+        "median": 19.069874561002507,
+        "min": 18.65089099599936
+      },
+      "qualifies_million_row_or_one_gib_target": false,
+      "repetitions": 3,
+      "rows": 50000,
+      "rows_per_second": {
+        "max": 2680.837071576101,
+        "median": 2621.936491509438,
+        "min": 2596.3529256339957
+      },
+      "temporary_files_bytes": {
+        "max": 65789020,
+        "median": 65789020,
+        "min": 65789020
+      }
+    }
+  ]
+}

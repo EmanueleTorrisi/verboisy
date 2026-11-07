@@ -223,7 +223,11 @@ def _ingest(
             if row.row_index > limits.max_rows:
                 raise StreamError("Streaming row limit exceeded")
             value = output_value(row, plan, limits.max_record_bytes)
-            if not validator.is_valid(decode_json(value)):
+            # Fresh captured rows have already passed the parser's unique-key,
+            # finite-number, UTF-8 and depth checks. Keep schema validation, but
+            # do not repeat those lexical checks on its own canonical encoding.
+            record = row.values if plan is None else decode_json(value)
+            if not validator.is_valid(record):
                 raise StreamError(f"Streaming schema rejected source row {row.row_index}")
             batch.append(
                 (
