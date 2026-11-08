@@ -4,7 +4,6 @@
 """The real runner persists timeout and cleanup when browser startup exceeds its ceiling."""
 
 import asyncio
-import time
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -20,15 +19,24 @@ async def test_startup_inside_runner_deadline(tmp_path):
         rid = store.create("Synthetic", {"type": "object"}, TaskSpec(), None)
         runner = ResearchRunner(store, rid, Settings(_env_file=None, run_timeout_seconds=0.01))
 
+        startup_entered = asyncio.Event()
+        startup_cancelled = asyncio.Event()
+
         async def start():
-            await asyncio.sleep(0.1)
+            startup_entered.set()
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                startup_cancelled.set()
+                raise
 
         close = AsyncMock()
         runner.browser = SimpleNamespace(start=start, close=close)
-        started = time.monotonic()
-        status, reason = await runner.run(1)
+        # This is a hang guard, not an execution-speed requirement.
+        status, reason = await asyncio.wait_for(runner.run(1), timeout=5.0)
         assert status == "PAUSED" and reason == "run_timeout"
-        assert time.monotonic() - started < 0.08
+        assert startup_entered.is_set()
+        assert startup_cancelled.is_set()
         assert store.load(rid)["reason"] == "run_timeout"
         close.assert_awaited_once()
     finally:
