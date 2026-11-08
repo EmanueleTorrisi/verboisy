@@ -74,7 +74,7 @@ def test_task_option_is_in_help(local_cli):
 
 def test_task_path_is_forwarded_without_losing_input_identity(local_cli, tmp_path):
     task = tmp_path / "advanced task.json"
-    task.write_text('{"csv_mode":"json"}')
+    task.write_text('{"csv_mode":"json"}', encoding="utf-8")
     # Stop at the API boundary; the separate integration case exercises execution.
     with patch.object(cli, "run", side_effect=KeyboardInterrupt) as call:
         result = local_cli.invoke(
@@ -89,8 +89,10 @@ def test_task_file_controls_real_local_ingestion_csv_and_reexport(local_cli, tmp
     source = tmp_path / "input.json"
     source.write_text(
         json.dumps(
-            [{"name": "Café 東京", "available": False}, {"name": "Other", "available": True}]
-        )
+            [{"name": "Café 東京", "available": False}, {"name": "Other", "available": True}],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
     )
     schema = tmp_path / "schema.json"
     schema.write_text(
@@ -100,7 +102,8 @@ def test_task_file_controls_real_local_ingestion_csv_and_reexport(local_cli, tmp
                 "properties": {"name": {"type": "string"}, "available": {"type": "boolean"}},
                 "required": ["name", "available"],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     task = tmp_path / "task.json"
     task.write_text(
@@ -110,7 +113,8 @@ def test_task_file_controls_real_local_ingestion_csv_and_reexport(local_cli, tmp
                 "target_records": 2,
                 "csv_mode": "json",
             }
-        )
+        ),
+        encoding="utf-8",
     )
     output = tmp_path / "rows.json"
     result = local_cli.invoke(
@@ -130,12 +134,12 @@ def test_task_file_controls_real_local_ingestion_csv_and_reexport(local_cli, tmp
         ],
     )
     assert result.exit_code == 0, result.output
-    rows = json.loads(output.read_text())
+    rows = json.loads(output.read_text(encoding="utf-8"))
     assert [{k: v for k, v in row.items() if k != "id"} for row in rows] == [
         {"name": "Café 東京", "available": False},
         {"name": "Other", "available": True},
     ]
-    info = json.loads(output.with_suffix(".json.manifest.json").read_text())
+    info = json.loads(output.with_suffix(".json.manifest.json").read_text(encoding="utf-8"))
     assert info["task"]["csv_mode"] == "json"
     assert info["task"]["target_records"] == 2
     assert info["model_request_units"] == 0
@@ -146,7 +150,7 @@ def test_task_file_controls_real_local_ingestion_csv_and_reexport(local_cli, tmp
         cli.app, ["run", "--resume", info["run_id"], "--export", str(resumed), "--no-animation"]
     )
     assert again.exit_code == 0, again.output
-    assert json.loads(resumed.read_text()) == rows
+    assert json.loads(resumed.read_text(encoding="utf-8")) == rows
 
 
 @pytest.mark.parametrize(
@@ -156,7 +160,7 @@ def test_task_file_controls_real_local_ingestion_csv_and_reexport(local_cli, tmp
 def test_invalid_task_is_controlled_and_does_not_create_a_ledger(local_cli, tmp_path, body):
     task = tmp_path / "bad-task.json"
     if body is not None:
-        task.write_text(body)
+        task.write_text(body, encoding="utf-8")
     result = local_cli.invoke(
         cli.app,
         [
@@ -178,7 +182,7 @@ def test_invalid_task_is_controlled_and_does_not_create_a_ledger(local_cli, tmp_
 def test_task_file_cannot_be_overwritten_by_export(local_cli, tmp_path):
     task = tmp_path / "task.json"
     original = '{"csv_mode":"json"}'
-    task.write_text(original)
+    task.write_text(original, encoding="utf-8")
     result = local_cli.invoke(
         cli.app,
         [
@@ -195,13 +199,13 @@ def test_task_file_cannot_be_overwritten_by_export(local_cli, tmp_path):
         ],
     )
     assert result.exit_code == 1
-    assert task.read_text() == original
+    assert task.read_text(encoding="utf-8") == original
     assert not (tmp_path / "research.db").exists()
 
 
 def test_task_cannot_replace_saved_requirements_on_resume(local_cli, tmp_path):
     task = tmp_path / "task.json"
-    task.write_text('{"csv_mode":"json"}')
+    task.write_text('{"csv_mode":"json"}', encoding="utf-8")
     result = local_cli.invoke(
         cli.app, ["run", "--resume", "not-a-run", "--task", str(task), "--no-animation"]
     )
@@ -212,7 +216,7 @@ def test_task_cannot_replace_saved_requirements_on_resume(local_cli, tmp_path):
 
 def test_task_and_column_flag_require_an_explicit_single_configuration(local_cli, tmp_path):
     task = tmp_path / "task.json"
-    task.write_text('{"column_tables":[{"table":1}]}')
+    task.write_text('{"column_tables":[{"table":1}]}', encoding="utf-8")
     with patch.object(cli, "run") as call:
         result = local_cli.invoke(
             cli.app,
