@@ -50,6 +50,7 @@ Basic
   --goal, -g TEXT          Required for a new run. Describe what data to find.
   --schema, -s TEXT        Required for a new run. Example: [name,price,website].
   --export, -e PATH        Optional CSV/JSON output. Repeat for multiple outputs.
+  --task PATH             Advanced task JSON; source rules, CSV mode and time-series policy.
 
 \b
 Source control
@@ -236,6 +237,13 @@ def run_agent(
             help=(
                 "Required for a new run; use [name,price,...] " "or an explicit JSON Schema path."
             ),
+        ),
+    ] = None,
+    task: Annotated[
+        Path | None,
+        typer.Option(
+            "--task",
+            help="Advanced task JSON file; validated through the same contract as the Python API.",
         ),
     ] = None,
     export: Annotated[
@@ -464,6 +472,24 @@ def run_agent(
                     )
                 sources.append({"format": fmt, "url": Path(local_path).absolute().as_uri()})
 
+        if task is not None and column_table:
+            raise VerboisyError(
+                "Choose --task or --column-table; declare column_tables inside the task file."
+            )
+        task_options: dict[str, Any] = (
+            {"task": task}
+            if task is not None
+            else {
+                "task": {
+                    "column_tables": [{"table": n} for n in column_table],
+                    "csv_mode": (
+                        "spreadsheet" if schema and schema.lstrip().startswith("[") else "json"
+                    ),
+                }
+            }
+            if column_table
+            else {}
+        )
         result = run(
             goal=goal,
             schema=schema,
@@ -490,18 +516,7 @@ def run_agent(
             date_format=date_format,
             config=config,
             on_started=display.started,
-            **(
-                {
-                    "task": {
-                        "column_tables": [{"table": n} for n in column_table],
-                        "csv_mode": (
-                            "spreadsheet" if schema and schema.lstrip().startswith("[") else "json"
-                        ),
-                    }
-                }
-                if column_table
-                else {}
-            ),
+            **task_options,
         )
 
     except KeyboardInterrupt:
