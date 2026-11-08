@@ -7,7 +7,7 @@ import asyncio
 import fnmatch
 import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
 from playwright.async_api import Error as PlaywrightError
@@ -81,6 +81,9 @@ from verboisy.utils.exceptions import (
     NavigationError,
     SearchBudgetExceededError,
 )
+
+if TYPE_CHECKING:
+    from verboisy.core.assessment_cache import AssessmentCache
 
 
 class ResearchRunner:
@@ -413,27 +416,64 @@ class ResearchRunner:
 
         from verboisy.core.source_assessment import (
             cached_source_assessment,
+            source_assessment_cache_event,
             source_assessment_cache_key,
         )
 
         # Persisted cache hits remain usable when provider credentials are absent.
         semantics = getattr(self, "field_semantics", None)
-        if cached_source_assessment(
-            events, source_assessment_cache_key(page, candidates, field_semantics=semantics)
-        ) is None and not self.model_execution_available("source_assessment"):
+        persistent: AssessmentCache | None = None
+        key = source_assessment_cache_key(page, candidates, field_semantics=semantics)
+        available_response = cached_source_assessment(events, key)
+        if (
+            available_response is None
+            and isinstance(getattr(self, "config", None), Settings)
+            and self.config.cache_directory is not None
+        ):
+            from copy import deepcopy
+
+            from verboisy.cache import CacheError
+            from verboisy.core import assessment_cache
+
+            policy = self.config.cache_policy()
+            assert policy is not None
+            try:
+                persistent = assessment_cache.AssessmentCache(self, page, candidates, policy)
+            except CacheError:
+                self.store.event(
+                    self.rid,
+                    "persistent_cache",
+                    {
+                        "version": 1,
+                        "stage": "source_assessment",
+                        "operation": "lookup",
+                        "outcome": "unsupported_client",
+                    },
+                )
+            else:
+                available_response = persistent.load()
+                if available_response is not None:
+                    payload = source_assessment_cache_event(key, available_response)
+                    self.store.event(self.rid, "source_assessment_cache", deepcopy(payload))
+                    events.append({"kind": "source_assessment_cache", "payload": payload})
+        if available_response is None and not self.model_execution_available("source_assessment"):
             return []
+
+        requested: SourceAssessmentBatchResponse | None = None
 
         async def request() -> SourceAssessmentBatchResponse:
             # Cache hits must not resolve a client, goal or model request budget.
-            return await assess_source_batch(
+            nonlocal requested
+            requested = await assess_source_batch(
                 self.client,
                 goal=self.goal,
                 page=page,
                 candidates=candidates,
                 field_semantics=semantics,
             )
+            return requested
 
-        return await journal_candidate_assessments(
+        grounded = await journal_candidate_assessments(
             page,
             candidates,
             events,
@@ -445,6 +485,14 @@ class ResearchRunner:
             lambda: tuple(getattr(getattr(self, "task", None), "identity_fields", ())),
             field_semantics=semantics,
         )
+        if (
+            persistent is not None
+            and requested is not None
+            and grounded
+            and all(claim.grounded for row in grounded for claim in row.values())
+        ):
+            persistent.store(requested)
+        return grounded
 
     def compare_candidate_evidence(
         self,
