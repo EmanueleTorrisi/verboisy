@@ -7,23 +7,53 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import wraps
+from importlib import import_module
 from pathlib import Path
-from typing import Annotated, Any, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Annotated, Any, ParamSpec, TypeVar
 
 import typer
 from pydantic import ValidationError
 from typer.core import TyperGroup
 
 from verboisy import __version__
-from verboisy.api import run
 from verboisy.cli.streaming import stream_command, stream_status
 from verboisy.cli.ui import CLIUserInterface, RunDisplay
 from verboisy.dataset_formats import MIME_TYPES, format_capabilities
-from verboisy.product import SortKey
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
 from verboisy.utils.json_payload import read_json_object
 from verboisy.utils.logger import setup_logging
+
+if TYPE_CHECKING:
+    from verboisy.api import run
+    from verboisy.product import SortKey
+
+_EXPORTS = {"run": "verboisy.api", "SortKey": "verboisy.product"}
+
+# Reload restores the same public bindings as a fresh import.
+for _export_name in _EXPORTS:
+    globals().pop(_export_name, None)
+del _export_name
+
+
+def __getattr__(name: str) -> Any:
+    module_name = _EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    value = getattr(import_module(module_name), name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted({*globals(), *_EXPORTS})
+
+
+def _load_run_runtime() -> None:
+    for name in _EXPORTS:
+        if name not in globals():
+            __getattr__(name)
+
 
 ROOT_HELP = r"""
 Verboisy turns a research goal and requested columns into an evidence-backed dataset.
@@ -431,6 +461,7 @@ def run_agent(
     """Start or resume an evidence-backed research run."""
 
     del orderby, orderbydesc
+    _load_run_runtime()
 
     CLIUserInterface.print_header(
         f"Verboisy {__version__}",
