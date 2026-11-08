@@ -18,7 +18,6 @@ from verboisy.evidence.models import ProjectionPlan
 from verboisy.extractor.dataset import SourceRow
 from verboisy.storage.exporters import _csv_value, sync_directory
 from verboisy.storage.path_safety import validate_output_paths
-from verboisy.streaming.capture import verify_capture
 from verboisy.streaming.contract import CHUNK_BYTES, StreamError
 from verboisy.streaming.integrity import (
     validated_job,
@@ -66,7 +65,6 @@ def export_stream(
         validate_output_paths(targets, protected)
     except (OSError, ValueError) as error:
         raise StreamError("Streaming output would overwrite a protected or unsafe path") from error
-    verify_capture(ledger, job)
     with tempfile.TemporaryDirectory(prefix=".verboisy-stream-", dir=output.parent) as temp:
         stage = tuple(Path(temp) / path.name for path in targets)
         _write_rows(

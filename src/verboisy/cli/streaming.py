@@ -6,19 +6,53 @@
 import json
 from contextlib import closing
 from dataclasses import asdict
+from importlib import import_module
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 import typer
 from pydantic import ValidationError
 
 from verboisy.evidence.models import ProjectionPlan
 from verboisy.storage.path_safety import validate_output_paths
-from verboisy.streaming import StreamLedger, StreamLimits, stream_dataset
-from verboisy.streaming.export import bundle_paths
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
 from verboisy.utils.json_payload import read_json_object
+
+if TYPE_CHECKING:
+    from verboisy.streaming import StreamLedger, StreamLimits, stream_dataset
+    from verboisy.streaming.export import bundle_paths
+
+_EXPORTS = {
+    "StreamLedger": "verboisy.streaming.ledger",
+    "StreamLimits": "verboisy.streaming.contract",
+    "stream_dataset": "verboisy.streaming.api",
+    "bundle_paths": "verboisy.streaming.export",
+}
+
+# Reload restores the same public bindings as a fresh import.
+for _export_name in _EXPORTS:
+    globals().pop(_export_name, None)
+del _export_name
+
+
+def __getattr__(name: str) -> Any:
+    module_name = _EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    value = getattr(import_module(module_name), name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted({*globals(), *_EXPORTS})
+
+
+def _load_stream_runtime(*names: str) -> None:
+    for name in names:
+        if name not in globals():
+            __getattr__(name)
 
 
 def stream_command(
@@ -39,6 +73,7 @@ def stream_command(
     Schema and projection options are JSON files. Resume fixes the saved contract;
     an invocation row budget pauses at a committed checkpoint. No model is called.
     """
+    _load_stream_runtime("StreamLimits", "stream_dataset", "bundle_paths")
     try:
         if resume is not None and any(
             v is not None
@@ -113,6 +148,7 @@ def stream_status(
     limit: Annotated[int, typer.Option("--limit")] = 10,
 ) -> None:
     """Inspect bounded saved job metadata, including IDs recoverable after a crash."""
+    _load_stream_runtime("StreamLedger")
     try:
         with closing(StreamLedger(database, read_only=True)) as ledger:
             typer.echo(
