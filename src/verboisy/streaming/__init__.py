@@ -9,15 +9,28 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from verboisy.streaming.api import stream_dataset
     from verboisy.streaming.contract import StreamLimits, StreamResult
+    from verboisy.streaming.delta import UpdateLimits, UpdateResult
     from verboisy.streaming.ledger import StreamLedger
+    from verboisy.streaming.update import stream_updates
 
-__all__ = ["StreamLedger", "StreamLimits", "StreamResult", "stream_dataset"]
+__all__ = [
+    "StreamLedger",
+    "StreamLimits",
+    "StreamResult",
+    "UpdateLimits",
+    "UpdateResult",
+    "stream_dataset",
+    "stream_updates",
+]
 
 _EXPORTS = {
     "StreamLedger": "verboisy.streaming.ledger",
     "StreamLimits": "verboisy.streaming.contract",
     "StreamResult": "verboisy.streaming.contract",
+    "UpdateLimits": "verboisy.streaming.delta",
+    "UpdateResult": "verboisy.streaming.delta",
     "stream_dataset": "verboisy.streaming.api",
+    "stream_updates": "verboisy.streaming.update",
 }
 
 # Reload restores the same public bindings as a fresh import.
