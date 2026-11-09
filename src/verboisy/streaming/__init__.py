@@ -11,24 +11,29 @@ if TYPE_CHECKING:
     from verboisy.streaming.contract import StreamLimits, StreamResult
     from verboisy.streaming.delta import UpdateLimits, UpdateResult
     from verboisy.streaming.ledger import StreamLedger
+    from verboisy.streaming.quality import QualityReport, check_stream_quality
     from verboisy.streaming.update import stream_updates
 
 __all__ = [
+    "QualityReport",
     "StreamLedger",
     "StreamLimits",
     "StreamResult",
     "UpdateLimits",
     "UpdateResult",
+    "check_stream_quality",
     "stream_dataset",
     "stream_updates",
 ]
 
 _EXPORTS = {
+    "QualityReport": "verboisy.streaming.quality",
     "StreamLedger": "verboisy.streaming.ledger",
     "StreamLimits": "verboisy.streaming.contract",
     "StreamResult": "verboisy.streaming.contract",
     "UpdateLimits": "verboisy.streaming.delta",
     "UpdateResult": "verboisy.streaming.delta",
+    "check_stream_quality": "verboisy.streaming.quality",
     "stream_dataset": "verboisy.streaming.api",
     "stream_updates": "verboisy.streaming.update",
 }
