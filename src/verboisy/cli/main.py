@@ -16,6 +16,7 @@ from pydantic import ValidationError
 from typer.core import TyperGroup
 
 from verboisy import __version__
+from verboisy.cli.cache import cache_command
 from verboisy.cli.streaming import stream_command, stream_status
 from verboisy.cli.ui import CLIUserInterface, RunDisplay
 from verboisy.dataset_formats import MIME_TYPES, format_capabilities
@@ -115,6 +116,8 @@ Execution and recovery
   --okresume [RUN_ID]      Accept the saved proposed changes and resume.
   --max-steps, -m INTEGER  Limit browser page visits for this invocation.
   --headless / --headed    Browser visibility override. Default is headless.
+  --cache-dir PATH         Optional private project cache directory.
+  --cache-scope NAME       Explicit reuse scope; required with --cache-dir.
 
 \b
 Important rules
@@ -450,6 +453,19 @@ def run_agent(
     verbose: Annotated[
         bool, typer.Option("--verbose", "-v", help="Also show provenance manifest paths.")
     ] = False,
+    cache_dir: Annotated[
+        Path | None,
+        typer.Option("--cache-dir", help="Reuse grounded assessments in a private project cache."),
+    ] = None,
+    cache_scope: Annotated[
+        str | None,
+        typer.Option(
+            "--cache-scope", help="Explicit project scope for persistent assessment reuse."
+        ),
+    ] = None,
+    disable_cache: Annotated[
+        bool, typer.Option("--no-cache", help="Bypass the persistent cache for this invocation.")
+    ] = False,
     animation: Annotated[
         bool,
         typer.Option(
@@ -479,7 +495,16 @@ def run_agent(
 
     display = RunDisplay(animate=animation)
     try:
-        config = Settings()
+        cache_options: dict[str, Any] = {}
+        if cache_dir is not None:
+            cache_options["cache_directory"] = cache_dir
+        if cache_scope is not None:
+            cache_options["cache_scope"] = cache_scope
+        if disable_cache:
+            if cache_dir is not None or cache_scope is not None:
+                raise VerboisyError("Choose --no-cache or persistent cache options.")
+            cache_options.update(cache_directory=None, cache_scope=None)
+        config = Settings(**cache_options)
         setup_logging(config)
 
         sources = None
@@ -926,6 +951,8 @@ def formats() -> None:
 app.command("stream")(stream_command)
 
 app.command("stream-status")(stream_status)
+
+app.command("cache")(cache_command)
 
 
 if __name__ == "__main__":

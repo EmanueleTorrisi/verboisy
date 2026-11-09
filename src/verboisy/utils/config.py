@@ -5,9 +5,9 @@
 
 import inspect
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
-from pydantic import Field, PrivateAttr, SecretStr, field_validator
+from pydantic import Field, PrivateAttr, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from verboisy.presentation_config import (
@@ -19,6 +19,9 @@ from verboisy.presentation_config import (
 )
 from verboisy.provider_config import ProviderProfile, ResponseMode
 from verboisy.source_config import validate_http_headers
+
+if TYPE_CHECKING:
+    from verboisy.cache_policy import CachePolicy
 
 _SETTINGS_PARAMETERS = inspect.signature(BaseSettings.__init__)
 
@@ -41,7 +44,47 @@ class Settings(BaseSettings):
 
     def input_files(self) -> tuple[Path, ...]:
         """Return dotenv paths read by this instance, independently of later chdir."""
-        return self._input_files
+        policy = self.cache_policy()
+        return self._input_files + (policy.protected_paths if policy is not None else ())
+
+    def cache_policy(self) -> "CachePolicy | None":
+        if self.cache_directory is None:
+            return None
+        from verboisy.cache_policy import CachePolicy
+
+        return CachePolicy(
+            self.cache_directory,
+            self.cache_scope or "",
+            self.cache_max_bytes,
+            self.cache_max_entry_bytes,
+            self.cache_ttl_seconds,
+            self.cache_max_entries,
+        )
+
+    cache_directory: Path | None = None
+    cache_scope: str | None = Field(default=None, min_length=1, max_length=128)
+    cache_max_bytes: int = Field(default=64 * 1024**2, ge=65536, le=1024**3)
+    cache_max_entry_bytes: int = Field(default=1024**2, ge=1)
+    cache_ttl_seconds: int = Field(default=3600, ge=1, le=604800)
+    cache_max_entries: int = Field(default=10000, ge=1, le=1000000)
+
+    @model_validator(mode="after")
+    def valid_project_cache(self) -> "Settings":
+        self.cache_policy()
+        return self
+
+    @field_validator(
+        "cache_max_bytes",
+        "cache_max_entry_bytes",
+        "cache_ttl_seconds",
+        "cache_max_entries",
+        mode="before",
+    )
+    @classmethod
+    def cache_limits_are_not_booleans(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("Cache limits must be integers, not booleans")
+        return value
 
     openai_api_key: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None
