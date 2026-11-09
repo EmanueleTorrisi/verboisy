@@ -256,10 +256,62 @@ class ProjectCacheTests(unittest.TestCase):
         with patch("verboisy.cache.os", SimpleNamespace(name="posix", getuid=lambda: 42)):
             _private(path, directory=True)
             info.st_uid = 43
-            with self.assertRaises(CacheError):
+            with self.assertRaisesRegex(CacheError, "private to"):
                 _private(path, directory=True)
+            info.st_uid = 42
+            info.st_mode = stat.S_IFDIR | 0o750
+            with self.assertRaisesRegex(CacheError, "private to"):
+                _private(path, directory=True)
+        info.st_mode = stat.S_IFDIR | 0o700
+        for posix in (SimpleNamespace(name="posix"), SimpleNamespace(name="posix", getuid=42)):
+            with (
+                self.subTest(platform=posix),
+                patch("verboisy.cache.os", posix),
+                self.assertRaisesRegex(CacheError, "private to"),
+            ):
+                _private(path, directory=True)
+        info.st_uid = 43
+        info.st_mode = stat.S_IFDIR | 0o755
         with patch("verboisy.cache.os", SimpleNamespace(name="nt")):
             _private(path, directory=True)
+
+    def test_windows_path_checks_reject_links_and_wrong_file_types(self):
+        path = Mock()
+        info = SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_nlink=1)
+        path.lstat.return_value = info
+        path.is_symlink.return_value = False
+        with patch("verboisy.cache.os", SimpleNamespace(name="nt")):
+            _private(path, directory=False)
+            with self.assertRaisesRegex(CacheError, "real directories"):
+                _private(path, directory=True)
+            info.st_nlink = 2
+            with self.assertRaisesRegex(CacheError, "Hard-linked"):
+                _private(path, directory=False)
+            info.st_nlink = 1
+            path.is_symlink.return_value = True
+            with self.assertRaisesRegex(CacheError, "real directories"):
+                _private(path, directory=False)
+
+    def test_linked_cache_root_is_refused_before_creation(self):
+        with (
+            patch.object(Path, "is_symlink", return_value=True),
+            self.assertRaises(CacheError) as caught,
+        ):
+            ProjectCache(self.policy)
+        self.assertIn("Linked cache directories", str(caught.exception.__cause__))
+        self.assertFalse(self.root.exists())
+
+    def test_nonregular_sidecar_is_preserved(self):
+        self.root.mkdir(mode=0o700)
+        journal = Path(str(self.policy.database) + "-journal")
+        journal.mkdir()
+        sentinel = journal / "preserve.txt"
+        sentinel.write_bytes(b"unrelated input")
+        with self.assertRaises(CacheError) as caught:
+            ProjectCache(self.policy)
+        self.assertIn("regular files", str(caught.exception.__cause__))
+        self.assertEqual(sentinel.read_bytes(), b"unrelated input")
+        self.assertFalse(self.policy.database.exists())
 
     def test_sidecar_alias_bad_accounting_and_oversized_saved_payload_are_refused(self):
         with ProjectCache(self.policy) as cache:
