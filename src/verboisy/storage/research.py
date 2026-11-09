@@ -9,7 +9,7 @@ import hashlib
 import json
 import sqlite3
 import uuid
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -134,7 +134,16 @@ class ResearchStore:
     def dataset_assets(self, rid: str) -> list[StoredDatasetAsset]:
         return list_assets(self.db, rid)
 
-    def create(self, goal: str, schema: dict[str, Any], task: TaskSpec, export: str | None) -> str:
+    def create(
+        self,
+        goal: str,
+        schema: dict[str, Any],
+        task: TaskSpec,
+        export: str | None,
+        *,
+        initial_events: Sequence[tuple[str, Any]] = (),
+    ) -> str:
+        """Create a run and any required origin events in one transaction."""
         rid = str(uuid.uuid4())
         with self.db:
             self.db.execute(
@@ -142,6 +151,11 @@ class ResearchStore:
                 "VALUES(?,?,?,?,?,?)",
                 (rid, goal, encode(schema), task.model_dump_json(), "RUNNING", export),
             )
+            for kind, value in initial_events:
+                self.db.execute(
+                    "INSERT INTO events(run_id,kind,payload) VALUES(?,?,?)",
+                    (rid, kind, encode(value)),
+                )
         return rid
 
     def update_task(self, rid: str, task: TaskSpec) -> None:
