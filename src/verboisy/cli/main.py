@@ -17,6 +17,7 @@ from typer.core import TyperGroup
 
 from verboisy import __version__
 from verboisy.cli.cache import cache_command
+from verboisy.cli.stream_update import stream_update_command
 from verboisy.cli.streaming import stream_command, stream_status
 from verboisy.cli.ui import CLIUserInterface, RunDisplay
 from verboisy.dataset_formats import MIME_TYPES, format_capabilities
@@ -951,6 +952,8 @@ def formats() -> None:
 app.command("stream")(stream_command)
 
 app.command("stream-status")(stream_status)
+
+app.command("stream-update")(stream_update_command)
 
 app.command("cache")(cache_command)
 
