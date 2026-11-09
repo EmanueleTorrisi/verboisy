@@ -79,8 +79,12 @@ def _private(path: Path, *, directory: bool) -> None:
         raise CacheError("Cache paths must be real directories and regular files")
     if not directory and info.st_nlink != 1:
         raise CacheError("Hard-linked cache files are not supported")
-    if os.name != "nt" and (info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o077):
-        raise CacheError("Cache directory/files must be private to their operating-system owner")
+    if os.name != "nt":
+        getuid = getattr(os, "getuid", None)
+        if not callable(getuid) or info.st_uid != getuid() or stat.S_IMODE(info.st_mode) & 0o077:
+            raise CacheError(
+                "Cache directory/files must be private to their operating-system owner"
+            )
 
 
 class ProjectCache:
