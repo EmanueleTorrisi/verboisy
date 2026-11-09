@@ -9,7 +9,7 @@ import asyncio
 import hashlib
 import json
 import re
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -60,6 +60,7 @@ from verboisy.utils.exceptions import (
     VerboisyError,
 )
 from verboisy.utils.json_payload import decode_json, read_json_object
+from verboisy.workflows import WorkflowError, read_workflow, saved_workflow_origin
 
 
 @dataclass(frozen=True)
@@ -293,8 +294,39 @@ async def arun(
     length_unit: str | None = None,
     date_format: str | None = None,
     on_started: Callable[[str, str], None] | None = None,
+    workflow: str | Path | None = None,
+    workflow_inputs: Mapping[str, str | Path] | None = None,
+    workflow_sha256: str | None = None,
 ) -> RunResult:
     """Start or resume evidence-backed research using simple or advanced configuration."""
+
+    definition = None
+    workflow_files: tuple[Path, ...] = ()
+    if workflow is not None:
+        if any(
+            (
+                resume,
+                okresume,
+                goal is not None,
+                schema is not None,
+                task is not None,
+                identity is not None,
+                dataset_sources is not None,
+                dataset_projection is not None,
+                include is not None,
+                avoid is not None,
+                onlyinclude,
+                maxrows is not None,
+                research,
+            )
+        ):
+            raise WorkflowError("A workflow supplies the goal, schema and task for a new run")
+        definition = read_workflow(Path(workflow), expected_sha256=workflow_sha256)
+        goal, schema = definition.goal, definition.schema
+        task, bound_paths = definition.bind(workflow_inputs)
+        workflow_files = (definition.path, *bound_paths)
+    elif workflow_inputs is not None or workflow_sha256 is not None:
+        raise WorkflowError("Workflow inputs and SHA-256 require a workflow file")
 
     for flag in (onlyinclude, strings, proof, research):
         if not isinstance(flag, bool):
@@ -314,6 +346,19 @@ async def arun(
     }
     preferences(display_overrides)  # Validate before opening or mutating the ledger.
     config = (config or Settings()).model_copy()
+    if workflow_files:
+        try:
+            validate_output_paths(
+                (
+                    Path(config.sqlite_db_path + suffix)
+                    for suffix in ("", "-wal", "-shm", "-journal", ".lock")
+                ),
+                workflow_files,
+            )
+        except (OSError, ValueError):
+            raise WorkflowError(
+                "Research database paths must differ from workflow inputs"
+            ) from None
     display_defaults = config.presentation_defaults()
     if not isinstance(okresume, bool | str) or (isinstance(okresume, str) and not okresume.strip()):
         raise VerboisyError("okresume must be True, False, or a nonempty run id")
@@ -362,6 +407,7 @@ async def arun(
     }
     input_paths.add(Path(".env").resolve())
     input_paths.update(config.input_files())
+    input_paths.update(workflow_files)
     if smartid is not None:
         input_paths.update(reference_input_paths(smartid))
     try:
@@ -419,6 +465,7 @@ async def arun(
             saved_inputs = store.events(rid, "export_inputs")
             for entry in saved_inputs:
                 input_paths.update(export_input_paths([entry]))
+            saved_workflow_origin(store.events(rid, "workflow_origin"))
             pending_change(store, rid)
             try:
                 saved_task = TaskSpec.model_validate(decode_json(state["task_json"]))
@@ -554,14 +601,23 @@ async def arun(
                 json.dumps([str(path) for path in destinations]) if destinations else None
             )
             store = ResearchStore(config.sqlite_db_path)
+            export_inputs = {"paths": sorted(str(path) for path in input_paths)}
+            initial_options: dict[str, Any] = {}
+            if definition is not None:
+                initial_options["initial_events"] = (
+                    ("export_inputs", export_inputs),
+                    ("workflow_origin", definition.origin()),
+                )
             rid = store.create(
                 goal or "",
                 target_schema,
                 spec,
                 stored_exports,
+                **initial_options,
             )
 
-            store.event(rid, "export_inputs", {"paths": sorted(str(path) for path in input_paths)})
+            if definition is None:
+                store.event(rid, "export_inputs", export_inputs)
             store.event(
                 rid,
                 "research_plan",
