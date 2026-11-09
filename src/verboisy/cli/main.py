@@ -21,11 +21,13 @@ from verboisy.cli.stream_quality import stream_quality_command
 from verboisy.cli.stream_update import stream_update_command
 from verboisy.cli.streaming import stream_command, stream_status
 from verboisy.cli.ui import CLIUserInterface, RunDisplay
+from verboisy.cli.workflow import workflow_check_command
 from verboisy.dataset_formats import MIME_TYPES, format_capabilities
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import VerboisyError
 from verboisy.utils.json_payload import read_json_object
 from verboisy.utils.logger import setup_logging
+from verboisy.workflows import parse_bindings
 
 if TYPE_CHECKING:
     from verboisy.api import run
@@ -123,7 +125,7 @@ Execution and recovery
 
 \b
 Important rules
-  --goal and --schema are required when starting a new run.
+  Start with --goal and --schema, or use a versioned --workflow file.
   --onlyinclude requires at least one --include.
   --proof requires at least one --export.
   --orderby and --orderbydesc may be repeated and mixed.
@@ -261,7 +263,7 @@ def run_agent(
         typer.Option(
             "--goal",
             "-g",
-            help=("Required for a new run; describe the dataset " "you want in ordinary language."),
+            help="Required for a new run without --workflow; describe the dataset to prepare.",
         ),
     ] = None,
     schema: Annotated[
@@ -270,7 +272,8 @@ def run_agent(
             "--schema",
             "-s",
             help=(
-                "Required for a new run; use [name,price,...] " "or an explicit JSON Schema path."
+                "Required for a new run; use [name,price,...] or an explicit JSON Schema path."
+                " A workflow can supply this."
             ),
         ),
     ] = None,
@@ -280,6 +283,16 @@ def run_agent(
             "--task",
             help="Advanced task JSON file; validated through the same contract as the Python API.",
         ),
+    ] = None,
+    workflow: Annotated[
+        Path | None, typer.Option("--workflow", help="Versioned JSON goal, schema and task.")
+    ] = None,
+    workflow_input: Annotated[
+        list[str] | None,
+        typer.Option("--workflow-input", help="Bind a local input with NAME=PATH; repeatable."),
+    ] = None,
+    workflow_sha256: Annotated[
+        str | None, typer.Option("--workflow-sha256", help="Require the exact workflow file hash.")
     ] = None,
     export: Annotated[
         list[Path] | None,
@@ -548,6 +561,13 @@ def run_agent(
             if column_table
             else {}
         )
+        workflow_options: dict[str, Any] = {}
+        if workflow is not None or workflow_input or workflow_sha256 is not None:
+            workflow_options = {
+                "workflow": workflow,
+                "workflow_inputs": parse_bindings(workflow_input) if workflow_input else None,
+                "workflow_sha256": workflow_sha256,
+            }
         result = run(
             goal=goal,
             schema=schema,
@@ -575,6 +595,7 @@ def run_agent(
             config=config,
             on_started=display.started,
             **task_options,
+            **workflow_options,
         )
 
     except KeyboardInterrupt:
@@ -959,6 +980,8 @@ app.command("stream-quality")(stream_quality_command)
 app.command("stream-update")(stream_update_command)
 
 app.command("cache")(cache_command)
+
+app.command("workflow-check")(workflow_check_command)
 
 
 if __name__ == "__main__":
