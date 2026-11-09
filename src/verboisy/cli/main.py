@@ -17,6 +17,7 @@ from typer.core import TyperGroup
 
 from verboisy import __version__
 from verboisy.cli.cache import cache_command
+from verboisy.cli.stream_quality import stream_quality_command
 from verboisy.cli.stream_update import stream_update_command
 from verboisy.cli.streaming import stream_command, stream_status
 from verboisy.cli.ui import CLIUserInterface, RunDisplay
@@ -952,6 +953,8 @@ def formats() -> None:
 app.command("stream")(stream_command)
 
 app.command("stream-status")(stream_status)
+
+app.command("stream-quality")(stream_quality_command)
 
 app.command("stream-update")(stream_update_command)
 
