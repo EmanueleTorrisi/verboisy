@@ -6,7 +6,6 @@
 import hashlib
 import json
 import os
-import re
 import sqlite3
 from collections.abc import Iterable
 from contextlib import closing
@@ -16,10 +15,10 @@ from tempfile import TemporaryDirectory
 from typing import Any, BinaryIO
 
 from verboisy.streaming.contract import StreamError
+from verboisy.streaming.record_keys import key_paths, record_key
 
 _PAGE_BYTES = 4096
 _COMMIT_ROWS = 4096
-_KEY_BYTES = 4096
 
 
 @dataclass(frozen=True)
@@ -71,46 +70,6 @@ def _json(value: Any) -> bytes:
     ).encode()
 
 
-def _key_paths(pointers: tuple[str, ...]) -> tuple[tuple[str, ...], ...]:
-    if not isinstance(pointers, tuple) or not 1 <= len(pointers) <= 8:
-        raise StreamError("Choose one to eight record key pointers")
-    result = []
-    for pointer in pointers:
-        if (
-            not isinstance(pointer, str)
-            or not pointer.startswith("/")
-            or len(pointer) > 1024
-            or re.search(r"~(?![01])", pointer)
-        ):
-            raise StreamError("Record keys must be non-root JSON pointers to object fields")
-        parts = tuple(part.replace("~1", "/").replace("~0", "~") for part in pointer[1:].split("/"))
-        if parts in result:
-            raise StreamError("Record key pointers must be distinct")
-        result.append(parts)
-    return tuple(result)
-
-
-def _record_key(record: _Record, paths: tuple[tuple[str, ...], ...]) -> bytes:
-    values: list[str | int] = []
-    for parts in paths:
-        value: Any = record.value
-        for part in parts:
-            if not isinstance(value, dict) or part not in value:
-                raise StreamError(f"Missing record key at row {record.ordinal}")
-            value = value[part]
-        if isinstance(value, bool) or not isinstance(value, str | int) or value == "":
-            raise StreamError(
-                f"Record key at row {record.ordinal} must be a nonempty string or integer"
-            )
-        if isinstance(value, str) and len(value) > _KEY_BYTES:
-            raise StreamError(f"Record key at row {record.ordinal} exceeds 4096 encoded bytes")
-        values.append(value)
-    encoded = _json(values)
-    if len(encoded) > _KEY_BYTES:
-        raise StreamError(f"Record key at row {record.ordinal} exceeds 4096 encoded bytes")
-    return encoded
-
-
 class _Writer:
     def __init__(self, stream: BinaryIO, limit: int) -> None:
         self.stream = stream
@@ -152,7 +111,7 @@ def _baseline(
         added = db.execute(
             "INSERT INTO keys VALUES(?,?,?,?,?,0) ON CONFLICT(key) DO NOTHING",
             (
-                _record_key(record, paths),
+                record_key(record.value, paths, record.ordinal),
                 hashlib.sha256(_json(record.value)).digest(),
                 record.ordinal,
                 record.first_line,
@@ -191,7 +150,7 @@ def _current(
 ) -> tuple[int, int, int]:
     inserted = updated = unchanged = count = 0
     for count, record in enumerate(version.records, 1):
-        key = _record_key(record, paths)
+        key = record_key(record.value, paths, record.ordinal)
         prior = db.execute("SELECT * FROM keys WHERE key=?", (key,)).fetchone()
         encoded = _json(record.value)
         digest = hashlib.sha256(encoded).digest()
@@ -234,7 +193,7 @@ def _write_delta(
     complete_snapshot: bool,
     limits: UpdateLimits,
 ) -> UpdateResult:
-    paths = _key_paths(keys)
+    paths = key_paths(keys)
     try:
         with TemporaryDirectory(
             prefix=".verboisy-update-", dir=output.parent, ignore_cleanup_errors=True
