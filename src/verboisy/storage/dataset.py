@@ -25,6 +25,7 @@ from verboisy.storage.path_safety import (
     validate_output_paths,
 )
 from verboisy.storage.research import ResearchStore
+from verboisy.workflows import saved_workflow_origin
 
 
 def export_dataset(
@@ -54,6 +55,7 @@ def export_dataset(
     # including exports whose public rows were supplied by the caller.
     captured_evidence = store.evidence(rid)
     captured_events = store.events(rid)
+    workflow_origin = saved_workflow_origin(captured_events)
     search_events = [event for event in captured_events if event["kind"] == "search_request"]
     search_attempts = {
         provider: len(reserved_attempt_ids(search_events, provider=provider))
@@ -194,6 +196,9 @@ def export_dataset(
         "cell_lineage": cell_lineage,
         "dataset_consistency": dataset_consistency,
     }
+    info.pop("workflow_origin", None)
+    if workflow_origin is not None:
+        info["workflow_origin"] = workflow_origin
     # Publish the manifest last, after every checksummed file has been written.
     _atomic_write(manifest, lambda stream: json.dump(info, stream, ensure_ascii=False, indent=2))
     return manifest

@@ -648,7 +648,6 @@ def test_hard_process_termination_recovers_committed_rows(tmp_path, fault, row_c
     source.write_bytes(raw)
     expected_hash = hashlib.sha256(raw).hexdigest()
     database = tmp_path / "stream.db"
-    signal_path = tmp_path / "phase.json"
     stderr_path = tmp_path / "child.stderr"
     code = r"""
 import importlib
@@ -663,15 +662,15 @@ from verboisy.utils.config import Settings
 
 database, source, root = map(Path, sys.argv[1:4])
 fault = sys.argv[4]
-signal_path = root / "phase.json"
 
 def signal(phase, **details):
-    temporary = root / "phase.tmp"
-    with temporary.open("w", encoding="utf-8") as stream:
+    # Each payload is written once; its ready marker is published after close.
+    # The parent never holds a file handle the child needs to replace.
+    with (root / f"{phase}.json").open("x", encoding="utf-8") as stream:
         json.dump({"phase": phase, **details}, stream)
         stream.flush()
         os.fsync(stream.fileno())
-    temporary.replace(signal_path)
+    (root / f"{phase}.ready").mkdir()
 
 def wait_for_kill():
     # Safety bound, not a performance assertion. The parent must kill us.
@@ -743,18 +742,21 @@ raise RuntimeError("Child returned before injected termination: " + repr(result)
             # Separate phase deadlines expose slow startup/capture instead of
             # confusing them with the correctness of a committed checkpoint.
             phase = "launch"
+            phases = iter(("engine_ready", "captured", "fault_ready"))
+            pending = next(phases)
             deadline = time.monotonic() + 30
             overall_deadline = time.monotonic() + 90
             state = {}
             while child.poll() is None:
                 now = time.monotonic()
-                if signal_path.exists():
-                    state = json.loads(signal_path.read_text(encoding="utf-8"))
-                    if state["phase"] != phase:
-                        phase = state["phase"]
-                        deadline = now + 30
+                if (tmp_path / f"{pending}.ready").is_dir():
+                    state = json.loads((tmp_path / f"{pending}.json").read_text(encoding="utf-8"))
+                    assert state["phase"] == pending
+                    phase = pending
                     if phase == "fault_ready":
                         break
+                    pending = next(phases)
+                    deadline = now + 30
                 if now >= deadline or now >= overall_deadline:
                     pytest.fail(f"Recovery child stalled in phase {phase}: {state}")
                 time.sleep(0.02)
