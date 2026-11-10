@@ -22,6 +22,7 @@ from verboisy.cli.retention import retention_command
 from verboisy.cli.stream_analytics import stream_analytics_command
 from verboisy.cli.stream_quality import stream_quality_command
 from verboisy.cli.stream_update import stream_update_command
+from verboisy.cli.stream_verify import stream_verify_command
 from verboisy.cli.streaming import stream_command, stream_status
 from verboisy.cli.ui import CLIUserInterface, RunDisplay
 from verboisy.cli.workflow import workflow_check_command
@@ -233,8 +234,25 @@ app = typer.Typer(
 )
 
 
+def _show_version(version: bool) -> bool:
+    if version:
+        typer.echo(__version__)
+        raise typer.Exit()
+    return version
+
+
 @app.callback()
-def main() -> None:
+def main(
+    _version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            is_eager=True,
+            callback=_show_version,
+            help="Print the installed Verboisy version.",
+        ),
+    ] = False,
+) -> None:
     """Verboisy command group."""
 
 
@@ -925,7 +943,11 @@ def _safe_settings(**kwargs: Any) -> Settings:
 
 
 @app.command()
-def setup() -> None:
+def setup(
+    no_install: Annotated[
+        bool, typer.Option("--no-install", help="Only check an existing Chromium installation.")
+    ] = False,
+) -> None:
     """Provision Chromium and check startup; no model calls."""
 
     import asyncio
@@ -933,7 +955,7 @@ def setup() -> None:
     from verboisy.browser.context import BrowserManager
 
     async def check() -> None:
-        manager = BrowserManager(_safe_settings(browser_auto_install=True))
+        manager = BrowserManager(_safe_settings(browser_auto_install=not no_install))
 
         try:
             await manager.start()
@@ -983,6 +1005,8 @@ app.command("stream-analytics")(stream_analytics_command)
 app.command("stream-quality")(stream_quality_command)
 
 app.command("stream-update")(stream_update_command)
+
+app.command("stream-verify")(stream_verify_command)
 
 app.command("cache")(cache_command)
 
