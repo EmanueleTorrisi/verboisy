@@ -10,6 +10,7 @@ __version__ = "1.0.0"
 
 if TYPE_CHECKING:
     from .api import RunResult, arun, run
+    from .operations import operational_report
     from .streaming import StreamLedger, StreamLimits, StreamResult, stream_dataset
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
     "StreamLimits",
     "StreamResult",
     "arun",
+    "operational_report",
     "run",
     "stream_dataset",
 ]
@@ -25,6 +27,7 @@ __all__ = [
 _EXPORTS = {
     "RunResult": "verboisy.api",
     "arun": "verboisy.api",
+    "operational_report": "verboisy.operations",
     "run": "verboisy.api",
     "StreamLedger": "verboisy.streaming.ledger",
     "StreamLimits": "verboisy.streaming.contract",
