@@ -8,6 +8,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -40,6 +41,45 @@ def repo(tmp_path):
         shutil.copytree(ROOT / name, tmp_path / name, ignore=shutil.ignore_patterns("__pycache__"))
     shutil.copyfile(ROOT / "mkdocs.yml", tmp_path / "mkdocs.yml")
     return tmp_path
+
+
+def _mismatch_project_version(path):
+    text = path.read_text(encoding="utf-8")
+    current = tomllib.loads(text)["project"]["version"]
+    wrong = "0.0.0" if current != "0.0.0" else "0.0.1"
+    declaration = f'version = "{current}"'
+    assert text.count(declaration) == 1, "The fixture must contain one project version"
+    changed = text.replace(declaration, f'version = "{wrong}"', 1)
+    assert tomllib.loads(changed)["project"]["version"] != current
+    path.write_text(changed, encoding="utf-8")
+
+
+def test_repository_version_tampering_works_for_release_versions(repo):
+    project = repo / "pyproject.toml"
+    package = repo / "src/verboisy/__init__.py"
+    project_source = project.read_text(encoding="utf-8")
+    package_source = package.read_text(encoding="utf-8")
+    current = tomllib.loads(project_source)["project"]["version"]
+    project_declaration = f'version = "{current}"'
+    package_declaration = f'__version__ = "{current}"'
+    assert (
+        project_source.count(project_declaration) == package_source.count(package_declaration) == 1
+    )
+    for version in ("0.0.0", "1.0.0", "2.0.0rc3", "2.0.0", "9.9.9", "2.0.0.post1"):
+        project.write_text(
+            project_source.replace(project_declaration, f'version = "{version}"', 1),
+            encoding="utf-8",
+        )
+        package.write_text(
+            package_source.replace(package_declaration, f'__version__ = "{version}"', 1),
+            encoding="utf-8",
+        )
+        before = CHECK.inspect(repo)
+        assert before["passed"], (version, before["issues"])
+        _mismatch_project_version(project)
+        after = CHECK.inspect(repo)
+        assert after["passed"] is False
+        assert after["issues"] == ["Package version and public __version__ differ"], version
 
 
 def test_actual_repository_consistency_is_not_product_certification():
@@ -77,12 +117,12 @@ def test_repository_tampering_is_reported(repo, case):
         path.write_text(text, encoding="utf-8")
     elif case == "link":
         (repo / "README.md").write_text("[Missing](missing.md)", encoding="utf-8")
-    elif case in {"version", "license"}:
+    elif case == "version":
+        _mismatch_project_version(repo / "pyproject.toml")
+    elif case == "license":
         path = repo / "pyproject.toml"
         path.write_text(
-            path.read_text(encoding="utf-8").replace('version = "1.0.0"', 'version = "9.9.9"')
-            if case == "version"
-            else path.read_text(encoding="utf-8").replace(
+            path.read_text(encoding="utf-8").replace(
                 'license = "LicenseRef-Verboisy-Source-Inspection-2.0"', 'license = "Unreviewed"'
             ),
             encoding="utf-8",
