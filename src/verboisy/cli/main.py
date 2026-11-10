@@ -18,6 +18,7 @@ from typer.core import TyperGroup
 from verboisy import __version__
 from verboisy.cli.cache import cache_command
 from verboisy.cli.operations import operations_command
+from verboisy.cli.retention import retention_command
 from verboisy.cli.stream_analytics import stream_analytics_command
 from verboisy.cli.stream_quality import stream_quality_command
 from verboisy.cli.stream_update import stream_update_command
@@ -986,6 +987,8 @@ app.command("stream-update")(stream_update_command)
 app.command("cache")(cache_command)
 
 app.command("report")(operations_command)
+
+app.command("retention")(retention_command)
 
 app.command("workflow-check")(workflow_check_command)
 
