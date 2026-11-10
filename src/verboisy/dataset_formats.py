@@ -71,6 +71,14 @@ def format_capabilities() -> dict[str, Any]:
             "model_requests": 0,
             "global_sorting_or_grouping": False,
         },
+        "analytical_bundles": {
+            "export_command": "verboisy stream-analytics",
+            "verify_command": "verboisy stream-verify",
+            "gzip_jsonl_verification": "file, proof and row digests",
+            "parquet_verification": "file digests and proof inventory; no decoded row check",
+            "requires_ledger_to_verify": False,
+            "source_truth_verified": False,
+        },
         "time_series": {
             "workflow": "explicit policy on accepted research records",
             "timestamp_policy_required": True,

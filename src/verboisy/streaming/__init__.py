@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from verboisy.streaming.analytics import AnalyticalExport, export_stream_analytics
+    from verboisy.streaming.analytics_verify import AnalyticsVerification, verify_stream_analytics
     from verboisy.streaming.api import stream_dataset
     from verboisy.streaming.contract import StreamLimits, StreamResult
     from verboisy.streaming.delta import UpdateLimits, UpdateResult
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "AnalyticalExport",
+    "AnalyticsVerification",
     "QualityReport",
     "StreamLedger",
     "StreamLimits",
@@ -27,10 +29,12 @@ __all__ = [
     "export_stream_analytics",
     "stream_dataset",
     "stream_updates",
+    "verify_stream_analytics",
 ]
 
 _EXPORTS = {
     "AnalyticalExport": "verboisy.streaming.analytics",
+    "AnalyticsVerification": "verboisy.streaming.analytics_verify",
     "QualityReport": "verboisy.streaming.quality",
     "StreamLedger": "verboisy.streaming.ledger",
     "StreamLimits": "verboisy.streaming.contract",
@@ -41,6 +45,7 @@ _EXPORTS = {
     "export_stream_analytics": "verboisy.streaming.analytics",
     "stream_dataset": "verboisy.streaming.api",
     "stream_updates": "verboisy.streaming.update",
+    "verify_stream_analytics": "verboisy.streaming.analytics_verify",
 }
 
 # Reload restores the same public bindings as a fresh import.
