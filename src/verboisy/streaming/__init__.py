@@ -7,6 +7,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from verboisy.streaming.analytics import AnalyticalExport, export_stream_analytics
     from verboisy.streaming.api import stream_dataset
     from verboisy.streaming.contract import StreamLimits, StreamResult
     from verboisy.streaming.delta import UpdateLimits, UpdateResult
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
     from verboisy.streaming.update import stream_updates
 
 __all__ = [
+    "AnalyticalExport",
     "QualityReport",
     "StreamLedger",
     "StreamLimits",
@@ -22,11 +24,13 @@ __all__ = [
     "UpdateLimits",
     "UpdateResult",
     "check_stream_quality",
+    "export_stream_analytics",
     "stream_dataset",
     "stream_updates",
 ]
 
 _EXPORTS = {
+    "AnalyticalExport": "verboisy.streaming.analytics",
     "QualityReport": "verboisy.streaming.quality",
     "StreamLedger": "verboisy.streaming.ledger",
     "StreamLimits": "verboisy.streaming.contract",
@@ -34,6 +38,7 @@ _EXPORTS = {
     "UpdateLimits": "verboisy.streaming.delta",
     "UpdateResult": "verboisy.streaming.delta",
     "check_stream_quality": "verboisy.streaming.quality",
+    "export_stream_analytics": "verboisy.streaming.analytics",
     "stream_dataset": "verboisy.streaming.api",
     "stream_updates": "verboisy.streaming.update",
 }
