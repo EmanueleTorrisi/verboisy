@@ -20,6 +20,38 @@ from email.parser import BytesParser
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+INSTALL_SMOKE = """
+import sys
+from pathlib import Path
+
+import verboisy
+
+expected_exports = (
+    "RunResult",
+    "StreamLedger",
+    "StreamLimits",
+    "StreamResult",
+    "arun",
+    "operational_report",
+    "run",
+    "stream_dataset",
+)
+if verboisy.__version__ != sys.argv[1]:
+    raise SystemExit("Installed package version differs from archive metadata")
+if not Path(verboisy.__file__).with_name("py.typed").is_file():
+    raise SystemExit("Installed package is missing py.typed")
+if tuple(sorted(verboisy.__all__)) != expected_exports:
+    raise SystemExit("Installed public exports differ from the supported API")
+for name in expected_exports:
+    if not callable(getattr(verboisy, name, None)):
+        raise SystemExit(f"Installed public export is not callable: {name}")
+
+from verboisy.browser.context import BrowserManager
+
+if not callable(BrowserManager):
+    raise SystemExit("Installed BrowserManager is not callable")
+"""
+
 
 def safe_members(names: list[str]) -> None:
     """Reject ambiguous, duplicate or escaping archive paths before extraction."""
@@ -186,21 +218,7 @@ def main() -> int:
                 empty.mkdir()
                 _run([str(python), "-m", "pip", "install", str(wheels[0])], empty)
                 _run([str(python), "-m", "pip", "check"], empty)
-                _run(
-                    [
-                        str(python),
-                        "-c",
-                        "import verboisy; from pathlib import Path; "
-                        "assert verboisy.__version__ == '"
-                        + str(contract["version"])
-                        + "'; assert Path(verboisy.__file__).with_name('py.typed').is_file(); "
-                        "from verboisy import run, arun, RunResult, StreamLedger, StreamLimits, "
-                        "StreamResult, stream_dataset; "
-                        "from verboisy.browser.context import BrowserManager; "
-                        "assert len(verboisy.__all__) == 7",
-                    ],
-                    empty,
-                )
+                _run([str(python), "-c", INSTALL_SMOKE, str(contract["version"])], empty)
                 _run([str(python), "-m", "verboisy", "--help"], empty)
         print(
             json.dumps(
