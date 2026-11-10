@@ -101,11 +101,25 @@ class StreamLedger:
         except sqlite3.Error:
             raise StreamError("Cannot read saved streaming job") from None
 
-    def page(self, job_id: str, *, after: int = 0, limit: int = 100) -> list[dict[str, Any]]:
+    def page(
+        self,
+        job_id: str,
+        *,
+        after: int = 0,
+        limit: int = 100,
+        max_bytes: int | None = None,
+    ) -> list[dict[str, Any]]:
+        """Read verified records after an ordinal, bounded by rows and stored JSON bytes.
+
+        With no max_bytes, a request exceeding 16 MiB fails instead of returning a
+        shorter page. An explicit max_bytes (1 byte through 16 MiB) allows a shorter
+        page. Continue after the last returned ordinal; an empty page means there
+        are no later committed rows. If the next record cannot fit, raise StreamError.
+        """
         from verboisy.streaming.integrity import read_verified_page
 
         try:
-            return read_verified_page(self, job_id, after, limit)
+            return read_verified_page(self, job_id, after, limit, max_bytes)
         except sqlite3.Error:
             raise StreamError("Cannot read verified streaming page") from None
 
