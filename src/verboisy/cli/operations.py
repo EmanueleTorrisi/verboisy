@@ -19,11 +19,19 @@ def operations_command(
     limit: Annotated[
         int, typer.Option("--limit", help="Newest saved entries, from 1 to 500.")
     ] = 100,
+    workspace: Annotated[
+        Path | None,
+        typer.Option("--workspace", help="Private Linux workspace; --database must be a filename."),
+    ] = None,
 ) -> None:
     """Report saved outcomes, row counts and request accounting as JSON."""
     from verboisy import operational_report
 
     try:
+        if workspace is not None:
+            from verboisy.workspace import workspace_ledger
+
+            database = workspace_ledger(workspace, str(database)).path
         report = operational_report(database, kind=kind, run_id=run_id, limit=limit)
         typer.echo(json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2))
     except KeyboardInterrupt:
