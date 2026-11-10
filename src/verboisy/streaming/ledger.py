@@ -15,6 +15,7 @@ from typing import Any
 from filelock import FileLock, Timeout
 
 from verboisy.streaming.contract import CHUNK_BYTES, StreamError
+from verboisy.streaming.ledger_schema import validate_stream_ledger
 
 
 class StreamLedger:
@@ -48,15 +49,7 @@ class StreamLedger:
             tables = {
                 row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")
             }
-            if tables:
-                if "stream_meta" not in tables:
-                    raise StreamError("Not a streaming ledger")
-                versions = db.execute("SELECT version FROM stream_meta").fetchall()
-                if len(versions) != 1 or versions[0][0] != 1:
-                    raise StreamError("Unsupported streaming ledger version")
-            elif read_only:
-                raise StreamError("Not a streaming ledger")
-            else:
+            if not tables and not read_only:
                 db.executescript("""
                     BEGIN IMMEDIATE;
                     CREATE TABLE stream_meta(version INTEGER NOT NULL);
@@ -74,39 +67,7 @@ class StreamLedger:
                         output_json TEXT, PRIMARY KEY(job_id,ordinal));
                     COMMIT;
                 """)
-            required = {
-                "stream_meta": {"version"},
-                "stream_jobs": {
-                    "id",
-                    "contract",
-                    "status",
-                    "captured",
-                    "byte_count",
-                    "sha256",
-                    "processed",
-                    "reason",
-                },
-                "stream_chunks": {"job_id", "seq", "sha256", "content"},
-                "stream_rows": {
-                    "job_id",
-                    "ordinal",
-                    "first_line",
-                    "last_line",
-                    "source_json",
-                    "output_json",
-                },
-            }
-            for table, columns in required.items():
-                info = db.execute(f"PRAGMA table_info({table})").fetchall()
-                if not columns <= {row[1] for row in info}:
-                    raise StreamError("Incomplete streaming ledger schema")
-                expected_key = {
-                    "stream_rows": {"job_id": 1, "ordinal": 2},
-                    "stream_chunks": {"job_id": 1, "seq": 2},
-                    "stream_jobs": {"id": 1},
-                }.get(table)
-                if expected_key and {row[1]: row[5] for row in info if row[5]} != expected_key:
-                    raise StreamError("Invalid streaming ledger primary key")
+            validate_stream_ledger(db)
             if not read_only:
                 db.execute("PRAGMA foreign_keys=ON")
                 page_size = db.execute("PRAGMA page_size").fetchone()[0]
