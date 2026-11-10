@@ -26,6 +26,7 @@ from verboisy.extractor.schema_builder import SchemaBuilder
 from verboisy.streaming.capture import verify_capture
 from verboisy.streaming.contract import FORMATS, StreamError, StreamLimits, validate_stream_schema
 from verboisy.streaming.ledger import ChunkReader, StreamLedger
+from verboisy.streaming.paging import page_budget, read_page_rows
 from verboisy.streaming.parser import source_rows
 from verboisy.streaming.validation import row_validator
 from verboisy.utils.exceptions import VerboisyError
@@ -260,16 +261,17 @@ def verified_resume_rows(
 
 
 def read_verified_page(
-    ledger: StreamLedger, job_id: str, after: int, limit: int
+    ledger: StreamLedger, job_id: str, after: int, limit: int, max_bytes: int | None = None
 ) -> list[dict[str, Any]]:
     """Read a bounded keyset page from one verified snapshot; cache at most 32 stamps."""
     if (
         (not isinstance(after, int) or isinstance(after, bool))
-        or after < 0
+        or not 0 <= after <= 2**63 - 1
         or (not isinstance(limit, int) or isinstance(limit, bool))
         or not 1 <= limit <= 1000
     ):
-        raise StreamError("Page requires a nonnegative cursor and limit from 1 to 1000")
+        raise StreamError("Page requires a nonnegative 64-bit cursor and limit from 1 to 1000")
+    budget = page_budget(max_bytes)
     db = ledger.connection
     own = not db.in_transaction
     # Revision reads bracket snapshot ownership. A concurrent commit cannot stamp
@@ -285,17 +287,15 @@ def read_verified_page(
             if not hit:
                 rows = verified_resume_rows(ledger, job)
                 rows.close()
-            page = [
-                {"ordinal": row["ordinal"], "record": decode_json(row["value"])}
-                for row in db.execute(
-                    "SELECT ordinal,CASE WHEN "
-                    "length(CAST(COALESCE(output_json,source_json) AS BLOB))<=? "
-                    "THEN COALESCE(output_json,source_json) ELSE NULL END AS value "
-                    "FROM stream_rows "
-                    "WHERE job_id=? AND ordinal>? ORDER BY ordinal LIMIT ?",
-                    (job["_contract"]["limits"]["max_record_bytes"], job_id, after, limit),
-                )
-            ]
+            page = read_page_rows(
+                db,
+                job_id,
+                after=after,
+                limit=limit,
+                record_ceiling=job["_contract"]["limits"]["max_record_bytes"],
+                budget=budget,
+                allow_short=max_bytes is not None,
+            )
         except (sqlite3.Error, ValueError, TypeError) as error:
             raise StreamError("Cannot read verified streaming records") from error
         finally:
