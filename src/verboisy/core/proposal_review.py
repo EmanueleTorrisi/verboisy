@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
-from verboisy.evidence.models import Candidate, PageProposal, RangeConflict, Snapshot
+from verboisy.evidence.models import Candidate, PageProposal, RangeConflict, Snapshot, TaskSpec
+from verboisy.evidence.verify import leaves
 from verboisy.extractor.evidenced import EvidenceExtractor
 from verboisy.extractor.proof_preparation import prepare_candidate_proofs
 from verboisy.extractor.range_changes import ProposedChangesPauseError
@@ -18,6 +19,37 @@ from verboisy.utils.exceptions import LLMResponseError
 
 if TYPE_CHECKING:
     from verboisy.core.research import ResearchRunner
+
+
+def _admission_candidate(
+    candidate: Candidate, page: Snapshot, task: TaskSpec
+) -> tuple[Candidate, dict[str, list[str]]]:
+    """Omit unverified proofs on allowed nulls when handing off a reviewed web record."""
+    if not task.allow_nulls or page.dataset_asset_id is not None:
+        return candidate, {}
+    nulls = {pointer for pointer, value in leaves(candidate.record).items() if value is None}
+    value_proofs = candidate.evidence.keys() & nulls
+    temporal_proofs = candidate.temporal_evidence.keys() & nulls
+    if not (value_proofs or temporal_proofs):
+        return candidate, {}
+    admitted = candidate.model_copy(
+        update={
+            "evidence": {
+                pointer: proof
+                for pointer, proof in candidate.evidence.items()
+                if pointer not in value_proofs
+            },
+            "temporal_evidence": {
+                pointer: proof
+                for pointer, proof in candidate.temporal_evidence.items()
+                if pointer not in temporal_proofs
+            },
+        }
+    )
+    return admitted, {
+        "value_proofs": sorted(value_proofs),
+        "temporal_proofs": sorted(temporal_proofs),
+    }
 
 
 async def review_page_proposal(
@@ -74,6 +106,19 @@ async def review_page_proposal(
                 {"reason": ("invalid_review_response")},
             )
             errors = ["invalid_review"]
+
+        if not errors and isinstance(runner.extractor, EvidenceExtractor):
+            candidate, discarded = _admission_candidate(candidate, supplied, runner.extractor.task)
+            if discarded:
+                runner.store.event(
+                    runner.rid,
+                    "unasserted_proofs_discarded",
+                    {
+                        "snapshot_id": captured.id,
+                        "candidate_index": candidate_index,
+                        **discarded,
+                    },
+                )
 
         checked_candidates.append(
             (
