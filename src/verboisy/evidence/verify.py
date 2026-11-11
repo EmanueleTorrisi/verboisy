@@ -58,6 +58,17 @@ def verify(
 ) -> list[str]:
     if "id" in candidate.record:
         return ["reserved_output_id"]
+    metadata = getattr(task, "html_metadata", None)
+    if metadata is not None:
+        from verboisy.evidence.html_metadata import HtmlMetadataError
+        from verboisy.evidence.html_metadata_snapshot import html_metadata_candidate
+
+        try:
+            planned = html_metadata_candidate(page, metadata)
+        except HtmlMetadataError:
+            return ["html_metadata_snapshot_invalid"]
+        if page.url not in task.seed_urls or planned != candidate:
+            return ["html_metadata_binding_mismatch"]
     try:
         validate_record(candidate.record, schema)
         json.dumps(candidate.record, allow_nan=False)
