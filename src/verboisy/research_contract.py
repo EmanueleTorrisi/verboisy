@@ -58,6 +58,8 @@ def validate_research_contract(schema: dict[str, Any], task: TaskSpec) -> None:
         )
     if task.identity_fields:
         validate_identity_fields(task.identity_fields, schema)
+    if task.html_metadata is not None:
+        _validate_html_metadata(schema, task)
     if (
         schema.get("type") == "array"
         and task.target_records is not None
@@ -101,3 +103,58 @@ def validate_research_contract(schema: dict[str, Any], task: TaskSpec) -> None:
                 "x-verboisy-comparable-across-rows",
             ) and not isinstance(value, bool):
                 raise VerboisyError("Explicit field policy flags must be Boolean")
+
+
+def _validate_html_metadata(schema: dict[str, Any], task: TaskSpec) -> None:
+    from verboisy.evidence.snapshot import canonical_url
+
+    plan = task.html_metadata
+    assert plan is not None
+    seeds = task.seed_urls
+    if (
+        not seeds
+        or len(set(seeds)) != len(seeds)
+        or any(canonical_url(url) != url for url in seeds)
+        or task.target_records != len(seeds)
+        or task.max_pages < len(seeds)
+    ):
+        raise VerboisyError(
+            "HTML metadata requires distinct canonical seeds and one target record per seed"
+        )
+    record = schema.get("items") if schema.get("type") == "array" else schema
+    if (
+        not isinstance(record, dict)
+        or record.get("type") != "object"
+        or record.get("additionalProperties") is not False
+        or not isinstance(record.get("properties"), dict)
+        or not isinstance(record.get("required"), list)
+        or any(not isinstance(name, str) for name in record["required"])
+        or record["properties"].keys() != plan.fields.keys()
+        or set(record["required"]) != plan.fields.keys()
+    ):
+        raise VerboisyError("HTML metadata bindings must exactly match a closed flat record schema")
+    required = {
+        "/" + name for name, binding in plan.fields.items() if binding.on_missing == "error"
+    }
+    if not task.identity_fields or not set(task.identity_fields) <= required:
+        raise VerboisyError(
+            "HTML metadata requires an explicit identity made of nonmissing bindings"
+        )
+    for name, binding in plan.fields.items():
+        field = record["properties"][name]
+        kind = field.get("type") if isinstance(field, dict) else None
+        nullable = kind in (["string", "null"], ["null", "string"])
+        if (
+            not isinstance(field, dict)
+            or (kind != "string" and not nullable)
+            or any(
+                key.startswith("x-verboisy-")
+                or key in {"$ref", "allOf", "anyOf", "oneOf", "if", "then", "else"}
+                for key in field
+            )
+        ):
+            raise VerboisyError("HTML metadata accepts only explicit literal string fields")
+        if binding.on_missing == "null" and (not task.allow_nulls or not nullable):
+            raise VerboisyError(
+                "A missing HTML field may be null only when the task and schema allow it"
+            )
