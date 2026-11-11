@@ -50,6 +50,13 @@ async def discover_seed_sources(
 
     seeds = [url for url in spec.seed_urls if policy.permits(url)]
 
+    if getattr(spec, "html_metadata", None) is not None:
+        # The literal contract names the complete observed scope. A goal URL or
+        # a search result cannot silently add an entity to the task.
+        if seeds != spec.seed_urls:
+            raise VerboisyError("A declared HTML metadata seed conflicts with the source policy")
+        return seeds, []
+
     inline = inline_urls(goal)
 
     seeds.extend(url for url in inline if policy.permits(url))
@@ -180,6 +187,10 @@ async def publish_initial_discovery(
             store.event(
                 rid, "initial_discovery_result", {"seeds": seeds, "observations": observations}
             )
+        if getattr(spec, "html_metadata", None) is not None and (
+            seeds != spec.seed_urls or observations
+        ):
+            raise VerboisyError("Saved discovery differs from the declared HTML metadata scope")
         spec = spec.model_copy(update={"seed_urls": seeds})
         store.update_task(rid, spec)
         published = [event["payload"] for event in store.events(rid, "source_discovery")]
