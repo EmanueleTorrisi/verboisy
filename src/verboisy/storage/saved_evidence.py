@@ -33,7 +33,7 @@ def _validate_accepted_reference(row: sqlite3.Row, run_id: str) -> None:
     validate_snapshot_page(row["page_run_id"], run_id)
 
 
-def _validated_snapshot_payload(row: sqlite3.Row) -> dict[str, Any]:
+def _validated_snapshot_payload(row: sqlite3.Row) -> tuple[dict[str, Any], Snapshot]:
     """Check the captured model and reference without rewriting historical JSON."""
     try:
         payload: dict[str, Any] = decode_saved_json(row["snapshot"])
@@ -42,7 +42,29 @@ def _validated_snapshot_payload(row: sqlite3.Row) -> dict[str, Any]:
         raise VerboisyError("Stored snapshot failed integrity verification") from error
     if page.id != row["snapshot_id"]:
         raise VerboisyError("Stored snapshot failed integrity verification")
-    return payload
+    return payload, page
+
+
+def _table_bindings(page: Snapshot, task: TaskSpec) -> dict[str, Candidate] | None:
+    if task.html_table is None:
+        return None
+    from verboisy.evidence.html_table import HtmlTableError
+    from verboisy.evidence.html_table_snapshot import html_table_candidates
+
+    if page.url not in task.seed_urls:
+        raise VerboisyError("Saved HTML table snapshot is outside its declared scope")
+    try:
+        return {row.scope: row for row in html_table_candidates(page, task.html_table)}
+    except HtmlTableError as error:
+        raise VerboisyError("Saved HTML table snapshot failed binding verification") from error
+
+
+def _validate_table_claim(bindings: dict[str, Candidate] | None, candidate: Candidate) -> None:
+    if bindings is not None:
+        from verboisy.evidence.html_table_snapshot import same_table_candidate
+
+        if not same_table_candidate(bindings.get(candidate.scope), candidate):
+            raise VerboisyError("Saved HTML table candidate differs from its bound row")
 
 
 def _validate_selected_record(row: sqlite3.Row, record: dict[str, Any], *, encode: Encoder) -> None:
@@ -85,7 +107,8 @@ def validated_accepted_candidate(
         raise VerboisyError("Accepted candidate identity differs from selected record") from error
     if saved_identity != identity:
         raise VerboisyError("Accepted candidate identity differs from selected record")
-    _validated_snapshot_payload(row)
+    _, page = _validated_snapshot_payload(row)
+    _validate_table_claim(_table_bindings(page, task), candidate)
     _validate_selected_record(row, candidate.record, encode=encode)
     return candidate
 
@@ -100,7 +123,7 @@ def decode_evidence_rows(
 ) -> list[dict[str, Any]]:
     """Validate selected rows while retaining their original decoded JSON shape."""
     result = []
-    snapshots: dict[tuple[str, str], dict[str, Any]] = {}
+    snapshots: dict[tuple[str, str], tuple[dict[str, Any], dict[str, Candidate] | None]] = {}
     for index, row in enumerate(rows):
         _validate_accepted_reference(row, rid)
         try:
@@ -132,8 +155,11 @@ def decode_evidence_rows(
         # shape or damaged payload must never inherit an earlier validation.
         snapshot_key = (row["snapshot_id"], row["snapshot"])
         if snapshot_key not in snapshots:
-            snapshots[snapshot_key] = _validated_snapshot_payload(row)
-        snapshot_payload = copy_saved_json(snapshots[snapshot_key])
+            payload, page = _validated_snapshot_payload(row)
+            snapshots[snapshot_key] = (payload, _table_bindings(page, task))
+        saved_payload, bindings = snapshots[snapshot_key]
+        _validate_table_claim(bindings, validated)
+        snapshot_payload = copy_saved_json(saved_payload)
         _validate_selected_record(row, candidate["record"], encode=encode)
         # Validate models without replacing historical payloads with dumps:
         # optional defaults must not change the portable evidence's shape.

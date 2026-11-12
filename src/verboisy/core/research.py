@@ -200,7 +200,10 @@ class ResearchRunner:
         )
 
     def in_scope(self, url: str) -> bool:
-        if getattr(self.task, "html_metadata", None) is not None and url not in self.task.seed_urls:
+        if (
+            getattr(self.task, "html_metadata", None) is not None
+            or getattr(self.task, "html_table", None) is not None
+        ) and url not in self.task.seed_urls:
             return False
         parsed = urlsplit(url)
         path = parsed.path or "/"
@@ -259,7 +262,10 @@ class ResearchRunner:
     ) -> bool:
         """Return whether targeted repair discovery is durable."""
 
-        if getattr(self.task, "html_metadata", None) is not None:
+        if (
+            getattr(self.task, "html_metadata", None) is not None
+            or getattr(self.task, "html_table", None) is not None
+        ):
             return False
         if not getattr(
             self.task,
@@ -338,13 +344,21 @@ class ResearchRunner:
         ):
             return False
 
-        self.ensure_unit_normalizations()
-        if self.dataset_consistency_gaps():
-            return False
+        table = getattr(self.task, "html_table", None)
+        if table is not None:
+            # The declared contract has no inferred comparison or unit policy.
+            if len(rows) != len(table.keys) or {row[table.key_field] for row in rows} != set(
+                table.keys
+            ):
+                return False
+        else:
+            self.ensure_unit_normalizations()
+            if self.dataset_consistency_gaps():
+                return False
 
-        # Normalization may have persisted deterministic events.
-        # Validate the effective view used by exports and resumed runs.
-        rows = self.store.records(self.rid)
+            # Normalization may have persisted deterministic events.
+            # Validate the effective view used by exports and resumed runs.
+            rows = self.store.records(self.rid)
 
         schema_rows = [{key: value for key, value in row.items() if key != "id"} for row in rows]
 
@@ -572,11 +586,18 @@ class ResearchRunner:
         page_rejected = 0
         page_duplicates = 0
         collecting_rows = not self.target_record_count_met()
+        table = getattr(self.task, "html_table", None)
 
         while True:
             captured, url, html, visible_html = await capture_rendered_page(
                 self, page, canonical_url, snapshot, CAPTURE_PAGE
             )
+            if table is not None:
+                from verboisy.core.html_table_run import admit_html_table
+
+                self.store.snapshot(self.rid, work["id"], captured, html, visible_html)
+                admit_html_table(self, work, captured, table)
+                return
             # Compare evidence, not volatile resource attributes or timestamps.
             signature = json.dumps([s.model_dump() for s in captured.sources], sort_keys=True)
             if signature in seen:

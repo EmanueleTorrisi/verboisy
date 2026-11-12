@@ -16,6 +16,7 @@ from pydantic import (
 
 from verboisy.dataset_formats import DatasetFormat
 from verboisy.evidence.html_metadata import HtmlMetadataSpec
+from verboisy.evidence.html_table import HtmlTableSpec
 from verboisy.time_series_contract import TimeSeriesSpec
 
 
@@ -179,6 +180,7 @@ class TaskSpec(StrictModel):
     dataset_sources: list[DatasetSource] = Field(default_factory=list, max_length=100)
     column_tables: list[ColumnTableSpec] = Field(default_factory=list, max_length=8)
     html_metadata: HtmlMetadataSpec | None = None
+    html_table: HtmlTableSpec | None = None
     seed_urls: list[str] = Field(default_factory=list, max_length=100)
     allowed_hosts: list[str] = Field(default_factory=list, max_length=100)
     avoided_hosts: list[str] = Field(default_factory=list, max_length=100)
@@ -199,9 +201,11 @@ class TaskSpec(StrictModel):
     @model_serializer(mode="wrap")
     def serialize_task(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         payload: dict[str, Any] = handler(self)
-        # Keep existing workflow hashes and saved tasks stable for non-metadata tasks.
+        # Keep existing workflow hashes and saved tasks stable without optional bindings.
         if self.html_metadata is None:
             payload.pop("html_metadata", None)
+        if self.html_table is None:
+            payload.pop("html_table", None)
         return payload
 
     @model_validator(mode="after")
@@ -231,4 +235,17 @@ class TaskSpec(StrictModel):
             raise ValueError(
                 "HTML metadata is a literal seed-only mode with no other source or field rules"
             )
+        return self
+
+    @model_validator(mode="after")
+    def exclusive_html_table(self) -> "TaskSpec":
+        if self.html_table is not None and (
+            self.html_metadata is not None
+            or self.dataset_sources
+            or self.column_tables
+            or self.time_series is not None
+            or self.field_rules
+            or self.pagination_selector is not None
+        ):
+            raise ValueError("HTML table bindings cannot be combined with other source rules")
         return self
