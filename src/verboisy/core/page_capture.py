@@ -25,7 +25,7 @@ CAPTURE_PAGE = """maxBytes => {
  const originals=[...document.documentElement.querySelectorAll('*')];
  const clones=[...copy.querySelectorAll('*')];
  originals.forEach((el,i)=>{ const s=getComputedStyle(el);
-  if(s.display==='none'||s.visibility==='hidden'||el.hidden)
+  if(s.display==='none'||s.visibility==='hidden'||s.visibility==='collapse'||el.hidden)
    clones[i].setAttribute('hidden',''); });
  return {url,html,visible_html:copy.outerHTML,oversized:false};
 }"""
@@ -50,6 +50,7 @@ async def capture_rendered_page(
     if len(html.encode()) > runner.config.max_page_bytes:
         raise NavigationError("Page exceeds configured size limit")
     metadata = getattr(runner.task, "html_metadata", None)
+    table = getattr(runner.task, "html_table", None)
     column_tables = getattr(runner.task, "column_tables", [])
     if metadata is not None:
         from verboisy.evidence.html_metadata import HtmlMetadataError
@@ -65,6 +66,21 @@ async def capture_rendered_page(
             )
             raise NavigationError(
                 "Declared HTML metadata did not match the rendered layout"
+            ) from error
+    elif table is not None:
+        from verboisy.evidence.html_table import HtmlTableError
+        from verboisy.evidence.html_table_snapshot import html_table_snapshot
+
+        try:
+            captured = html_table_snapshot(
+                visible_html, url, runner.config.max_snapshot_chars, table
+            )
+        except HtmlTableError as error:
+            runner.store.event(
+                runner.rid, "coverage_gap", {"reason": "html_table_layout", "detail": str(error)}
+            )
+            raise NavigationError(
+                "Declared HTML table did not match the rendered layout"
             ) from error
     elif column_tables:
         try:
