@@ -60,6 +60,8 @@ def validate_research_contract(schema: dict[str, Any], task: TaskSpec) -> None:
         validate_identity_fields(task.identity_fields, schema)
     if task.html_metadata is not None:
         _validate_html_metadata(schema, task)
+    if task.html_table is not None:
+        _validate_html_table(schema, task)
     if (
         schema.get("type") == "array"
         and task.target_records is not None
@@ -105,6 +107,60 @@ def validate_research_contract(schema: dict[str, Any], task: TaskSpec) -> None:
                 raise VerboisyError("Explicit field policy flags must be Boolean")
 
 
+def _validate_html_table(schema: dict[str, Any], task: TaskSpec) -> None:
+    from verboisy.evidence.snapshot import canonical_url
+
+    plan = task.html_table
+    assert plan is not None
+    seeds = task.seed_urls
+    if (
+        len(seeds) != 1
+        or canonical_url(seeds[0]) != seeds[0]
+        or task.target_records != len(plan.keys)
+        or task.identity_fields != ["/" + plan.key_field]
+    ):
+        raise VerboisyError(
+            "HTML table bindings require one canonical seed, the declared key as identity, "
+            "and one target record per key"
+        )
+    record = _closed_literal_record(schema, set(plan.fields), "HTML table")
+    for name, binding in plan.fields.items():
+        field = record["properties"][name]
+        expected_type = "string" if binding.value_type == "text" else "integer"
+        if (
+            not isinstance(field, dict)
+            or field.get("type") != expected_type
+            or _nonliteral_field(field)
+        ):
+            raise VerboisyError(
+                "HTML table bindings require explicit matching string or integer fields"
+            )
+
+
+def _nonliteral_field(field: dict[str, Any]) -> bool:
+    return any(
+        key.startswith("x-verboisy-")
+        or key in {"$ref", "allOf", "anyOf", "oneOf", "if", "then", "else"}
+        for key in field
+    )
+
+
+def _closed_literal_record(schema: dict[str, Any], fields: set[str], mode: str) -> dict[str, Any]:
+    record = schema.get("items") if schema.get("type") == "array" else schema
+    if (
+        not isinstance(record, dict)
+        or record.get("type") != "object"
+        or record.get("additionalProperties") is not False
+        or not isinstance(record.get("properties"), dict)
+        or not isinstance(record.get("required"), list)
+        or any(not isinstance(name, str) for name in record["required"])
+        or record["properties"].keys() != fields
+        or set(record["required"]) != fields
+    ):
+        raise VerboisyError(mode + " bindings must exactly match a closed flat record schema")
+    return record
+
+
 def _validate_html_metadata(schema: dict[str, Any], task: TaskSpec) -> None:
     from verboisy.evidence.snapshot import canonical_url
 
@@ -121,18 +177,7 @@ def _validate_html_metadata(schema: dict[str, Any], task: TaskSpec) -> None:
         raise VerboisyError(
             "HTML metadata requires distinct canonical seeds and one target record per seed"
         )
-    record = schema.get("items") if schema.get("type") == "array" else schema
-    if (
-        not isinstance(record, dict)
-        or record.get("type") != "object"
-        or record.get("additionalProperties") is not False
-        or not isinstance(record.get("properties"), dict)
-        or not isinstance(record.get("required"), list)
-        or any(not isinstance(name, str) for name in record["required"])
-        or record["properties"].keys() != plan.fields.keys()
-        or set(record["required"]) != plan.fields.keys()
-    ):
-        raise VerboisyError("HTML metadata bindings must exactly match a closed flat record schema")
+    record = _closed_literal_record(schema, set(plan.fields), "HTML metadata")
     required = {
         "/" + name for name, binding in plan.fields.items() if binding.on_missing == "error"
     }
@@ -147,11 +192,7 @@ def _validate_html_metadata(schema: dict[str, Any], task: TaskSpec) -> None:
         if (
             not isinstance(field, dict)
             or (kind != "string" and not nullable)
-            or any(
-                key.startswith("x-verboisy-")
-                or key in {"$ref", "allOf", "anyOf", "oneOf", "if", "then", "else"}
-                for key in field
-            )
+            or _nonliteral_field(field)
         ):
             raise VerboisyError("HTML metadata accepts only explicit literal string fields")
         if binding.on_missing == "null" and (not task.allow_nulls or not nullable):
