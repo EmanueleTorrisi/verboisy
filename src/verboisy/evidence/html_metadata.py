@@ -91,17 +91,20 @@ class _Node:
     identity: str | None = None
     classes: tuple[str, ...] = ()
     hidden: bool = False
+    spanning: bool = False
+    row_header: bool = False
     children: list[_Node | str] = field(default_factory=list)
 
 
 class _RenderedDOM(HTMLParser):
     """Parse bounded browser serialization, refusing malformed or oversized input."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, keep_hidden: bool = False) -> None:
         super().__init__(convert_charrefs=True)
         self.root = _Node("")
         self.stack = [self.root]
         self.nodes = 0
+        self.keep_hidden = keep_hidden
 
     def _start(self, tag: str, attrs: list[tuple[str, str | None]], *, closed: bool) -> None:
         self.nodes += 1
@@ -123,8 +126,15 @@ class _RenderedDOM(HTMLParser):
                 for part in inline.split(";")
             )
         )
-        node = _Node(tag, values.get("id"), tuple((values.get("class") or "").split()), hidden)
-        if not hidden:
+        node = _Node(
+            tag,
+            values.get("id"),
+            tuple((values.get("class") or "").split()),
+            hidden,
+            "rowspan" in values or "colspan" in values,
+            tag == "th" and (values.get("scope") or "").lower() == "row",
+        )
+        if self.keep_hidden or not hidden:
             parent.children.append(node)
         if not closed and tag not in _VOID:
             self.stack.append(node)
@@ -153,6 +163,8 @@ def _matching(root: _Node, selector: str) -> list[_Node]:
     todo = [root]
     while todo:
         node = todo.pop()
+        if node.hidden:
+            continue
         if (
             node.tag
             and (tag is None or node.tag == tag)
@@ -212,16 +224,20 @@ def _definitions(node: _Node) -> dict[str, str]:
     return result
 
 
-def literal_metadata(html: str, plan: HtmlMetadataSpec) -> dict[str, str | None]:
-    """Return exact visible text (collapsed whitespace) or an explicitly allowed null."""
+def _parse_rendered_html(html: str, *, keep_hidden: bool = False) -> _Node:
     if len(html) > MAX_HTML_CHARS:
         raise HtmlMetadataError("layout_limit")
-    parser = _RenderedDOM()
+    parser = _RenderedDOM(keep_hidden=keep_hidden)
     parser.feed(html)
     parser.close()
     if len(parser.stack) != 1:
         raise HtmlMetadataError("unbalanced_layout")
-    regions = _matching(parser.root, plan.region)
+    return parser.root
+
+
+def literal_metadata(html: str, plan: HtmlMetadataSpec) -> dict[str, str | None]:
+    """Return exact visible text (collapsed whitespace) or an explicitly allowed null."""
+    regions = _matching(_parse_rendered_html(html), plan.region)
     if len(regions) != 1:
         raise HtmlMetadataError("record_region_not_unique")
     matches: dict[str, list[_Node]] = {}
