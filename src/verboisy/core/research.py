@@ -200,6 +200,8 @@ class ResearchRunner:
         )
 
     def in_scope(self, url: str) -> bool:
+        if getattr(self.task, "html_metadata", None) is not None and url not in self.task.seed_urls:
+            return False
         parsed = urlsplit(url)
         path = parsed.path or "/"
         host = str(parsed.hostname).lower().rstrip(".")
@@ -257,6 +259,8 @@ class ResearchRunner:
     ) -> bool:
         """Return whether targeted repair discovery is durable."""
 
+        if getattr(self.task, "html_metadata", None) is not None:
+            return False
         if not getattr(
             self.task,
             "identity_fields",
@@ -579,6 +583,27 @@ class ResearchRunner:
                 break
             seen.add(signature)
             self.store.snapshot(self.rid, work["id"], captured, html, visible_html)
+            metadata = getattr(self.task, "html_metadata", None)
+            if metadata is not None:
+                from verboisy.evidence.html_metadata_snapshot import html_metadata_candidate
+                from verboisy.evidence.verify import verify
+
+                candidate = html_metadata_candidate(captured, metadata)
+                errors = verify(candidate, captured, self.schema, self.task)
+                outcome = admit_reviewed_candidate(self, captured, captured, candidate, errors)
+                self.store.event(
+                    self.rid,
+                    "html_metadata_binding",
+                    {"snapshot_id": captured.id, "outcome": outcome},
+                )
+                self.record_source_productivity(
+                    work["url"],
+                    accepted=int(outcome == "accepted"),
+                    rejected=int(outcome == "rejected"),
+                    duplicates=int(outcome not in {"accepted", "rejected"}),
+                )
+                self.store.mark_page(work["id"], "done")
+                return
             priorities: list[str] = []
             productive = False
 

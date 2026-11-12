@@ -5,9 +5,17 @@
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    model_serializer,
+    model_validator,
+)
 
 from verboisy.dataset_formats import DatasetFormat
+from verboisy.evidence.html_metadata import HtmlMetadataSpec
 from verboisy.time_series_contract import TimeSeriesSpec
 
 
@@ -170,6 +178,7 @@ class TaskSpec(StrictModel):
     time_series: TimeSeriesSpec | None = None
     dataset_sources: list[DatasetSource] = Field(default_factory=list, max_length=100)
     column_tables: list[ColumnTableSpec] = Field(default_factory=list, max_length=8)
+    html_metadata: HtmlMetadataSpec | None = None
     seed_urls: list[str] = Field(default_factory=list, max_length=100)
     allowed_hosts: list[str] = Field(default_factory=list, max_length=100)
     avoided_hosts: list[str] = Field(default_factory=list, max_length=100)
@@ -187,6 +196,14 @@ class TaskSpec(StrictModel):
     allow_nulls: bool = True
     csv_mode: Literal["json", "spreadsheet"] = "json"
 
+    @model_serializer(mode="wrap")
+    def serialize_task(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        payload: dict[str, Any] = handler(self)
+        # Keep existing workflow hashes and saved tasks stable for non-metadata tasks.
+        if self.html_metadata is None:
+            payload.pop("html_metadata", None)
+        return payload
+
     @model_validator(mode="after")
     def unique_column_tables(self) -> "TaskSpec":
         numbers = [item.table for item in self.column_tables]
@@ -200,4 +217,18 @@ class TaskSpec(StrictModel):
     def valid_series_identity(self) -> "TaskSpec":
         if self.time_series is not None:
             self.time_series.validate_identity(self.identity_fields)
+        return self
+
+    @model_validator(mode="after")
+    def exclusive_html_metadata(self) -> "TaskSpec":
+        if self.html_metadata is not None and (
+            self.dataset_sources
+            or self.column_tables
+            or self.time_series is not None
+            or self.field_rules
+            or self.pagination_selector is not None
+        ):
+            raise ValueError(
+                "HTML metadata is a literal seed-only mode with no other source or field rules"
+            )
         return self

@@ -121,14 +121,17 @@ and whether each value has the requested meaning. Literal occurrence alone is in
 a founder's social profile is not a company website; a nearby entity's year is not its year.
 Use only the supplied evidence, never memorized knowledge. Return {"relevant":bool,
 "same_entity":bool,"supported_fields":[JSON pointers],"rejected_fields":[JSON pointers]}.
-Every non-null field must occur exactly once across the two lists. Reject ambiguous facts.
+Audit only the non-null claims listed in review_pointers. Each listed pointer must occur
+exactly once across the two lists. Reject ambiguous facts. Judge this candidate on its own;
+the requested total row count is not a requirement for one candidate.
 When temporal_evidence is supplied, also check that its cited year actually applies to
 that field and entity or to the whole dataset/table. A nearby unrelated year is not
 temporal support. Reject ambiguous temporal attribution.
 Distinguish the requested claim from weaker or differently scoped claims. For example,
 "restricted", "ownership conditions" and "potentially dangerous" do not alone support
 "banned"; a city-level statement does not establish a countrywide statement.
-A null field asserts no value and must not be listed as a rejected or supported field.
+A null field asserts no value, including no claim that a value does not exist. Schema-allowed
+nulls do not make an otherwise relevant record invalid. Do not list them in either field list.
 Judge relevance to the goal separately: nullable schema fields do not make an irrelevant
 entity qualify, and literal text alone does not establish the requested relationship."""
 
@@ -201,7 +204,22 @@ class EvidenceExtractor:
             if errors:
                 return errors
 
-        fields = {p for p, v in leaves(candidate.record).items() if v is not None}
+        values = leaves(candidate.record)
+        pointers = [pointer for pointer, value in values.items() if value is not None]
+        fields = set(pointers)
+        missing = values.keys() - fields if self.task.allow_nulls else set()
+        # Preserve the typed record and array positions. The reviewer sees only
+        # the evidence attached to actual field claims.
+        review_candidate = candidate.model_dump()
+        for name in ("evidence", "temporal_evidence"):
+            review_candidate[name] = {
+                pointer: proof
+                for pointer, proof in review_candidate[name].items()
+                if pointer in fields
+            }
+        temporal_sources = {
+            proof["source"] for proof in review_candidate["temporal_evidence"].values()
+        }
         review: Review = await complete_validated_for_role(
             self.client,
             "extraction",
@@ -210,7 +228,8 @@ class EvidenceExtractor:
                 {
                     "goal": self.goal,
                     "schema": self.schema,
-                    "candidate": candidate.model_dump(),
+                    "candidate": review_candidate,
+                    "review_pointers": pointers,
                     "current_url": page.url,
                     "temporal_policy": (
                         self.temporal_intent.as_event()
@@ -224,21 +243,25 @@ class EvidenceExtractor:
                         s.model_dump() for s in page.sources if s.scope == candidate.scope
                     ],
                     "temporal_context": [
-                        s.model_dump()
-                        for s in page.sources
-                        if s.id in {proof.source for proof in candidate.temporal_evidence.values()}
+                        s.model_dump() for s in page.sources if s.id in temporal_sources
                     ],
                 },
                 ensure_ascii=False,
             ),
             Review.model_validate,
         )
+        supported = set(review.supported_fields)
+        rejected = set(review.rejected_fields)
+        # A single vote on a verified, allowed null does not evaluate a claim.
+        # Unknown pointers, duplicate votes and contradictory votes still fail.
         if (
             not review.relevant
             or not review.same_entity
-            or review.rejected_fields
-            or set(review.supported_fields) != fields
-            or len(review.supported_fields) != len(fields)
+            or len(supported) != len(review.supported_fields)
+            or len(rejected) != len(review.rejected_fields)
+            or supported & rejected
+            or rejected - missing
+            or supported - missing != fields
         ):
             return ["semantic_review_rejected"]
         return []

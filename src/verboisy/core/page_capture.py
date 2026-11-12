@@ -49,8 +49,24 @@ async def capture_rendered_page(
     html, visible_html = observation["html"], observation["visible_html"]
     if len(html.encode()) > runner.config.max_page_bytes:
         raise NavigationError("Page exceeds configured size limit")
+    metadata = getattr(runner.task, "html_metadata", None)
     column_tables = getattr(runner.task, "column_tables", [])
-    if column_tables:
+    if metadata is not None:
+        from verboisy.evidence.html_metadata import HtmlMetadataError
+        from verboisy.evidence.html_metadata_snapshot import html_metadata_snapshot
+
+        try:
+            captured = html_metadata_snapshot(
+                visible_html, url, runner.config.max_snapshot_chars, metadata
+            )
+        except HtmlMetadataError as error:
+            runner.store.event(
+                runner.rid, "coverage_gap", {"reason": "html_metadata_layout", "detail": str(error)}
+            )
+            raise NavigationError(
+                "Declared HTML metadata did not match the rendered layout"
+            ) from error
+    elif column_tables:
         try:
             captured = make_snapshot(
                 visible_html,
