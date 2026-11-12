@@ -69,11 +69,25 @@ def verify(
             return ["html_metadata_snapshot_invalid"]
         if page.url not in task.seed_urls or planned != candidate:
             return ["html_metadata_binding_mismatch"]
+    table = getattr(task, "html_table", None)
+    if table is not None:
+        from verboisy.evidence.html_table import HtmlTableError
+        from verboisy.evidence.html_table_snapshot import html_table_candidate, same_table_candidate
+
+        try:
+            bound = html_table_candidate(page, table, candidate.scope)
+        except HtmlTableError:
+            return ["html_table_snapshot_invalid"]
+        if page.url not in task.seed_urls or not same_table_candidate(bound, candidate):
+            return ["html_table_binding_mismatch"]
     try:
         validate_record(candidate.record, schema)
         json.dumps(candidate.record, allow_nan=False)
     except (ValueError, TypeError):
         return ["schema_invalid"]
+    if table is not None:
+        # The exact scoped cell and its full quote have already been checked.
+        return []
     # A projection plan alone is not evidence. Replay it against the captured raw
     # row before trusting the proposed values or their source bindings.
     projection_bindings: dict[str, tuple[str, str]] = {}
