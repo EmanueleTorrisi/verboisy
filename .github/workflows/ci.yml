@@ -3,7 +3,6 @@
 
 
 name: CI
-# Verify Codecov action permissions.
 
 on:
   push:
@@ -74,17 +73,38 @@ jobs:
       - name: Run tests with 100% coverage
         run: poetry run pytest -m "not browser and not live" --cov=src --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=100
 
+      - name: Save coverage report
+        id: coverage_artifact
+        if: ${{ !cancelled() && matrix.os == 'ubuntu-latest' && matrix.python == '3.11' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: coverage-ubuntu-py3.11
+          path: coverage.xml
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Upload coverage to Codecov
-        if: |
-          matrix.os == 'ubuntu-latest' &&
-          matrix.python == '3.11' &&
-          github.event_name == 'push'
+        id: codecov
+        if: ${{ success() && matrix.os == 'ubuntu-latest' && matrix.python == '3.11' && github.event_name == 'push' }}
+        continue-on-error: true
+        timeout-minutes: 5
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
           disable_search: true
           fail_ci_if_error: true
+
+      - name: Report Codecov upload failure
+        if: ${{ !cancelled() && steps.codecov.outcome == 'failure' }}
+        shell: bash
+        env:
+          COVERAGE_ARTIFACT_URL: ${{ steps.coverage_artifact.outputs.artifact-url }}
+        run: |
+          echo "::warning title=Codecov upload failed::See the Codecov step log."
+          if [[ -n "$COVERAGE_ARTIFACT_URL" ]]; then
+            printf 'Coverage report: %s\n' "$COVERAGE_ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   native:
     name: Native C++ ${{ matrix.os }} Python ${{ matrix.python }}
