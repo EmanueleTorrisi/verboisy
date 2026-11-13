@@ -130,7 +130,7 @@ def inspect_archive(path: Path) -> dict[str, Any]:
     parsed = BytesParser().parsebytes(metadata[0])
     if (
         parsed.get("Name") != "verboisy"
-        or parsed.get("Requires-Python") != ">=3.11,<3.15"
+        or parsed.get("Requires-Python") != ">=3.11.5,<3.15"
         or parsed.get("License-Expression") != "LicenseRef-Verboisy-Source-Inspection-2.0"
     ):
         raise ValueError("Distribution metadata disagrees with package contract")
