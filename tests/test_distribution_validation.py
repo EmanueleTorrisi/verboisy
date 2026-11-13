@@ -51,7 +51,7 @@ def test_distribution_license_matches_current_project_and_terms(
         archive.writestr(
             "verboisy-1.0.0.dist-info/METADATA",
             "Metadata-Version: 2.4\nName: verboisy\nVersion: 1.0.0\n"
-            "Requires-Python: >=3.11,<3.15\nLicense-Expression: " + expression + "\n\n",
+            "Requires-Python: >=3.11.5,<3.15\nLicense-Expression: " + expression + "\n\n",
         )
         archive.writestr(
             "verboisy-1.0.0.dist-info/entry_points.txt",
