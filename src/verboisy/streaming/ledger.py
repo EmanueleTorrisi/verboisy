@@ -9,6 +9,7 @@ import hashlib
 import io
 import sqlite3
 from collections import OrderedDict
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -149,15 +150,19 @@ class StreamLedger:
             self.lock.release()
 
 
+_CHUNK_QUERY = (
+    "SELECT seq,sha256,CASE WHEN typeof(content)='blob' AND length(content)<=? "
+    "THEN content ELSE NULL END AS content FROM stream_chunks WHERE job_id=?"
+)
+
+
 class ChunkReader(io.RawIOBase):
     """Sequential byte view; each bounded chunk and the aggregate hash are checked."""
 
     def __init__(self, ledger: StreamLedger, job: dict[str, Any]):
         super().__init__()
         self.cursor = ledger.connection.execute(
-            "SELECT seq,sha256,CASE WHEN typeof(content)='blob' AND length(content)<=? "
-            "THEN content ELSE NULL END AS content FROM stream_chunks WHERE job_id=? ORDER BY seq",
-            (CHUNK_BYTES, job["id"]),
+            _CHUNK_QUERY + " ORDER BY seq", (CHUNK_BYTES, job["id"])
         )
         self.job = job
         self.pending = memoryview(b"")
@@ -174,24 +179,53 @@ class ChunkReader(io.RawIOBase):
     def readable(self) -> bool:
         return True
 
+    def verify_remaining(self) -> None:
+        """Verify the full capture without moving the positioned parser.
+
+        After prefix replay, the active cursor pins the same SQLite read view
+        for the suffix cursor. The digest already includes every loaded chunk,
+        including any bytes still buffered by the parser.
+        """
+        sequence = self.sequence
+        count = self.count
+        digest = self.digest.copy()
+        with closing(
+            self.cursor.connection.execute(
+                _CHUNK_QUERY + " AND seq>? ORDER BY seq",
+                (CHUNK_BYTES, self.job["id"], sequence - 1),
+            )
+        ) as tail:
+            for row in tail:
+                content = self._checked_chunk(row, sequence)
+                sequence += 1
+                count += len(content)
+                digest.update(content)
+        self._verify_end(count, digest.hexdigest())
+
+    @staticmethod
+    def _checked_chunk(row: sqlite3.Row, sequence: int) -> bytes:
+        content = row["content"]
+        if (
+            row["seq"] != sequence
+            or not isinstance(content, bytes)
+            or not content
+            or len(content) > CHUNK_BYTES
+            or hashlib.sha256(content).hexdigest() != row["sha256"]
+        ):
+            raise StreamError("Streaming source chunk integrity failure")
+        return content
+
+    def _verify_end(self, count: int, digest: str) -> None:
+        if count != self.job["byte_count"] or digest != self.job["sha256"]:
+            raise StreamError("Streaming source aggregate integrity failure")
+
     def readinto(self, buffer: Any) -> int:
         if not self.pending:
             row = self.cursor.fetchone()
             if row is None:
-                if (
-                    self.count != self.job["byte_count"]
-                    or self.digest.hexdigest() != self.job["sha256"]
-                ):
-                    raise StreamError("Streaming source aggregate integrity failure")
+                self._verify_end(self.count, self.digest.hexdigest())
                 return 0
-            content = row["content"]
-            if (
-                row["seq"] != self.sequence
-                or not content
-                or len(content) > CHUNK_BYTES
-                or hashlib.sha256(content).hexdigest() != row["sha256"]
-            ):
-                raise StreamError("Streaming source chunk integrity failure")
+            content = self._checked_chunk(row, self.sequence)
             self.sequence += 1
             self.digest.update(content)
             self.count += len(content)
