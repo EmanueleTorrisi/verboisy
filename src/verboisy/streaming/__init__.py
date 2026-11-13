@@ -14,12 +14,15 @@ if TYPE_CHECKING:
     from verboisy.streaming.delta import UpdateLimits, UpdateResult
     from verboisy.streaming.ledger import StreamLedger
     from verboisy.streaming.quality import QualityReport, check_stream_quality
+    from verboisy.streaming.segments import JSONLSegmentResult, SealedJSONL, prepare_jsonl_segments
     from verboisy.streaming.update import stream_updates
 
 __all__ = [
     "AnalyticalExport",
     "AnalyticsVerification",
+    "JSONLSegmentResult",
     "QualityReport",
+    "SealedJSONL",
     "StreamLedger",
     "StreamLimits",
     "StreamResult",
@@ -27,6 +30,7 @@ __all__ = [
     "UpdateResult",
     "check_stream_quality",
     "export_stream_analytics",
+    "prepare_jsonl_segments",
     "stream_dataset",
     "stream_updates",
     "verify_stream_analytics",
@@ -35,7 +39,9 @@ __all__ = [
 _EXPORTS = {
     "AnalyticalExport": "verboisy.streaming.analytics",
     "AnalyticsVerification": "verboisy.streaming.analytics_verify",
+    "JSONLSegmentResult": "verboisy.streaming.segments",
     "QualityReport": "verboisy.streaming.quality",
+    "SealedJSONL": "verboisy.streaming.segments",
     "StreamLedger": "verboisy.streaming.ledger",
     "StreamLimits": "verboisy.streaming.contract",
     "StreamResult": "verboisy.streaming.contract",
@@ -43,6 +49,7 @@ _EXPORTS = {
     "UpdateResult": "verboisy.streaming.delta",
     "check_stream_quality": "verboisy.streaming.quality",
     "export_stream_analytics": "verboisy.streaming.analytics",
+    "prepare_jsonl_segments": "verboisy.streaming.segments",
     "stream_dataset": "verboisy.streaming.api",
     "stream_updates": "verboisy.streaming.update",
     "verify_stream_analytics": "verboisy.streaming.analytics_verify",
