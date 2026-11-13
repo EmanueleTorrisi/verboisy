@@ -4,8 +4,9 @@
 """Bounded source-bound checkpoint validation and coherent public paging.
 
 A stable connection revision caches only a validation stamp, never row payloads.
-A resume eagerly verifies the committed prefix once, then reuses its positioned
-parser. Corrupt history is rejected without implicit repair or status mutation.
+A resume verifies the committed prefix and unread chunks before reusing its
+positioned parser. Corrupt history is rejected without implicit repair or status
+mutation.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import json
 import re
 import sqlite3
 from collections.abc import Generator
+from contextlib import ExitStack, closing
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -118,7 +120,9 @@ def validate_checkpoint_shape(ledger: StreamLedger, job: dict[str, Any]) -> None
         raise StreamError("Cannot validate streaming checkpoint") from error
 
 
-def captured_rows(ledger: StreamLedger, job: dict[str, Any]) -> Generator[SourceRow, None, None]:
+def captured_rows(
+    ledger: StreamLedger, job: dict[str, Any], capture: ChunkReader | None = None
+) -> Generator[SourceRow, None, None]:
     contract = job.get("_contract") or decode_json(job["contract"])
     if contract["format"] == "asset":
         encoded = json.dumps(
@@ -126,7 +130,8 @@ def captured_rows(ledger: StreamLedger, job: dict[str, Any]) -> Generator[Source
         )
         yield SourceRow(1, "/", None, None, encoded)
     else:
-        with io.BufferedReader(ChunkReader(ledger, job)) as stream:
+        reader = capture if capture is not None else ChunkReader(ledger, job)
+        with io.BufferedReader(reader) as stream:
             yield from source_rows(
                 stream, contract["format"], contract["limits"]["max_record_bytes"]
             )
@@ -236,28 +241,31 @@ def verified_resume_rows(
     validate_checkpoint_shape(ledger, job)
     if not job["captured"]:
         raise StreamError("Cannot replay an incomplete capture")
-    verify_capture(ledger, job)
+    processed = job["processed"]
+    has_text_prefix = processed > 0 and job["_contract"]["format"] != "asset"
+    if not has_text_prefix:
+        verify_capture(ledger, job)
     plan, validator, ceiling = _row_contract(job)
-    rows = captured_rows(ledger, job)
-    cursor = _saved_rows(ledger, job, ceiling)
-    try:
-        for _ in range(job["processed"]):
-            source = next(rows, None)
-            saved = cursor.fetchone()
-            if source is None or saved is None:
-                raise StreamError("Streaming checkpoint exceeds captured source")
-            _verify_row(source, saved, plan, validator, ceiling)
-        if job["status"] == "COMPLETED" and next(rows, None) is not None:
-            raise StreamError("Completed streaming checkpoint is not at source EOF")
-    except (ValueError, TypeError, sqlite3.Error) as error:
-        rows.close()
-        raise StreamError("Cannot verify saved streaming row evidence") from error
-    except BaseException:
-        rows.close()
-        raise
-    finally:
-        cursor.close()
-    return rows
+    with ExitStack() as cleanup, closing(_saved_rows(ledger, job, ceiling)) as cursor:
+        capture = cleanup.enter_context(ChunkReader(ledger, job)) if has_text_prefix else None
+        rows = cleanup.enter_context(closing(captured_rows(ledger, job, capture)))
+        try:
+            for _ in range(processed):
+                try:
+                    source = next(rows)
+                except StopIteration:
+                    raise StreamError("Streaming checkpoint exceeds captured source") from None
+                _verify_row(source, cursor.fetchone(), plan, validator, ceiling)
+            if job["status"] == "COMPLETED":
+                if next(rows, None) is not None:
+                    raise StreamError("Completed streaming checkpoint is not at source EOF")
+            elif capture is not None:
+                capture.verify_remaining()
+        except (ValueError, TypeError, sqlite3.Error) as error:
+            raise StreamError("Cannot verify saved streaming row evidence") from error
+        # A started replay owns its reader. The caller closes or exhausts it.
+        cleanup.pop_all()
+        return rows
 
 
 def read_verified_page(
