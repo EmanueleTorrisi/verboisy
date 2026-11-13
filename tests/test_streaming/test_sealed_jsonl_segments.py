@@ -11,7 +11,7 @@ import sqlite3
 import stat
 import subprocess
 import sys
-from contextlib import closing
+from contextlib import closing, contextmanager
 from pathlib import Path
 from threading import Event
 from types import SimpleNamespace
@@ -22,31 +22,61 @@ from verboisy.streaming import JSONLSegmentResult, SealedJSONL, prepare_jsonl_se
 from verboisy.streaming.contract import StreamError
 
 module = segments
-_OWNER_UID = module._uid
+
+
+def metadata(info, **overrides):
+    fields = {
+        name: getattr(info, name)
+        for name in (
+            "st_mode",
+            "st_uid",
+            "st_nlink",
+            "st_dev",
+            "st_ino",
+            "st_size",
+            "st_mtime_ns",
+            "st_ctime_ns",
+        )
+    }
+    return SimpleNamespace(**{**fields, **overrides})
 
 
 @pytest.fixture(autouse=True)
 def private_metadata():
-    # The production path enforces POSIX ownership/modes on Linux; elsewhere
-    # use synthetic metadata while exercising the same I/O and catalog logic.
+    # Exercise real file identity and timestamps while supplying Linux ownership
+    # and permission metadata on platforms without the Linux workspace contract.
     if sys.platform == "linux":
         yield
         return
     real_lstat = module._lstat
 
-    def metadata(path):
+    def owned_stat(path):
         result = real_lstat(path)
-        values = list(result)
-        if stat.S_ISDIR(result.st_mode):
-            values[0] = stat.S_IFDIR | 0o700
-        values[4] = 1  # st_uid
-        return type(result)(values)
+        mode = result.st_mode
+        if stat.S_ISDIR(mode):
+            mode = stat.S_IFDIR | 0o700
+        elif stat.S_ISREG(mode):
+            mode = stat.S_IFREG | 0o600
+        return metadata(result, st_mode=mode, st_uid=1)
 
+    def owned_entry(entry):
+        def entry_stat(*, follow_symlinks):
+            assert not follow_symlinks
+            # A Windows directory listing omits link count and file identity.
+            return owned_stat(Path(entry.path))
+
+        return SimpleNamespace(name=entry.name, path=entry.path, stat=entry_stat)
+
+    @contextmanager
+    def scandir(path):
+        with os.scandir(path) as entries:
+            yield (owned_entry(entry) for entry in entries)
+
+    fixture_os = SimpleNamespace(**{**vars(os), "scandir": scandir, "geteuid": lambda: 1})
     with (
-        patch.object(module, "_uid", return_value=1),
-        patch.object(module, "_lstat", metadata),
-        patch.object(module, "_entry_stat", lambda entry: metadata(Path(entry.path))),
-        patch.object(module, "_stamp", lambda info: (info.st_dev, info.st_ino, info.st_size)),
+        patch.object(module, "sys", SimpleNamespace(platform="linux")),
+        patch.object(module, "os", fixture_os),
+        patch.object(module, "_lstat", owned_stat),
     ):
         yield
 
@@ -294,24 +324,24 @@ def test_empty_catalog_and_interrupted_marker_creation_resume(tmp_path):
     assert list(scratch.iterdir()) == [scratch / ".format"]
 
 
-def test_platform_refusal():
+@pytest.mark.parametrize("platform", ["darwin", "win32"])
+def test_platform_refusal(tmp_path, platform):
     with (
-        patch.object(module, "sys", SimpleNamespace(platform="win32")),
+        patch.object(module, "sys", SimpleNamespace(platform=platform)),
         pytest.raises(StreamError, match="require Linux or WSL"),
     ):
-        _OWNER_UID()
+        list(prepare_jsonl_segments([], workspace=tmp_path))
+    assert not any(tmp_path.iterdir())
 
 
 def test_ancestor_refusal(tmp_path):
     root = workspace(tmp_path)
-    metadata = module._lstat
+    read_metadata = module._lstat
 
     def unsafe(path):
-        info = metadata(path)
+        info = read_metadata(path)
         if path == root.parent:
-            values = list(info)
-            values[0] = stat.S_IFDIR | 0o777
-            return type(info)(values)
+            return metadata(info, st_mode=stat.S_IFDIR | 0o777)
         return info
 
     with (
