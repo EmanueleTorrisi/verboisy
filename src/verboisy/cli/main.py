@@ -794,6 +794,9 @@ def model_configuration() -> None:
         fields = ", ".join(".".join(map(str, error["loc"])) for error in exc.errors())
         typer.echo(f"Invalid configuration fields: {fields}", err=True)
         raise typer.Exit(1) from None
+    except VerboisyError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
     typer.echo(json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2))
 
 
