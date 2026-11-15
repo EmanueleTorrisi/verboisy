@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
+from pydantic import ValidationError
 from verboisy import arun
 from verboisy.core.search import _openai_search_request, openai_search, web_search
 from verboisy.utils.config import Settings
@@ -18,6 +19,12 @@ def config(**updates):
     return Settings(
         _env_file=None, openai_api_key="offline-fixture-key", search_provider="openai", **updates
     )
+
+
+@pytest.mark.parametrize("limit", [0, 33])
+def test_openai_tool_limit_is_bounded_before_transport(limit):
+    with pytest.raises(ValidationError, match="openai_search_max_tool_calls"):
+        config(openai_search_max_tool_calls=limit)
 
 
 @pytest.mark.parametrize("limits", [{"model_request_budget": 1}, {"max_total_tokens": 1}])
