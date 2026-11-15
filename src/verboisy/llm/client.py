@@ -14,7 +14,7 @@ from pydantic import ValidationError
 
 from verboisy.llm.diagnostics import provider_failure_message
 from verboisy.llm.providers import ResolvedProvider, resolve_provider
-from verboisy.llm.routing import plan_model_routing
+from verboisy.llm.routing import ModelRouting, plan_model_routing
 from verboisy.provider_config import ModelRole as ModelRole
 from verboisy.utils.config import Settings, settings
 from verboisy.utils.exceptions import (
@@ -233,6 +233,8 @@ async def complete_validated_for_role(
 
 
 class LLMClient:
+    routing: ModelRouting | None = None
+
     def __init__(self, model: str | None = None, config: Settings | None = None) -> None:
         self.config = config or settings
         self.routing = plan_model_routing(self.config, model)
