@@ -180,7 +180,11 @@ class ResearchRunner:
             if model.startswith(("openai/", "gpt-", "o1", "o3", "o4")):
                 return getattr(config, "openai_api_key", None) is not None
             return True
-        resolved = resolve_provider(config, model)
+        resolved = (
+            client.provider_for(model)
+            if isinstance(client, LLMClient)
+            else resolve_provider(config, model)
+        )
         if resolved.prefix is not None or resolved.api_key is not None or resolved.api_base:
             return True
         # Unprofiled first-party roles preserve the deterministic no-provider path.
