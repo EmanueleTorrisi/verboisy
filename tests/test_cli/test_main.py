@@ -120,9 +120,8 @@ def test_cli_equals_sort_syntax_and_result_artifacts(monkeypatch, tmp_path):
         ("age", "desc"),
     ]
     assert "Grouping by country." in result.output
-    assert "CSV:" in result.output
-    assert "Manifest:" in result.output
-    assert "Proof:" in result.output
+    labels = [line.split(":", 1)[0] for line in result.output.splitlines() if line.startswith("→ ")]
+    assert labels == ["→      CSV", "→    Proof", "→ Manifest"]
 
 
 def test_cli_clean_layout_uses_started_identity_and_keeps_manifests_optional(monkeypatch, tmp_path):
@@ -149,10 +148,11 @@ def test_cli_clean_layout_uses_started_identity_and_keeps_manifests_optional(mon
     assert "Status: COMPLETED" in output and "Success: Completed" not in output
     assert "CSV preview: first 1 of 1 rows." in output
     assert "JSON preview: first 1 of 1 rows; 2 of 2 source columns." in output
-    assert "CSV:" in output and "JSON:" in output and "Proof:" in output
+    labels = [line.split(":", 1)[0] for line in output.splitlines() if line.startswith("→ ")]
+    assert labels == ["→   CSV", "→  JSON", "→ Proof"]
     assert "Manifest:" not in output and "Task:" not in output
     assert output.index("Run ID:") < output.index("Status:") < output.index("CSV preview:")
-    assert output.index("JSON preview:") < output.index("→    CSV:")
+    assert output.index("JSON preview:") < output.index("→   CSV:")
 
 
 @pytest.mark.parametrize(
