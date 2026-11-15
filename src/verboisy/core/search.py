@@ -491,8 +491,11 @@ async def web_search(
             config,
         )
 
-    # auto
-    if config.openai_api_key is not None:
+    # In catalog mode, an unrelated LLM credential is not permission to use
+    # that provider for discovery. SEARCH_PROVIDER=openai remains explicit.
+    routing = config.llm_model_routing
+    openai_allowed = routing is None or routing.provider == "openai"
+    if openai_allowed and config.openai_api_key is not None:
         try:
             return await openai_search(
                 query,
@@ -508,6 +511,11 @@ async def web_search(
             config,
         )
 
+    if not openai_allowed:
+        raise SearchUnavailableError(
+            "Choose a web search provider explicitly, configure Brave Search, "
+            "or supply source URLs."
+        )
     raise SearchUnavailableError(
         "Automatic source discovery requires " "OPENAI_API_KEY or BRAVE_SEARCH_API_KEY."
     )

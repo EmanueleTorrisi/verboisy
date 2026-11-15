@@ -22,7 +22,6 @@ from verboisy.core.source_assessment import (
 )
 from verboisy.evidence.models import Candidate, Snapshot
 from verboisy.llm.client import LLMClient, ModelRole
-from verboisy.llm.providers import resolve_provider
 
 
 class AssessmentCache:
@@ -41,7 +40,7 @@ class AssessmentCache:
         roles: tuple[ModelRole, ...] = ("source_assessment", "escalation")
         for role in roles:
             model = client.model_for(role)
-            provider = resolve_provider(config, model)
+            provider = client.provider_for(model)
             # Credentials are never read, serialized or hashed. The project scope
             # is explicit; the current source is acquired under current permissions.
             routes.append(

@@ -17,7 +17,7 @@ from verboisy.presentation_config import (
     PresentationPreferences,
     preferences,
 )
-from verboisy.provider_config import ProviderProfile, ResponseMode
+from verboisy.provider_config import ModelRoutingPolicy, ProviderProfile, ResponseMode
 from verboisy.source_config import validate_http_headers
 
 if TYPE_CHECKING:
@@ -99,6 +99,7 @@ class Settings(BaseSettings):
     llm_token_limit_parameter: Literal["max_tokens", "max_completion_tokens"] = "max_tokens"
     llm_response_mode: ResponseMode = "json_object"
     llm_provider_profiles: dict[str, ProviderProfile] = Field(default_factory=dict, max_length=64)
+    llm_model_routing: ModelRoutingPolicy | None = None
     temperature: float = Field(default=0.0, ge=0, le=2)
     llm_send_temperature: bool = True
     llm_timeout_seconds: float = Field(default=60, gt=0)

@@ -8,12 +8,14 @@ import inspect
 import json
 import time
 from collections.abc import Callable
-from typing import Any, Literal, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from pydantic import ValidationError
 
 from verboisy.llm.diagnostics import provider_failure_message
-from verboisy.llm.providers import resolve_provider
+from verboisy.llm.providers import ResolvedProvider, resolve_provider
+from verboisy.llm.routing import ModelRouting, plan_model_routing
+from verboisy.provider_config import ModelRole as ModelRole
 from verboisy.utils.config import Settings, settings
 from verboisy.utils.exceptions import (
     BudgetExceededError,
@@ -45,13 +47,6 @@ async def _complete(**kwargs: Any) -> Any:
 
     return await litellm.acompletion(**kwargs)
 
-
-ModelRole = Literal[
-    "semantic_plan",
-    "source_assessment",
-    "extraction",
-    "escalation",
-]
 
 T = TypeVar("T")
 
@@ -116,7 +111,8 @@ def escalation_available(
         None,
     )
 
-    if not isinstance(configured, str) or not configured:
+    has_routed_escalation = isinstance(client, LLMClient) and client.has_routed_escalation()
+    if not has_routed_escalation and (not isinstance(configured, str) or not configured):
         return False
 
     model_for = getattr(
@@ -237,9 +233,16 @@ async def complete_validated_for_role(
 
 
 class LLMClient:
+    routing: ModelRouting | None = None
+
     def __init__(self, model: str | None = None, config: Settings | None = None) -> None:
         self.config = config or settings
-        self.model = model or self.config.litellm_model
+        self.routing = plan_model_routing(self.config, model)
+        self.model = (
+            self.routing.model_for("extraction")
+            if self.routing
+            else model or self.config.litellm_model
+        )
         self.total_tokens = 0
         self.reserved_tokens = 0
         self.search_requests = 0
@@ -269,6 +272,8 @@ class LLMClient:
     ) -> str:
         """Resolve a task model without creating another client."""
 
+        if self.routing is not None:
+            return self.routing.model_for(role)
         configured = getattr(
             self.config,
             f"{role}_model",
@@ -280,6 +285,14 @@ class LLMClient:
 
         return self.model
 
+    def has_routed_escalation(self) -> bool:
+        return self.routing is not None and "escalation" in self.routing.routes
+
+    def provider_for(self, model: str) -> ResolvedProvider:
+        if self.routing is not None:
+            return self.routing.transport_for(model)
+        return resolve_provider(self.config, model)
+
     async def complete_json(
         self,
         system_prompt: str,
@@ -288,7 +301,7 @@ class LLMClient:
         model: str | None = None,
     ) -> dict[str, Any]:
         request_model = model or self.model
-        provider = resolve_provider(self.config, request_model)
+        provider = self.provider_for(request_model)
 
         messages = [
             {
@@ -303,6 +316,8 @@ class LLMClient:
         ]
         # Local request budget, not a billing guarantee: provider hidden tokens may differ.
         reservation = len(json.dumps(messages, ensure_ascii=False).encode()) + provider.max_tokens
+        if self.routing is not None:
+            self.routing.validate_request(request_model, reservation)
         kwargs: dict[str, Any] = {
             "model": request_model,
             "messages": messages,
@@ -376,13 +391,16 @@ class LLMClient:
                 if status == 429 and any(
                     marker in detail or marker in code for marker in quota_markers
                 ):
+                    provider_name = self._limit_label(request_model)
                     raise LLMError(
-                        "OpenAI quota or daily limit reached "
+                        f"{provider_name} quota or daily limit reached "
                         "(HTTP 429). Check API usage and billing."
                     ) from None
 
                 if status == 429:
-                    raise LLMRateLimitError("OpenAI rate limit reached") from None
+                    raise LLMRateLimitError(
+                        f"{self._limit_label(request_model)} rate limit reached"
+                    ) from None
 
                 transient = isinstance(exc, TimeoutError) or status in (
                     408,
@@ -401,3 +419,9 @@ class LLMClient:
 
                 raise LLMError(provider_failure_message(exc, status)) from None
         raise LLMError("LLM request failed")  # pragma: no cover
+
+    @staticmethod
+    def _limit_label(model: str) -> str:
+        if model.startswith(("openai/", "gpt-", "o1", "o3", "o4")):
+            return "OpenAI"
+        return "Model provider"

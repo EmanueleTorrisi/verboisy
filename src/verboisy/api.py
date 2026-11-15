@@ -674,19 +674,25 @@ async def arun(
 
         runner: ResearchRunner | None = None
         if state["status"] != "COMPLETED":
-            store.event(
-                rid,
-                "run_config",
-                {
-                    "software_version": __version__,
-                    "model": config.litellm_model,
-                    "prompt_sha256": hashlib.sha256((PROPOSE + REVIEW).encode()).hexdigest(),
-                    "max_output_tokens": config.max_tokens,
-                    "request_budget": config.model_request_budget or config.max_total_tokens,
-                    "search_request_budget": config.search_request_budget,
-                },
-            )
             runner = ResearchRunner(store, rid, config)
+            run_config: dict[str, Any] = {
+                "software_version": __version__,
+                "model": config.litellm_model,
+                "prompt_sha256": hashlib.sha256((PROPOSE + REVIEW).encode()).hexdigest(),
+                "max_output_tokens": config.max_tokens,
+                "request_budget": config.model_request_budget or config.max_total_tokens,
+                "search_request_budget": config.search_request_budget,
+            }
+            if config.llm_model_routing is not None:
+                routing = runner.client.routing
+                assert routing is not None
+                extraction = routing.routes["extraction"]
+                run_config.update(
+                    model=extraction.model,
+                    max_output_tokens=extraction.output_tokens,
+                    model_routing=routing.summary(),
+                )
+            store.event(rid, "run_config", run_config)
             if spec.dataset_sources:
                 await run_dataset_sources(runner, steps)
             else:
