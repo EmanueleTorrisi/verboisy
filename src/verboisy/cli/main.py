@@ -675,15 +675,12 @@ def run_agent(
     CLIUserInterface.display_json_preview(result.records, animate=animate_results)
 
     if show_artifacts:
-        for path in result.export_paths:
-            CLIUserInterface.print_artifact(
-                Path(path).suffix.lstrip(".").upper(), path, animate=animate_results
-            )
+        artifacts = [(Path(path).suffix.lstrip(".").upper(), path) for path in result.export_paths]
         if result.proof_path:
-            CLIUserInterface.print_artifact("Proof", result.proof_path)
+            artifacts.append(("Proof", result.proof_path))
         if verbose:
-            for path in result.manifest_paths:
-                CLIUserInterface.print_artifact("Manifest", path)
+            artifacts.extend(("Manifest", path) for path in result.manifest_paths)
+        CLIUserInterface.print_artifacts(artifacts, animate=animate_results)
 
     if result.completed:
         CLIUserInterface.print_signoff(animate=animation)
