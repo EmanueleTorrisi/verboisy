@@ -6,7 +6,6 @@
 from typing import Any
 
 from verboisy.llm.client import LLMClient, ModelRole
-from verboisy.llm.providers import resolve_provider
 from verboisy.utils.config import Settings
 
 
@@ -20,12 +19,12 @@ def inspect_model_configuration(config: Settings | None = None) -> dict[str, Any
         "extraction",
         "escalation",
     )
-    return {
+    report: dict[str, Any] = {
         "configuration_version": "1",
         "default_model": client.model,
         "role_models": {role: client.model_for(role) for role in roles},
         "effective_provider_settings": {
-            role: resolve_provider(active, client.model_for(role)).summary() for role in roles
+            role: client.provider_for(client.model_for(role)).summary() for role in roles
         },
         "provider_profile_count": len(active.llm_provider_profiles),
         "response_mode": active.llm_response_mode,
@@ -48,3 +47,6 @@ def inspect_model_configuration(config: Settings | None = None) -> dict[str, Any
         },
         "custom_endpoint_configured": bool(active.litellm_api_base),
     }
+    if client.routing is not None:
+        report["model_routing"] = client.routing.summary()
+    return report
