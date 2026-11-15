@@ -7,6 +7,7 @@ import json
 import os
 import sys
 import time
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlsplit
@@ -267,8 +268,19 @@ class CLIUserInterface:
         _pause(3, animate)
 
     @staticmethod
-    def print_artifact(label: str, path: str | Path, *, animate: bool = False) -> None:
-        text = Text(f"→ {label:>6}: ")
+    def print_artifacts(
+        artifacts: Sequence[tuple[str, str | Path]], *, animate: bool = False
+    ) -> None:
+        width = max((cell_len(label) for label, _ in artifacts), default=0)
+        for label, path in artifacts:
+            CLIUserInterface.print_artifact(label, path, animate=animate, label_width=width)
+
+    @staticmethod
+    def print_artifact(
+        label: str, path: str | Path, *, animate: bool = False, label_width: int = 6
+    ) -> None:
+        padding = " " * (label_width - cell_len(label))
+        text = Text(f"→ {padding}{label}: ")
         text.append(
             _single_line(path),
             style=Style(color="white", underline=True, link=_artifact_uri(path)),
