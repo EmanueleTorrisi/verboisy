@@ -3,12 +3,14 @@
 
 """Real HTTP client semantics with deterministic transport; no subscription is used."""
 
+import json
 from unittest.mock import AsyncMock
 
 import httpx
 import pytest
 from pydantic import SecretStr
-from verboisy.core.search import brave_search
+from verboisy.core.search import brave_search, openai_search, search_accounting
+from verboisy.llm.client import LLMClient
 from verboisy.utils.exceptions import NavigationError, SearchUnavailableError
 
 
@@ -339,6 +341,95 @@ async def test_openai_search_success(
     assert body["tools"][0]["type"] == "web_search"
 
 
+def _web_action(kind):
+    action = {"type": kind}
+    if kind == "search":
+        action["sources"] = [{"url": "https://example.org/official"}]
+    return {"type": "web_search_call", "action": action}
+
+
+@pytest.mark.parametrize("billable", [0, 1, True])
+async def test_openai_limits_hosted_actions_and_keeps_billing_separate(
+    config, openai_transport, billable
+):
+    config.openai_search_max_tool_calls = 2
+    requests = openai_transport(
+        httpx.Response(
+            200,
+            json={
+                "status": "completed",
+                "output": [_web_action("search"), _web_action("open_page")],
+                "tool_usage": {"web_search": {"num_requests": billable}},
+                "usage": {"total_tokens": 17},
+            },
+        )
+    )
+    client = LLMClient(config=config)
+    events = []
+    with search_accounting(client, events.append):
+        result = await openai_search("Find the official source", config)
+    assert len(requests) == 1 and json.loads(requests[0].content)["max_tool_calls"] == 2
+    assert [item.url for item in result.results] == ["https://example.org/official"]
+    reserved, succeeded = events
+    assert reserved["max_tool_calls"] == succeeded["max_tool_calls"] == 2
+    assert succeeded["status"] == "succeeded" and succeeded["response_status"] == "completed"
+    assert succeeded["tool_actions"] == 2
+    if billable is True:
+        assert "billable_searches" not in succeeded
+    else:
+        assert succeeded["billable_searches"] == billable
+    assert succeeded["reported_tokens"] == client.total_tokens == 17
+
+
+@pytest.mark.parametrize(
+    "status,details,actions,message,reason",
+    [
+        (
+            "incomplete",
+            {"reason": "max_output_tokens"},
+            1,
+            "max_output_tokens",
+            "max_output_tokens",
+        ),
+        ("incomplete", "PRIVATE PROVIDER DETAIL", 0, "unknown", "unknown"),
+        ("failed", {}, 1, "failed", None),
+        ("PRIVATE PROVIDER STATUS", {}, 1, "unrecognized", None),
+        ("completed", {}, 3, "more tool actions than requested", None),
+        ("completed", {}, 0, "no usable source URLs", None),
+    ],
+)
+async def test_openai_unsuccessful_response_retains_reservation_and_safe_counters(
+    config, openai_transport, status, details, actions, message, reason
+):
+    config.openai_search_max_tool_calls = 2
+    reply = {
+        "status": status,
+        "incomplete_details": details,
+        "output": [_web_action("search")] * actions,
+        "usage": {"total_tokens": 19, "private": "PRIVATE PROVIDER DETAIL"},
+        "tool_usage": {"web_search": {"num_requests": int(actions > 0)}},
+    }
+    requests = openai_transport(httpx.Response(200, json=reply))
+    client = LLMClient(config=config)
+    events = []
+    with (
+        search_accounting(client, events.append),
+        pytest.raises(SearchUnavailableError, match=message) as error,
+    ):
+        await openai_search("Find the official source", config)
+    assert len(requests) == 1 and client.search_requests == 1
+    assert [event["status"] for event in events] == ["reserved", "failed"]
+    assert client.reserved_tokens == events[0]["request_units"] > 0
+    failed = events[-1]
+    assert failed["http_status"] == 200 and failed["tool_actions"] == actions
+    assert failed["billable_searches"] == int(actions > 0)
+    assert failed["reported_tokens"] == client.total_tokens == 19
+    assert failed.get("incomplete_reason") == reason
+    assert "PRIVATE PROVIDER" not in json.dumps(events) and "PRIVATE PROVIDER" not in str(
+        error.value
+    )
+
+
 @pytest.mark.parametrize(
     "key",
     [
@@ -456,16 +547,18 @@ async def test_openai_search_response_size_is_bounded(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("payload", [{"output": []}, {"output": {}}, []])
 async def test_openai_search_requires_usable_sources(
     config,
     openai_transport,
+    payload,
 ):
     from verboisy.core.search import openai_search
 
     openai_transport(
         httpx.Response(
             200,
-            json={"output": []},
+            json=payload,
         )
     )
 

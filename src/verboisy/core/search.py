@@ -10,7 +10,7 @@ import json
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 from urllib.parse import urlsplit
 from uuid import uuid4
 
@@ -56,6 +56,61 @@ class _Web(BaseModel):
 class _BraveResponse(BaseModel):
     type: Literal["search"]
     web: _Web | None = None
+
+
+class _OpenAIReport(TypedDict, total=False):
+    http_status: int
+    response_status: str
+    incomplete_reason: str
+    tool_actions: int
+    billable_searches: int
+    reported_tokens: int
+
+
+def _count(value: Any) -> int | None:
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
+
+
+def _report_openai_response(payload: Any, report: _OpenAIReport) -> None:
+    """Record counters and known response states without retaining provider text."""
+    if not isinstance(payload, dict):
+        return
+    status = payload.get("status")
+    if status is not None:
+        report["response_status"] = (
+            status
+            if status
+            in (
+                "completed",
+                "incomplete",
+                "failed",
+                "cancelled",
+                "in_progress",
+                "queued",
+            )
+            else "unrecognized"
+        )
+    if report.get("response_status") == "incomplete":
+        details = payload.get("incomplete_details")
+        reason = details.get("reason") if isinstance(details, dict) else None
+        report["incomplete_reason"] = (
+            reason if reason in ("max_output_tokens", "content_filter") else "unknown"
+        )
+
+    output = payload.get("output")
+    if isinstance(output, list):
+        report["tool_actions"] = sum(
+            isinstance(item, dict) and item.get("type") == "web_search_call" for item in output
+        )
+    tool_usage = payload.get("tool_usage")
+    web_usage = tool_usage.get("web_search") if isinstance(tool_usage, dict) else None
+    billed = _count(web_usage.get("num_requests")) if isinstance(web_usage, dict) else None
+    if billed is not None:
+        report["billable_searches"] = billed
+    usage = payload.get("usage")
+    tokens = _count(usage.get("total_tokens")) if isinstance(usage, dict) else None
+    if tokens is not None:
+        report["reported_tokens"] = tokens
 
 
 def _source_results(
@@ -168,6 +223,7 @@ def _openai_search_request(query: str, config: Settings) -> dict[str, Any]:
             }
         ],
         "tool_choice": "required",
+        "max_tool_calls": config.openai_search_max_tool_calls,
         "include": [
             "web_search_call.action.sources",
         ],
@@ -227,10 +283,11 @@ async def openai_search(query: str, config: Settings) -> SearchObservation:
     if key is None or not key.get_secret_value().strip():
         raise SearchUnavailableError("OpenAI web search requires OPENAI_API_KEY.")
     payload = _openai_search_request(query, config)
+    report: _OpenAIReport = {}
     account = _SEARCH_ACCOUNT.get()
     if account is None:
         _check_search_budget(None, config)
-        return await _openai_search_transport(query, config, payload)
+        return await _openai_search_transport(query, config, payload, report)
     client, record = account
     units = len(json.dumps(payload, ensure_ascii=False).encode("utf-8")) + config.max_tokens
     details = {
@@ -240,6 +297,7 @@ async def openai_search(query: str, config: Settings) -> SearchObservation:
         "model": config.openai_search_model,
         "request_units": units,
         "max_output_tokens": config.max_tokens,
+        "max_tool_calls": payload["max_tool_calls"],
     }
     try:
         _check_search_budget(client, config)
@@ -250,25 +308,28 @@ async def openai_search(query: str, config: Settings) -> SearchObservation:
     client.search_requests += 1
     record({**details, "status": "reserved", "reported_tokens": None})
     try:
-        result = await _openai_search_transport(query, config, payload)
+        result = await _openai_search_transport(query, config, payload, report)
     except BaseException as exc:
+        if "reported_tokens" in report:
+            client.report_tokens(report["reported_tokens"])
         record(
             {
                 **details,
+                **report,
                 "status": "cancelled" if isinstance(exc, asyncio.CancelledError) else "failed",
-                "reported_tokens": None,
+                "reported_tokens": report.get("reported_tokens"),
                 "error_type": type(exc).__name__,
             }
         )
         raise
     if result.reported_tokens is not None:
         client.report_tokens(result.reported_tokens)
-    record({**details, "status": "succeeded", "reported_tokens": result.reported_tokens})
+    record({**details, **report, "status": "succeeded", "reported_tokens": result.reported_tokens})
     return result
 
 
 async def _openai_search_transport(
-    query: str, config: Settings, payload: dict[str, Any]
+    query: str, config: Settings, payload: dict[str, Any], report: _OpenAIReport
 ) -> SearchObservation:
     key = config.openai_api_key
     assert key is not None
@@ -295,6 +356,7 @@ async def _openai_search_transport(
                     json=payload,
                 ) as response,
             ):
+                report["http_status"] = response.status_code
                 if response.status_code != 200:
                     raise SearchUnavailableError(
                         "OpenAI web search returned " f"HTTP {response.status_code}."
@@ -310,7 +372,7 @@ async def _openai_search_transport(
                             "OpenAI web search response " "exceeded the size limit."
                         )
 
-                payload = json.loads(bytes(body))
+                data = json.loads(bytes(body))
 
     except SearchUnavailableError:
         raise
@@ -324,21 +386,25 @@ async def _openai_search_transport(
             "OpenAI web search unavailable " f"({type(exc).__name__})."
         ) from None
 
-    results = _source_results(payload)
+    _report_openai_response(data, report)
+    status = report.get("response_status")
+    if status == "incomplete":
+        reason = report["incomplete_reason"]
+        raise SearchUnavailableError(f"OpenAI web search did not complete ({reason}).")
+    if status not in (None, "completed"):
+        raise SearchUnavailableError(f"OpenAI web search did not complete ({status}).")
+    if report.get("tool_actions", 0) > payload["max_tool_calls"]:
+        raise SearchUnavailableError("OpenAI web search returned more tool actions than requested.")
+    results = _source_results(data)
 
     if not results:
         raise SearchUnavailableError("OpenAI web search returned " "no usable source URLs.")
 
-    usage = payload.get("usage")
-    tokens = usage.get("total_tokens") if isinstance(usage, dict) else None
-    reported = (
-        tokens if isinstance(tokens, int) and not isinstance(tokens, bool) and tokens >= 0 else None
-    )
     return SearchObservation(
         provider="openai",
         query=query,
         results=results,
-        reported_tokens=reported,
+        reported_tokens=report.get("reported_tokens"),
     )
 
 

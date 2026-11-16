@@ -113,6 +113,7 @@ class Settings(BaseSettings):
     brave_search_api_key: SecretStr | None = None
     search_timeout_seconds: float = Field(default=30, gt=0)
     openai_search_model: str = "gpt-4.1-mini"
+    openai_search_max_tool_calls: int = Field(default=4, ge=1, le=32)
     browser_auto_install: bool = True
     max_page_bytes: int = Field(default=5_000_000, ge=1000, le=50_000_000)
     max_snapshot_chars: int = Field(default=120000, ge=1000, le=2000000)
