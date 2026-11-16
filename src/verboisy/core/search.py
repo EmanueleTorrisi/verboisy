@@ -394,7 +394,12 @@ async def _openai_search_transport(
     if status not in (None, "completed"):
         raise SearchUnavailableError(f"OpenAI web search did not complete ({status}).")
     if report.get("tool_actions", 0) > payload["max_tool_calls"]:
-        raise SearchUnavailableError("OpenAI web search returned more tool actions than requested.")
+        raise SearchUnavailableError(
+            "OpenAI web search returned more tool actions than requested. "
+            f"Returned tool entries: {report.get('tool_actions', 0)}; "
+            f"requested limit: {payload['max_tool_calls']}; "
+            f"reported billable searches: {report.get('billable_searches', 'unreported')}."
+        )
     results = _source_results(data)
 
     if not results:
