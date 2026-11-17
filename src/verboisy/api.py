@@ -11,6 +11,7 @@ import json
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Any, cast
 
@@ -242,8 +243,11 @@ async def _discover_seeds(
     plan: ResearchPlan,
 ) -> tuple[list[str], list[dict[str, Any]]]:
     """Retain the existing discovery hook and call-time API provider/URL callbacks."""
+    search = (
+        partial(web_search, individual_pages=True) if spec.html_metadata_discovery else web_search
+    )
     return await discover_seed_sources(
-        goal, spec, policy, config, plan, web_search, _inline_urls, canonical_url
+        goal, spec, policy, config, plan, search, _inline_urls, canonical_url
     )
 
 
@@ -478,8 +482,10 @@ async def arun(
                 input_paths.update(reference_input_paths(options["smartid"]))
             _protect_exports(destinations, input_paths)
             policy = SourcePolicy(**options["source_policy"])
-            if store.events(rid, "initial_discovery") and not store.events(rid, "seed_frontier"):
-                preflight_initial_discovery(store, rid, policy)
+            if saved_task.html_metadata_discovery or (
+                store.events(rid, "initial_discovery") and not store.events(rid, "seed_frontier")
+            ):
+                preflight_initial_discovery(store, rid, policy, saved_task)
             saved_display = store.events(rid, "presentation_preferences")
             display = resolve_saved_preferences(display_defaults, saved_display, display_overrides)
             # Candidate decoding is independent of the proposed replacement schema.
@@ -538,6 +544,10 @@ async def arun(
                 spec = spec.model_copy(update={"dataset_sources": projected_sources})
             if spec.dataset_sources and spec.seed_urls:
                 raise VerboisyError("Declared dataset sources cannot be mixed with browser seeds")
+            if spec.html_metadata_discovery and spec.seed_urls:
+                raise VerboisyError(
+                    "HTML metadata discovery cannot be combined with explicit seeds"
+                )
             schema_value = cast(
                 str | Path | dict[str, Any] | list[str] | tuple[str, ...],
                 schema,
@@ -559,7 +569,7 @@ async def arun(
                 updates["csv_mode"] = "spreadsheet"
             if maxrows is not None:
                 updates["target_records"] = maxrows
-            if policy.onlyinclude:
+            if policy.onlyinclude and not spec.html_metadata_discovery:
                 updates["allowed_hosts"] = list(policy.include)
             if research:
                 updates["max_depth"] = max(spec.max_depth, 8)
