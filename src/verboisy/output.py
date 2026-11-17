@@ -23,7 +23,7 @@ from verboisy.product import (
     relation_field,
     transform_rows,
 )
-from verboisy.reference_dataset import load_reference_dataset
+from verboisy.reference_dataset import ReferenceDataset
 from verboisy.research_summary import summarize_fields
 from verboisy.storage.dataset import export_dataset
 from verboisy.storage.numeric_presentation import output_numeric_units
@@ -59,6 +59,49 @@ class OutputArtifacts:
     proof_path: Path | None
 
 
+def _attach_smartid(
+    rows: list[dict[str, Any]],
+    output_rows: list[dict[str, Any]],
+    lineage: list[dict[str, Any]],
+    reference: ReferenceDataset,
+    relation: str,
+    identity: list[str],
+    *,
+    grouped: bool,
+) -> list[dict[str, Any]]:
+    """Resolve from typed accepted rows, then project the links through lineage."""
+    _, matches = apply_smart_ids(rows, reference.rows, relation, identity_fields=identity)
+    by_id = {str(match["record_id"]): match for match in matches}
+    decisions = []
+    for row, mapping in zip(output_rows, lineage, strict=True):
+        if grouped:
+            contributors = [by_id[record_id] for record_id in mapping["record_ids"]]
+            candidates = {
+                candidate for decision in contributors for candidate in decision["candidate_ids"]
+            }
+            linked = contributors[0]["matched_id"]
+            if not all(decision["matched_id"] == linked for decision in contributors):
+                linked = None
+            decision = {
+                "relation_field": relation,
+                "matched_id": linked,
+                "matched_fields": sorted(
+                    {field for item in contributors for field in item["matched_fields"]}
+                ),
+                "candidate_ids": sorted(
+                    candidates, key=lambda value: (type(value).__name__, str(value))
+                ),
+                "outcome": "exact"
+                if linked is not None
+                else ("ambiguous" if len(candidates) > 1 else "unresolved"),
+            }
+        else:
+            decision = by_id[mapping["record_id"]]
+        row[relation] = decision["matched_id"]
+        decisions.append({**decision, "record_id": row["id"]})
+    return decisions
+
+
 def prepare_output(
     store: ResearchStore,
     rid: str,
@@ -71,6 +114,8 @@ def prepare_output(
     groupby: str | None,
     sort_keys: list[SortKey],
     smartid: str | Path | None,
+    reference: ReferenceDataset | None,
+    reference_was_bound: bool,
     schema_inferred: bool,
     change_notice: str | None,
 ) -> PreparedOutput:
@@ -123,35 +168,26 @@ def prepare_output(
 
     smartid_decisions: list[dict[str, Any]] = []
     relation_name: str | None = None
-    if smartid:
-        reference = load_reference_dataset(smartid)
-        binding = {
-            "file_sha256": reference.sha256,
-            "manifest_sha256": reference.manifest_sha256,
-            "csv_mode": reference.mode,
-            "manifest_version": reference.version,
-        }
-        prior = [entry["payload"] for entry in store.events(rid, "smartid")]
-        for event in prior:
-            if "reference_binding" in event and event["reference_binding"] != binding:
-                raise VerboisyError(
-                    "SmartID reference changed; create a new explicitly reviewed run"
-                )
-        previous = reference.rows
+    if reference is not None:
+        assert smartid is not None
         relation_name = relation_field(smartid)
-        transformed.rows, smartid_decisions = apply_smart_ids(
-            transformed.rows, previous, relation_name, identity_fields=spec.identity_fields
+        smartid_decisions = _attach_smartid(
+            rows,
+            transformed.rows,
+            output_lineage,
+            reference,
+            relation_name,
+            spec.identity_fields,
+            grouped=groupby is not None,
         )
         store.event(
             rid,
             "smartid",
             {
-                "dataset": str(Path(smartid).resolve()),
+                "dataset": str(reference.path),
                 "relation_field": relation_name,
-                "reference_binding": binding,
-                "previous_binding": "recorded"
-                if prior and "reference_binding" in prior[-1]
-                else "unrecorded",
+                "reference_binding": reference.binding(),
+                "previous_binding": "recorded" if reference_was_bound else "unrecorded",
                 "decisions": smartid_decisions,
             },
         )
