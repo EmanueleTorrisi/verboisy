@@ -180,6 +180,7 @@ class TaskSpec(StrictModel):
     dataset_sources: list[DatasetSource] = Field(default_factory=list, max_length=100)
     column_tables: list[ColumnTableSpec] = Field(default_factory=list, max_length=8)
     html_metadata: HtmlMetadataSpec | None = None
+    html_metadata_discovery: bool = False
     html_table: HtmlTableSpec | None = None
     seed_urls: list[str] = Field(default_factory=list, max_length=100)
     allowed_hosts: list[str] = Field(default_factory=list, max_length=100)
@@ -204,6 +205,8 @@ class TaskSpec(StrictModel):
         # Keep existing workflow hashes and saved tasks stable without optional bindings.
         if self.html_metadata is None:
             payload.pop("html_metadata", None)
+        if not self.html_metadata_discovery:
+            payload.pop("html_metadata_discovery", None)
         if self.html_table is None:
             payload.pop("html_table", None)
         return payload
@@ -225,6 +228,8 @@ class TaskSpec(StrictModel):
 
     @model_validator(mode="after")
     def exclusive_html_metadata(self) -> "TaskSpec":
+        if self.html_metadata_discovery and self.html_metadata is None:
+            raise ValueError("HTML metadata discovery requires declared HTML metadata bindings")
         if self.html_metadata is not None and (
             self.dataset_sources
             or self.column_tables
@@ -232,9 +237,7 @@ class TaskSpec(StrictModel):
             or self.field_rules
             or self.pagination_selector is not None
         ):
-            raise ValueError(
-                "HTML metadata is a literal seed-only mode with no other source or field rules"
-            )
+            raise ValueError("HTML metadata is a literal mode with no other source or field rules")
         return self
 
     @model_validator(mode="after")
