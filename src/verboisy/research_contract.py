@@ -162,12 +162,17 @@ def _closed_literal_record(schema: dict[str, Any], fields: set[str], mode: str) 
 
 
 def _validate_html_metadata(schema: dict[str, Any], task: TaskSpec) -> None:
+    from verboisy.core.metadata_discovery import MetadataSourceScope
     from verboisy.evidence.snapshot import canonical_url
 
     plan = task.html_metadata
     assert plan is not None
     seeds = task.seed_urls
-    if (
+    if task.html_metadata_discovery:
+        scope = MetadataSourceScope.from_task(task)
+        if seeds and scope.select(seeds) != seeds:
+            raise VerboisyError("Saved HTML metadata seeds do not match their declared order")
+    elif (
         not seeds
         or len(set(seeds)) != len(seeds)
         or any(canonical_url(url) != url for url in seeds)
