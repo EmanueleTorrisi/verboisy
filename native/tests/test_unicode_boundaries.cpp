@@ -13,6 +13,11 @@ int test_unicode_boundaries() {
     const Py_UCS4 separators[] = {0, ' ', '.', ',', '+', '-', 0x2212,
                                  0x0301, 0x200b, 0x1f415, 0xd800, 0x10ffff};
     int checks = 0;
+    for (Py_UCS4 value = 0; value < 128; ++value) {
+        require(word(value) == (value == '_' || Py_UNICODE_ISALNUM(value)),
+                "ASCII word classification must match CPython");
+        ++checks;
+    }
     for (auto value : words) {
         require(word(value), "Expected Unicode word character");
         ++checks;

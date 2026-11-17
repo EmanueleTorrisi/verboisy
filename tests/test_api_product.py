@@ -11,6 +11,7 @@ import verboisy.api as api
 from verboisy.core.search import SearchObservation, SearchResult
 from verboisy.evidence.models import TaskSpec
 from verboisy.product import SortKey, SourcePolicy
+from verboisy.storage.research import ResearchStore
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import SearchUnavailableError, VerboisyError
 
@@ -215,12 +216,6 @@ async def test_arun_product_options_exports_proof_and_smartid(monkeypatch, tmp_p
     old = tmp_path / "people.json"
     old.write_text('[{"id":"old","name":"A"}]', encoding="utf-8")
 
-    def smart_ids(rows, _previous, _relation, *, identity_fields):
-        assert identity_fields == []
-        return rows, [{"outcome": "none"}]
-
-    monkeypatch.setattr("verboisy.output.apply_smart_ids", smart_ids)
-
     result = await api.arun(
         goal="Find names",
         schema="[name]",
@@ -241,6 +236,12 @@ async def test_arun_product_options_exports_proof_and_smartid(monkeypatch, tmp_p
     assert len(result.export_paths) == 2 and len(result.manifest_paths) == 2
     assert result.proof_path and result.proof_path.exists()
     assert result.inferred_schema is not None
+    store = ResearchStore(config.sqlite_db_path, read_only=True)
+    try:
+        (matched,) = store.events(result.run_id, "smartid")
+        assert matched["payload"]["decisions"] == []
+    finally:
+        store.close()
 
 
 @pytest.mark.asyncio

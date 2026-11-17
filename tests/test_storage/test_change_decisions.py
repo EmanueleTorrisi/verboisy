@@ -301,6 +301,65 @@ def test_acceptance_requeues_previous_work_and_adds_new_seeds(ledger):
     assert len(store.events(rid, "research_plan")) == 1
 
 
+@pytest.mark.parametrize(
+    "edited",
+    [
+        {"allowed_hosts": ["test"]},
+        {"seed_urls": ["https://outside.test/"]},
+        {"seed_urls": ["https://blocked.example.test/"]},
+    ],
+)
+def test_changes_preserve_saved_cli_source_policy(ledger, edited):
+    _, store, rid = ledger
+    policy = {"include": ["example.test"], "avoid": ["blocked.example.test"], "onlyinclude": True}
+    store.event(rid, "product_options", {"source_policy": policy})
+    allowed = TaskSpec(
+        allowed_hosts=["news.example.test"],
+        avoided_hosts=["blocked.example.test"],
+        seed_urls=["https://news.example.test/"],
+    )
+    before = store.load(rid)
+    change = request(task=allowed.model_copy(update=edited).model_dump())
+    with pytest.raises(VerboisyError, match="saved source policy"):
+        propose_change(store, rid, change)
+    assert store.load(rid) == before and not store.events(rid, "change_proposed")
+    good = propose_change(store, rid, request(task=allowed.model_dump()))
+    # An older proposal (or one edited on disk) must be checked again at acceptance.
+    payload = good.model_dump(mode="json", by_alias=True)
+    payload["request"]["task"] = change["task"]
+    with store.db:
+        store.db.execute(
+            "UPDATE events SET payload=? WHERE run_id=? AND kind='change_proposed'",
+            (json.dumps(payload), rid),
+        )
+    with pytest.raises(VerboisyError, match="saved source policy"):
+        decide_change(store, rid, accept=True)
+    assert not store.events(rid, "change_decided")
+    decide_change(store, rid, accept=False)
+    assert store.load(rid)["task_json"] == before["task_json"]
+
+
+def test_omitted_task_policy_does_not_override_fixed_cli_scope(ledger):
+    _, store, rid = ledger
+    store.event(
+        rid,
+        "product_options",
+        {
+            "source_policy": {
+                "include": ["example.test"],
+                "avoid": ["blocked.example.test"],
+                "onlyinclude": True,
+            }
+        },
+    )
+    proposed = propose_change(store, rid, request())
+    assert decide_change(store, rid, accept=True) == proposed
+    runner = ResearchRunner(store, rid, Settings(_env_file=None))
+    assert runner.in_scope("https://example.test/allowed")
+    assert not runner.in_scope("https://outside.test/restricted")
+    assert not runner.in_scope("https://blocked.example.test/restricted")
+
+
 @pytest.mark.parametrize("stage", ["existing", "proposed", "corrupt_saved"])
 def test_dataset_changes_require_reingestion_workflow(ledger, stage):
     _, store, rid = ledger

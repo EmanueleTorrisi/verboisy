@@ -17,8 +17,10 @@ from pydantic import Field, ValidationError
 from verboisy.core.planner import build_research_plan
 from verboisy.evidence.models import StrictModel, TaskSpec
 from verboisy.extractor.schema_builder import SchemaBuilder
+from verboisy.product import SourcePolicy
 from verboisy.research_contract import validate_research_contract
 from verboisy.storage.event_journal import decode_event_rows
+from verboisy.storage.product_options import saved_product_options
 from verboisy.storage.research import ResearchStore
 from verboisy.utils.exceptions import VerboisyError
 
@@ -159,6 +161,19 @@ def _eligible(store: ResearchStore, rid: str) -> dict[str, Any]:
     return state
 
 
+def _validate_acquisition_change(store: ResearchStore, rid: str, task: TaskSpec) -> None:
+    if task.html_metadata_discovery and task.seed_urls:
+        raise VerboisyError("A scoped discovery proposal must leave its seeds empty")
+    options = saved_product_options(store.events(rid, "product_options"))
+    policy = SourcePolicy(**options["source_policy"])
+    if (
+        policy.onlyinclude
+        and any(not policy.permits(f"https://{host}/") for host in task.allowed_hosts)
+        or any(not policy.permits(url) for url in task.seed_urls)
+    ):
+        raise VerboisyError("Proposed sources conflict with the run's saved source policy")
+
+
 def propose_change(store: ResearchStore, rid: str, value: Any) -> SavedChange:
     """Validate, save and pause for an exact proposed replacement contract."""
     if pending_change(store, rid) is not None:
@@ -174,6 +189,7 @@ def propose_change(store: ResearchStore, rid: str, value: Any) -> SavedChange:
         raise VerboisyError("Proposal description and goal must not be blank")
     if request.task.dataset_sources:
         raise VerboisyError("This change workflow currently supports browser research only")
+    _validate_acquisition_change(store, rid, request.task)
     request = request.model_copy(update={"schema_": normalized})
     proposed = {
         "goal": request.goal,
@@ -212,6 +228,11 @@ def decide_change(store: ResearchStore, rid: str, *, accept: bool) -> SavedChang
     validate_research_contract(normalized, change.request.task)
     if change.request.task.dataset_sources:
         raise VerboisyError("This change workflow currently supports browser research only")
+    fresh_discovery = False
+    if accept:
+        task = change.request.task
+        _validate_acquisition_change(store, rid, task)
+        fresh_discovery = task.html_metadata_discovery
     # The decision and its requirement update share a transaction. Old evidence and
     # consumed budgets remain available even after the browser frontier is revisited.
     with store.db:
@@ -225,13 +246,25 @@ def decide_change(store: ResearchStore, rid: str, *, accept: bool) -> SavedChang
                     rid,
                 ),
             )
-            store.db.execute(
-                "UPDATE pages SET status='queued',reason=NULL WHERE run_id=?",
-                (rid,),
-            )
+            if fresh_discovery:
+                store.db.execute(
+                    "UPDATE pages SET status='superseded',reason='requirements_changed' "
+                    "WHERE run_id=?",
+                    (rid,),
+                )
+            else:
+                store.db.execute(
+                    "UPDATE pages SET status='queued',reason=NULL "
+                    "WHERE run_id=? AND status!='superseded'",
+                    (rid,),
+                )
             for url in change.request.task.seed_urls:
                 store.db.execute(
-                    "INSERT OR IGNORE INTO pages(run_id,url,depth) VALUES (?,?,0)", (rid, url)
+                    "INSERT INTO pages(run_id,url,depth) VALUES (?,?,0) "
+                    "ON CONFLICT(run_id,url) DO UPDATE SET "
+                    "status='queued',reason=NULL,depth=0,parent_url=NULL "
+                    "WHERE pages.status='superseded'",
+                    (rid, url),
                 )
             store.db.execute(
                 "INSERT INTO events(run_id,kind,payload) VALUES (?,'research_plan',?)",
@@ -262,6 +295,15 @@ def decide_change(store: ResearchStore, rid: str, *, accept: bool) -> SavedChang
                 ),
             ),
         )
+        if fresh_discovery:
+            store.db.execute(
+                "INSERT INTO events(run_id,kind,payload) VALUES (?,'initial_discovery_reset','{}')",
+                (rid,),
+            )
+            store.db.execute(
+                "INSERT INTO events(run_id,kind,payload) VALUES (?,'initial_discovery',?)",
+                (rid, '{"status":"pending"}'),
+            )
         store.db.execute("UPDATE research_runs SET status='PAUSED',reason=NULL WHERE id=?", (rid,))
     return change
 

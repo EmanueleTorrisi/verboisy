@@ -15,13 +15,22 @@ PyObject* match_quote(PyObject* text, PyObject* quote, bool numeric) {
 #endif
     const Py_ssize_t size = PyUnicode_GET_LENGTH(text);
     const Py_ssize_t length = PyUnicode_GET_LENGTH(quote);
-    if (length == 0) {
+    if (length == 0 || length > size) {
         Py_RETURN_FALSE;
     }
+    if (length == size) {
+        // The only possible match touches neither boundary.
+        const int order = PyUnicode_Compare(text, quote);
+        if (order == -1 && PyErr_Occurred()) {
+            return nullptr;
+        }
+        return PyBool_FromLong(order == 0);
+    }
+    const Py_ssize_t last_start = size - length;
     const int kind = PyUnicode_KIND(text);
     const void* data = PyUnicode_DATA(text);
     Py_ssize_t start = 0;
-    while (start <= size) {
+    while (start <= last_start) {
         // CPython supplies its literal search; this extension removes dynamic
         // regex compilation and checks boundaries without Python call overhead.
         const Py_ssize_t position = PyUnicode_Find(text, quote, start, size, 1);
@@ -35,7 +44,7 @@ PyObject* match_quote(PyObject* text, PyObject* quote, bool numeric) {
         const Py_UCS4 before = position ? PyUnicode_READ(kind, data, position - 1) : 0;
         const Py_UCS4 after = end < size ? PyUnicode_READ(kind, data, end) : 0;
         const bool left = position && (word(before) || (numeric && numeric_prefix(before)));
-        const bool decimal_tail = numeric && end + 1 < size &&
+        const bool decimal_tail = numeric && end < size - 1 &&
             (after == '.' || after == ',') &&
             Py_UNICODE_ISDECIMAL(PyUnicode_READ(kind, data, end + 1));
         if (!left && !word(after) && !decimal_tail) {
@@ -45,7 +54,7 @@ PyObject* match_quote(PyObject* text, PyObject* quote, bool numeric) {
         // Skip starts with forbidden predecessors, preserving overlaps at every
         // eligible boundary. This avoids quadratic repeated searches inside a
         // long run of word characters containing a long repeated literal.
-        while (start < size) {
+        while (start <= last_start) {
             const Py_UCS4 predecessor = PyUnicode_READ(kind, data, start - 1);
             if (!word(predecessor) && !(numeric && numeric_prefix(predecessor))) {
                 break;
