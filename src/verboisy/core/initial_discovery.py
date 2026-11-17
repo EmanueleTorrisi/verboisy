@@ -27,6 +27,7 @@ from verboisy.evidence.models import TaskSpec
 from verboisy.evidence.snapshot import canonical_url
 from verboisy.llm.client import LLMClient
 from verboisy.product import SourcePolicy
+from verboisy.storage.event_journal import decode_event_rows
 from verboisy.storage.research import ResearchStore
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import (
@@ -182,6 +183,22 @@ async def discover_seed_sources(
     return [url for url in dict.fromkeys(canonical) if url is not None], observations
 
 
+def acquisition_events(store: ResearchStore, rid: str, kind: str) -> list[dict[str, Any]]:
+    """Keep compatible replay until a reviewed decision requests a new acquisition."""
+    change = store.db.execute(
+        "SELECT MAX(id) FROM events WHERE run_id=? AND kind='initial_discovery_reset'", (rid,)
+    ).fetchone()[0]
+    if change is None:
+        return store.events(rid, kind)
+    return decode_event_rows(
+        store.db.execute(
+            "SELECT kind,payload,created_at FROM events "
+            "WHERE run_id=? AND kind=? AND id>? ORDER BY id",
+            (rid, kind, change),
+        ).fetchall()
+    )
+
+
 def preflight_initial_discovery(
     store: ResearchStore, rid: str, policy: SourcePolicy, task: TaskSpec | None = None
 ) -> None:
@@ -192,7 +209,7 @@ def preflight_initial_discovery(
     Binding a temporary query context reuses its conflict checks and restores
     any enclosing context on exit; the writer is never invoked during replay.
     """
-    results = store.events(rid, "initial_discovery_result")
+    results = acquisition_events(store, rid, "initial_discovery_result")
     if results:
         seeds, observations = validated_discovery_result(
             results[-1]["payload"], policy, canonicalize=canonical_url
@@ -209,7 +226,7 @@ def preflight_initial_discovery(
             scope = MetadataSourceScope.from_task(task)
             scope.check_policy(policy)
             query = scope.query(store.load(rid)["goal"])
-        queries = store.events(rid, "initial_query_result")
+        queries = acquisition_events(store, rid, "initial_query_result")
         unused_writes: list[dict[str, Any]] = []
         with initial_query_journal(queries, unused_writes.append):
             for event in queries:
@@ -245,7 +262,7 @@ async def publish_initial_discovery(
         rid, "RUNNING", "initial_discovery", client.total_tokens, client.reserved_tokens
     )
     try:
-        saved_results = store.events(rid, "initial_discovery_result")
+        saved_results = acquisition_events(store, rid, "initial_discovery_result")
         if saved_results:
             result = saved_results[-1]["payload"]
             seeds, observations = validated_discovery_result(
@@ -257,7 +274,7 @@ async def publish_initial_discovery(
                     client, lambda payload: store.event(rid, "search_request", payload)
                 ),
                 initial_query_journal(
-                    store.events(rid, "initial_query_result"),
+                    acquisition_events(store, rid, "initial_query_result"),
                     lambda payload: store.event(rid, "initial_query_result", payload),
                 ),
             ):
@@ -286,7 +303,9 @@ async def publish_initial_discovery(
             raise VerboisyError(f"Saved discovery differs from the declared HTML {kind} scope")
         spec = spec.model_copy(update={"seed_urls": seeds})
         store.update_task(rid, spec)
-        published = [event["payload"] for event in store.events(rid, "source_discovery")]
+        published = [
+            event["payload"] for event in acquisition_events(store, rid, "source_discovery")
+        ]
         for observation in observations:
             if observation not in published:
                 store.event(rid, "source_discovery", observation)
