@@ -7,7 +7,7 @@ import csv
 import json
 from contextlib import closing
 from importlib import import_module
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
@@ -19,6 +19,7 @@ from verboisy.core.metadata_discovery import MetadataSourceScope
 from verboisy.evidence.models import Candidate, Snapshot, TaskSpec
 from verboisy.evidence.verify import verify
 from verboisy.research_contract import validate_research_contract
+from verboisy.storage.changes import propose_change
 from verboisy.storage.research import ResearchStore
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import SearchUnavailableError, VerboisyError
@@ -384,6 +385,64 @@ async def test_cannot_count_a_redirect_to_another_approved_page(replay):
     assert visited == [FIRST, SECOND]
     assert not result.completed
     assert [row["title"] for row in result.records] == [EXPECTED[1]["title"]]
+
+
+async def test_okresume_starts_a_new_acquisition_and_retains_search_spend(replay):
+    config, replies, requests, visited, _ = replay
+    replies.extend([openai_reply([FIRST, SECOND]), openai_reply([SECOND])])
+
+    async def stop_before_visiting(runner, _steps):
+        runner.store.finish(
+            runner.rid,
+            "PAUSED",
+            "page_budget",
+            runner.client.total_tokens,
+            runner.client.reserved_tokens,
+        )
+
+    with patch.object(research.ResearchRunner, "run", stop_before_visiting):
+        source = await arun(goal=GOAL, schema=SCHEMA, task=task(), config=config)
+    rid = source.run_id
+    new = task(include_paths=["/releases/*/boreal/"], target_records=1, max_pages=1)
+    with closing(ResearchStore(config.sqlite_db_path)) as store:
+        prior = store.load(rid)
+        with pytest.raises(VerboisyError, match="seeds empty"):
+            propose_change(
+                store,
+                rid,
+                {
+                    "description": "Retarget the approved host",
+                    "goal": "Find Boreal",
+                    "schema": SCHEMA,
+                    "task": new.model_copy(update={"seed_urls": [SECOND]}),
+                },
+            )
+        propose_change(
+            store,
+            rid,
+            {
+                "description": "Retarget the approved host",
+                "goal": "Find Boreal",
+                "schema": SCHEMA,
+                "task": new,
+            },
+        )
+    from verboisy.utils.exceptions import SearchBudgetExceededError
+
+    with pytest.raises(SearchBudgetExceededError):
+        await arun(okresume=rid, config=config, max_steps=1)
+    assert len(requests) == 1 and not visited
+    config.search_request_budget = 2
+    resumed = await arun(resume=rid, config=config, max_steps=1)
+    assert resumed.completed and visited == [SECOND] and len(requests) == 2
+    with closing(ResearchStore(config.sqlite_db_path, read_only=True)) as store:
+        assert store.load(rid)["reserved"] > prior["reserved"]
+        assert store.search_attempt_count(rid) == 2
+        assert len(store.events(rid, "initial_discovery_result")) == 2
+        assert {page["url"]: page["status"] for page in store.pages(rid)} == {
+            FIRST: "superseded",
+            SECOND: "done",
+        }
 
 
 @pytest.mark.parametrize(
