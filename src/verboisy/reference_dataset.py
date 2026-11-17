@@ -30,6 +30,14 @@ class ReferenceDataset:
     mode: str
     version: int | str | None
 
+    def binding(self) -> dict[str, str | int | None]:
+        return {
+            "file_sha256": self.sha256,
+            "manifest_sha256": self.manifest_sha256,
+            "csv_mode": self.mode,
+            "manifest_version": self.version,
+        }
+
 
 def reference_input_paths(path: str | Path) -> set[Path]:
     """Protect the reference and its potential adjacent manifest, even if absent."""
