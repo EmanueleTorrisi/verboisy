@@ -71,6 +71,8 @@ from verboisy.extractor.research_changes import offer_research_change
 from verboisy.extractor.schema_builder import SchemaBuilder
 from verboisy.llm.client import LLMClient, ModelRole
 from verboisy.llm.providers import resolve_provider
+from verboisy.product import SourcePolicy
+from verboisy.storage.product_options import saved_product_options
 from verboisy.storage.research import ResearchStore
 from verboisy.utils.config import Settings
 from verboisy.utils.exceptions import (
@@ -89,6 +91,7 @@ if TYPE_CHECKING:
 class ResearchRunner:
     # Created only after an invalid semantic-plan gap is durably journaled.
     semantic_plan_failed: bool
+    source_policy = SourcePolicy()
 
     def __init__(self, store: ResearchStore, rid: str, config: Settings):
         self.store, self.rid, self.config = store, rid, config
@@ -96,6 +99,9 @@ class ResearchRunner:
         self.task = TaskSpec.model_validate_json(row["task_json"])
         self.schema = json.loads(row["schema_json"])
         self.goal = row["goal"]
+        self.source_policy = SourcePolicy(
+            **saved_product_options(store.events(rid, "product_options"))["source_policy"]
+        )
 
         from verboisy.storage.changes import current_requirement_events
 
@@ -204,6 +210,8 @@ class ResearchRunner:
         )
 
     def in_scope(self, url: str) -> bool:
+        if not self.source_policy.permits(url):
+            return False
         if (
             getattr(self.task, "html_metadata", None) is not None
             or getattr(self.task, "html_table", None) is not None
