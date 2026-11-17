@@ -215,13 +215,14 @@ class ResearchStore:
 
         with self.db:
             self.db.execute(
-                "INSERT OR IGNORE INTO pages(run_id,url,depth,parent_url) VALUES(?,?,?,?)",
+                "INSERT INTO pages(run_id,url,depth,parent_url) VALUES(?,?,?,?) "
+                "ON CONFLICT(run_id,url) DO UPDATE SET status='queued',reason=NULL,"
+                "depth=CASE WHEN pages.status='superseded' "
+                "THEN excluded.depth ELSE pages.depth END,"
+                "parent_url=CASE WHEN pages.status='superseded' "
+                "THEN excluded.parent_url ELSE pages.parent_url END "
+                "WHERE pages.status IN ('deferred','superseded')",
                 (rid, url, depth, parent),
-            )
-            self.db.execute(
-                "UPDATE pages SET status='queued',reason=NULL "
-                "WHERE run_id=? AND url=? AND status='deferred'",
-                (rid, url),
             )
 
     def defer(self, rid: str, url: str, depth: int, parent: str | None) -> None:
@@ -229,9 +230,12 @@ class ResearchStore:
 
         with self.db:
             self.db.execute(
-                "INSERT OR IGNORE INTO "
+                "INSERT INTO "
                 "pages(run_id,url,depth,parent_url,status) "
-                "VALUES(?,?,?,?, 'deferred')",
+                "VALUES(?,?,?,?, 'deferred') "
+                "ON CONFLICT(run_id,url) DO UPDATE SET status='deferred',reason=NULL,"
+                "depth=excluded.depth,parent_url=excluded.parent_url "
+                "WHERE pages.status='superseded'",
                 (rid, url, depth, parent),
             )
 
