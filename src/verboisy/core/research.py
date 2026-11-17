@@ -596,6 +596,8 @@ class ResearchRunner:
             captured, url, html, visible_html = await capture_rendered_page(
                 self, page, canonical_url, snapshot, CAPTURE_PAGE
             )
+            if getattr(self.task, "html_metadata_discovery", False) and url != work["url"]:
+                raise NavigationError("Discovered HTML metadata page redirected to another target")
             if table is not None:
                 from verboisy.core.html_table_run import admit_html_table
 

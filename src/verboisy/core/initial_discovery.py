@@ -20,6 +20,7 @@ from verboisy.core.initial_query_journal import (
     journal_initial_query,
     replay_initial_query,
 )
+from verboisy.core.metadata_discovery import MetadataSourceScope
 from verboisy.core.planner import ResearchPlan
 from verboisy.core.search import SearchObservation, search_accounting
 from verboisy.evidence.models import TaskSpec
@@ -36,6 +37,65 @@ from verboisy.utils.exceptions import (
 )
 
 
+def _metadata_seeds(
+    scope: MetadataSourceScope, query: str, observation: dict[str, Any]
+) -> list[str]:
+    if observation["query"] != query:
+        raise VerboisyError("Saved HTML metadata discovery query does not match its task")
+    return scope.select(result["url"] for result in observation["results"])
+
+
+async def _discover_metadata_sources(
+    goal: str,
+    task: TaskSpec,
+    policy: SourcePolicy,
+    config: Settings,
+    search: Callable[[str, Settings], Awaitable[SearchObservation]],
+    canonicalize: Callable[[str], str | None],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    scope = MetadataSourceScope.from_task(task)
+    scope.check_policy(policy)
+    query = scope.query(goal)
+    saved = replay_initial_query(query)
+    if saved is not None:
+        observation = validated_observation(saved, policy, canonicalize=canonicalize)
+        return _metadata_seeds(scope, query, observation), [observation]
+
+    response = await search(query, config)
+    candidates = {
+        url: result.model_copy(update={"url": url}).model_dump()
+        for result in response.results
+        if (url := canonicalize(result.url)) is not None and scope.paths_for(url)
+    }
+    observation = {
+        "provider": response.provider,
+        "query": response.query,
+        "results": list(candidates.values()),
+    }
+    seeds = _metadata_seeds(scope, query, observation)
+    # A partial result remains retryable. A complete selection can be replayed
+    # even if saving the acquisition or its frontier is interrupted.
+    journal_initial_query(query, observation)
+    return seeds, [observation]
+
+
+def _validate_metadata_acquisition(
+    goal: str,
+    task: TaskSpec,
+    policy: SourcePolicy,
+    seeds: list[str],
+    observations: list[dict[str, Any]],
+) -> None:
+    scope = MetadataSourceScope.from_task(task)
+    scope.check_policy(policy)
+    if (
+        len(observations) != 1
+        or seeds != _metadata_seeds(scope, scope.query(goal), observations[0])
+        or (task.seed_urls and seeds != task.seed_urls)
+    ):
+        raise VerboisyError("Saved HTML metadata discovery does not match its selected sources")
+
+
 async def discover_seed_sources(
     goal: str,
     spec: TaskSpec,
@@ -48,6 +108,8 @@ async def discover_seed_sources(
 ) -> tuple[list[str], list[dict[str, Any]]]:
     """Select permitted seeds in their existing stable order, reusing saved queries."""
 
+    if getattr(spec, "html_metadata_discovery", False):
+        return await _discover_metadata_sources(goal, spec, policy, config, search, canonicalize)
     seeds = [url for url in spec.seed_urls if policy.permits(url)]
 
     metadata = getattr(spec, "html_metadata", None) is not None
@@ -120,7 +182,9 @@ async def discover_seed_sources(
     return [url for url in dict.fromkeys(canonical) if url is not None], observations
 
 
-def preflight_initial_discovery(store: ResearchStore, rid: str, policy: SourcePolicy) -> None:
+def preflight_initial_discovery(
+    store: ResearchStore, rid: str, policy: SourcePolicy, task: TaskSpec | None = None
+) -> None:
     """Check the replay branch before resume can commit a requirement decision.
 
     A saved acquisition takes precedence over query checkpoints. Validate only
@@ -130,15 +194,34 @@ def preflight_initial_discovery(store: ResearchStore, rid: str, policy: SourcePo
     """
     results = store.events(rid, "initial_discovery_result")
     if results:
-        validated_discovery_result(results[-1]["payload"], policy, canonicalize=canonical_url)
+        seeds, observations = validated_discovery_result(
+            results[-1]["payload"], policy, canonicalize=canonical_url
+        )
+        if task is not None and task.html_metadata_discovery:
+            _validate_metadata_acquisition(
+                store.load(rid)["goal"], task, policy, seeds, observations
+            )
     else:
+        scope = None
+        if task is not None and task.html_metadata_discovery:
+            if task.seed_urls:
+                raise VerboisyError("Selected HTML metadata sources have no saved discovery")
+            scope = MetadataSourceScope.from_task(task)
+            scope.check_policy(policy)
+            query = scope.query(store.load(rid)["goal"])
         queries = store.events(rid, "initial_query_result")
         unused_writes: list[dict[str, Any]] = []
         with initial_query_journal(queries, unused_writes.append):
             for event in queries:
-                validated_observation(
+                observation = validated_observation(
                     event["payload"]["observation"], policy, canonicalize=canonical_url
                 )
+                if scope is not None:
+                    if event["payload"]["query"] != query:
+                        raise VerboisyError(
+                            "Saved HTML metadata discovery query does not match its task"
+                        )
+                    _metadata_seeds(scope, query, observation)
 
 
 async def publish_initial_discovery(
@@ -184,14 +267,20 @@ async def publish_initial_discovery(
             seeds, observations = validated_discovery_result(
                 {"seeds": seeds, "observations": observations}, policy, canonicalize=canonical_url
             )
+        scoped_metadata = getattr(spec, "html_metadata_discovery", False)
+        if scoped_metadata:
+            _validate_metadata_acquisition(state["goal"], spec, policy, seeds, observations)
+        if not saved_results:
             # Save the acquisition before publishing task/frontier state. A resume
             # can replay publication without spending another provider request.
             store.event(
                 rid, "initial_discovery_result", {"seeds": seeds, "observations": observations}
             )
         metadata = getattr(spec, "html_metadata", None) is not None
-        if (metadata or getattr(spec, "html_table", None) is not None) and (
-            seeds != spec.seed_urls or observations
+        if (
+            not scoped_metadata
+            and (metadata or getattr(spec, "html_table", None) is not None)
+            and (seeds != spec.seed_urls or observations)
         ):
             kind = "metadata" if metadata else "table"
             raise VerboisyError(f"Saved discovery differs from the declared HTML {kind} scope")

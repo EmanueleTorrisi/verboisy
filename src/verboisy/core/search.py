@@ -10,6 +10,7 @@ import json
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
+from functools import partial
 from typing import Any, Literal, TypedDict
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -31,6 +32,7 @@ BRAVE_ENDPOINT = "https://api.search.brave.com/res/v1/web/search"
 OPENAI_RESPONSES_ENDPOINT = "https://api.openai.com/v1/responses"
 
 MAX_RESPONSE_BYTES = 1_048_576
+MAX_SEARCH_RESULTS = 10
 
 
 class SearchResult(BaseModel):
@@ -209,11 +211,33 @@ def _source_results(
                     annotation.get("title"),
                 )
 
-    return list(found.values())[:10]
+    return list(found.values())[:MAX_SEARCH_RESULTS]
 
 
-def _openai_search_request(query: str, config: Settings) -> dict[str, Any]:
+def _openai_search_request(
+    query: str, config: Settings, *, individual_pages: bool = False
+) -> dict[str, Any]:
     """Bound an individual search attempt before opening provider transport."""
+    guidance = (
+        "Use web search to identify one authoritative detail page per requested entity. "
+        "Keep the site restriction and return the individual pages as sources."
+        if individual_pages
+        else (
+            "Search the public web for the smallest "
+            "set of high-quality sources that can "
+            "satisfy this research goal efficiently. "
+            "Strongly prefer authoritative pages that "
+            "contain many requested records and many "
+            "requested fields together in one table, "
+            "list, directory, or structured page. "
+            "Prefer consolidated sources over "
+            "one-page-per-record browsing. Avoid "
+            "social pages, user-uploaded documents, "
+            "and narrow subsets unless the research "
+            "goal specifically requires them. "
+            "Use web search."
+        )
+    )
     payload = {
         "model": config.openai_search_model,
         "tools": [
@@ -227,22 +251,7 @@ def _openai_search_request(query: str, config: Settings) -> dict[str, Any]:
         "include": [
             "web_search_call.action.sources",
         ],
-        "input": (
-            "Search the public web for the smallest "
-            "set of high-quality sources that can "
-            "satisfy this research goal efficiently. "
-            "Strongly prefer authoritative pages that "
-            "contain many requested records and many "
-            "requested fields together in one table, "
-            "list, directory, or structured page. "
-            "Prefer consolidated sources over "
-            "one-page-per-record browsing. Avoid "
-            "social pages, user-uploaded documents, "
-            "and narrow subsets unless the research "
-            "goal specifically requires them. "
-            "Use web search.\n\n"
-            f"Research goal: {query}"
-        ),
+        "input": f"{guidance}\n\nResearch goal: {query}",
         "store": False,
     }
     payload["max_output_tokens"] = config.max_tokens
@@ -277,12 +286,14 @@ def _check_search_budget(client: LLMClient | None, config: Settings) -> None:
         )
 
 
-async def openai_search(query: str, config: Settings) -> SearchObservation:
+async def openai_search(
+    query: str, config: Settings, *, individual_pages: bool = False
+) -> SearchObservation:
     """Reserve repair search against the active run before any provider request."""
     key = config.openai_api_key
     if key is None or not key.get_secret_value().strip():
         raise SearchUnavailableError("OpenAI web search requires OPENAI_API_KEY.")
-    payload = _openai_search_request(query, config)
+    payload = _openai_search_request(query, config, individual_pages=individual_pages)
     report: _OpenAIReport = {}
     account = _SEARCH_ACCOUNT.get()
     if account is None:
@@ -485,7 +496,7 @@ async def _brave_search_transport(query: str, config: Settings) -> SearchObserva
                     BRAVE_ENDPOINT,
                     params={
                         "q": query,
-                        "count": 10,
+                        "count": MAX_SEARCH_RESULTS,
                         "result_filter": "web",
                         "text_decorations": "false",
                     },
@@ -524,7 +535,7 @@ async def _brave_search_transport(query: str, config: Settings) -> SearchObserva
             "Brave Search unavailable " f"({type(exc).__name__})."
         ) from None
 
-    results = [] if data.web is None else data.web.results[:10]
+    results = [] if data.web is None else data.web.results[:MAX_SEARCH_RESULTS]
 
     return SearchObservation(
         provider="brave",
@@ -536,10 +547,15 @@ async def _brave_search_transport(query: str, config: Settings) -> SearchObserva
 async def web_search(
     query: str,
     config: Settings,
+    *,
+    individual_pages: bool = False,
 ) -> SearchObservation:
     """Select a search provider automatically."""
 
     provider = config.search_provider
+    find_openai = (
+        partial(openai_search, individual_pages=True) if individual_pages else openai_search
+    )
 
     if provider == "disabled":
         raise SearchUnavailableError("Automatic source discovery is disabled.")
@@ -548,7 +564,7 @@ async def web_search(
         if config.openai_api_key is None:
             raise SearchUnavailableError("OpenAI web search requires OPENAI_API_KEY.")
 
-        return await openai_search(
+        return await find_openai(
             query,
             config,
         )
@@ -568,7 +584,7 @@ async def web_search(
     openai_allowed = routing is None or routing.provider == "openai"
     if openai_allowed and config.openai_api_key is not None:
         try:
-            return await openai_search(
+            return await find_openai(
                 query,
                 config,
             )
