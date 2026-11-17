@@ -19,6 +19,7 @@ from pydantic import ValidationError
 
 from verboisy import __version__
 from verboisy.core.initial_discovery import (
+    acquisition_events,
     discover_seed_sources,
     preflight_initial_discovery,
     publish_initial_discovery,
@@ -44,7 +45,11 @@ from verboisy.product import (
     SourcePolicy,
     parse_simple_schema,
 )
-from verboisy.reference_dataset import reference_input_paths
+from verboisy.reference_dataset import (
+    ReferenceDataset,
+    load_reference_dataset,
+    reference_input_paths,
+)
 from verboisy.research_contract import validate_identity_fields, validate_research_contract
 from verboisy.storage.changes import SavedChange, decide_change, pending_change
 from verboisy.storage.path_safety import (
@@ -270,6 +275,39 @@ def _declared_identity(identity: Sequence[str], schema: dict[str, Any]) -> list[
     return validate_identity_fields(identity, schema)
 
 
+def _read_smartid_reference(path: str | Path, database: str) -> ReferenceDataset:
+    try:
+        validate_output_paths(
+            (Path(database + suffix) for suffix in ("", "-wal", "-shm", "-journal", ".lock")),
+            reference_input_paths(path),
+        )
+    except (OSError, ValueError):
+        raise VerboisyError(
+            "Research database paths must differ from the SmartID reference"
+        ) from None
+    return load_reference_dataset(path)
+
+
+def _saved_smartid_binding(store: ResearchStore, rid: str, reference: ReferenceDataset) -> bool:
+    bindings = [event["payload"] for event in store.events(rid, "smartid_reference")]
+    bindings.extend(
+        event["payload"]["reference_binding"]
+        for event in store.events(rid, "smartid")
+        if "reference_binding" in event["payload"]
+    )
+    binding = reference.binding()
+    if any(value != binding for value in bindings):
+        raise VerboisyError("SmartID reference changed; create a new explicitly reviewed run")
+    return bool(bindings)
+
+
+def _initial_discovery_pending(store: ResearchStore, rid: str) -> bool:
+    return bool(
+        acquisition_events(store, rid, "initial_discovery")
+        and not acquisition_events(store, rid, "seed_frontier")
+    )
+
+
 async def arun(
     *,
     goal: str | None = None,
@@ -455,6 +493,8 @@ async def arun(
     simple_schema = False
     inferred_schema: dict[str, Any] | None = None
     change_notice: str | None = None
+    reference: ReferenceDataset | None = None
+    reference_was_bound = False
     try:
         if resume:
             store = ResearchStore(config.sqlite_db_path)
@@ -478,13 +518,15 @@ async def arun(
             saved_schema = SchemaBuilder.normalize(decode_json(state["schema_json"]))
             validate_research_contract(saved_schema, saved_task)
             input_paths.update(local_source_paths(s.url for s in saved_task.dataset_sources))
-            if options.get("smartid"):
-                input_paths.update(reference_input_paths(options["smartid"]))
+            smartid = options.get("smartid")
+            if smartid:
+                input_paths.update(reference_input_paths(smartid))
             _protect_exports(destinations, input_paths)
+            if smartid:
+                reference = _read_smartid_reference(smartid, config.sqlite_db_path)
+                reference_was_bound = _saved_smartid_binding(store, rid, reference)
             policy = SourcePolicy(**options["source_policy"])
-            if saved_task.html_metadata_discovery or (
-                store.events(rid, "initial_discovery") and not store.events(rid, "seed_frontier")
-            ):
+            if saved_task.html_metadata_discovery or _initial_discovery_pending(store, rid):
                 preflight_initial_discovery(store, rid, policy, saved_task)
             saved_display = store.events(rid, "presentation_preferences")
             display = resolve_saved_preferences(display_defaults, saved_display, display_overrides)
@@ -503,9 +545,10 @@ async def arun(
             target_schema = json.loads(state["schema_json"])
             strings = bool(options.get("strings", False))
             groupby = options.get("groupby")
-            smartid = options.get("smartid")
             proof = proof or bool(options.get("proof", False))
             sort_keys = [SortKey(**value) for value in options.get("order", [])]
+            if reference is not None and not reference_was_bound:
+                store.event(rid, "smartid_reference", reference.binding())
         else:
             try:
                 spec = (
@@ -607,23 +650,27 @@ async def arun(
 
             input_paths.update(local_source_paths(s.url for s in spec.dataset_sources))
             _protect_exports(destinations, input_paths)
+            if smartid:
+                smartid = Path(smartid).absolute()
+                reference = _read_smartid_reference(smartid, config.sqlite_db_path)
             stored_exports = (
                 json.dumps([str(path) for path in destinations]) if destinations else None
             )
             store = ResearchStore(config.sqlite_db_path)
             export_inputs = {"paths": sorted(str(path) for path in input_paths)}
-            initial_options: dict[str, Any] = {}
+            initial_events: list[tuple[str, Any]] = []
+            if reference is not None:
+                initial_events.append(("smartid_reference", reference.binding()))
             if definition is not None:
-                initial_options["initial_events"] = (
-                    ("export_inputs", export_inputs),
-                    ("workflow_origin", definition.origin()),
+                initial_events.extend(
+                    [("export_inputs", export_inputs), ("workflow_origin", definition.origin())]
                 )
             rid = store.create(
                 goal or "",
                 target_schema,
                 spec,
                 stored_exports,
-                **initial_options,
+                initial_events=initial_events,
             )
 
             if definition is None:
@@ -677,7 +724,7 @@ async def arun(
             if offered is not None:
                 return _proposal_pause_result(store, rid, offered)
 
-        if store.events(rid, "initial_discovery") and not store.events(rid, "seed_frontier"):
+        if _initial_discovery_pending(store, rid):
             plan = build_research_plan(target_schema, spec.target_records)
             spec = await _initial_discovery(store, rid, spec, policy, config, plan)
             state = store.load(rid)
@@ -735,6 +782,8 @@ async def arun(
             groupby=groupby,
             sort_keys=sort_keys,
             smartid=smartid,
+            reference=reference,
+            reference_was_bound=reference_was_bound,
             schema_inferred=simple_schema or bool(inferred_schema),
             change_notice=change_notice,
         )
