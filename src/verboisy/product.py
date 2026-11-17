@@ -9,6 +9,7 @@ import hashlib
 import json
 import math
 import re
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from fractions import Fraction
@@ -272,6 +273,85 @@ _STRONG_KEYS = (
     "domain",
     "email",
 )
+_NAME_KEYS = ("name", "full_name")
+_CONTEXT_KEYS = ("surname", "company", "employer", "city", "country", "address", "model")
+_Identifier = tuple[type[Any], str | int]
+
+
+def _identifier(value: Any) -> _Identifier | None:
+    if not isinstance(value, str | int) or isinstance(value, bool):
+        return None
+    if isinstance(value, str) and not value.strip():
+        return None
+    return type(value), value
+
+
+def _compound_key(row: dict[str, Any], pointers: list[str]) -> tuple[_Identifier, ...] | None:
+    parts: list[_Identifier] = []
+    for pointer in pointers:
+        try:
+            part = _identifier(lookup(row, pointer))
+        except (KeyError, IndexError, TypeError, ValueError):
+            return None
+        if part is None:
+            return None
+        parts.append(part)
+    return tuple(parts)
+
+
+def _strong_values(row: dict[str, Any]) -> list[tuple[str, _Identifier]]:
+    return [
+        (field, value)
+        for field in _STRONG_KEYS
+        if (value := _identifier(row.get(field))) is not None
+    ]
+
+
+def _weak_values(row: dict[str, Any], fields: tuple[str, ...]) -> list[tuple[str, str]]:
+    return [
+        (field, _normal_identity(value))
+        for field in fields
+        if (value := row.get(field)) is not None and value != ""
+    ]
+
+
+class _ReferenceIndex:
+    """Retrieve a superset of eligible rows, then apply the existing vetoes."""
+
+    def __init__(self, previous: list[dict[str, Any]], identity: list[str] | None) -> None:
+        self.identity = identity
+        self.exact: dict[tuple[_Identifier, ...], list[int]] = defaultdict(list)
+        self.strong: dict[tuple[str, _Identifier], list[int]] = defaultdict(list)
+        self.weak: dict[tuple[str, str], list[int]] = defaultdict(list)
+        for index, row in enumerate(previous):
+            if identity:
+                if (key := _compound_key(row, identity)) is not None:
+                    self.exact[key].append(index)
+                continue
+            for strong in _strong_values(row):
+                self.strong[strong].append(index)
+            names = _weak_values(row, _NAME_KEYS)
+            if names:
+                for weak in [*names, *_weak_values(row, _CONTEXT_KEYS)]:
+                    self.weak[weak].append(index)
+
+    def candidates(self, row: dict[str, Any]) -> list[int] | set[int]:
+        if self.identity:
+            key = _compound_key(row, self.identity)
+            return self.exact.get(key, []) if key is not None else []
+        possible = {index for value in _strong_values(row) for index in self.strong.get(value, ())}
+        names = self._postings(row, _NAME_KEYS)
+        context = self._postings(row, _CONTEXT_KEYS)
+        if names and context:
+            # A weak match requires both groups. Visit the smaller set of
+            # postings, so a common city does not defeat a selective name.
+            narrow = min((names, context), key=lambda group: sum(map(len, group)))
+            for indices in narrow:
+                possible.update(indices)
+        return possible
+
+    def _postings(self, row: dict[str, Any], fields: tuple[str, ...]) -> list[list[int]]:
+        return [self.weak[key] for key in _weak_values(row, fields) if key in self.weak]
 
 
 def apply_smart_ids(
@@ -285,14 +365,18 @@ def apply_smart_ids(
 
     if any(relation_name in row for row in rows):
         raise VerboisyError("SmartID relation field already exists in output rows")
+    if not rows:
+        return [], []
 
     decisions: list[dict[str, Any]] = []
     result: list[dict[str, Any]] = []
+    index = _ReferenceIndex(previous, identity_fields)
     for row in rows:
         matched: list[tuple[dict[str, Any], list[str]]] = []
-        for old in previous:
+        for location in index.candidates(row):
+            old = previous[location]
             fields = (
-                _matching_declared_identity(row, old, identity_fields)
+                _declared_match(row, old, identity_fields)
                 if identity_fields
                 else _matching_identity_fields(row, old)
             )
@@ -320,18 +404,8 @@ def apply_smart_ids(
     return result, decisions
 
 
-def _matching_declared_identity(
-    new: dict[str, Any], old: dict[str, Any], pointers: list[str]
-) -> list[str]:
-    """All declared components must match; never fall back to weaker evidence."""
-    for pointer in pointers:
-        try:
-            left, right = lookup(new, pointer), lookup(old, pointer)
-        except (KeyError, IndexError, TypeError, ValueError):
-            return []
-        if not _same_identifier(left, right):
-            return []
-    # Retain contradiction vetoes for additional shared strong identifiers.
+def _declared_match(new: dict[str, Any], old: dict[str, Any], pointers: list[str]) -> list[str]:
+    """Retain contradiction vetoes after the full, typed compound key matches."""
     for key in _STRONG_KEYS:
         if (
             key in new
@@ -355,9 +429,8 @@ def _matching_identity_fields(new: dict[str, Any], old: dict[str, Any]) -> list[
     if strong:
         return strong
     # Names alone are insufficient. Require at least one additional exact context field.
-    name_keys = [key for key in ("name", "full_name") if _same_field(new, old, key)]
-    context_keys = ("surname", "company", "employer", "city", "country", "address", "model")
-    shared = [key for key in context_keys if key in new and key in old]
+    name_keys = [key for key in _NAME_KEYS if _same_field(new, old, key)]
+    shared = [key for key in _CONTEXT_KEYS if key in new and key in old]
     if any(not _same_nonempty(new[key], old[key]) for key in shared):
         return []
     context = [key for key in shared if _same_nonempty(new[key], old[key])]
@@ -368,11 +441,8 @@ def _matching_identity_fields(new: dict[str, Any], old: dict[str, Any]) -> list[
 
 def _same_identifier(left: Any, right: Any) -> bool:
     """Opaque identifiers and URLs require exact, type-preserving equality."""
-    if type(left) is not type(right) or not isinstance(left, str | int) or isinstance(left, bool):
-        return False
-    if isinstance(left, str) and not left.strip():
-        return False
-    return bool(left == right)
+    value = _identifier(left)
+    return value is not None and value == _identifier(right)
 
 
 def _same_field(left: dict[str, Any], right: dict[str, Any], key: str) -> bool:
