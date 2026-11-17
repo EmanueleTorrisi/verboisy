@@ -181,6 +181,8 @@ def export_dataset(
             if any(source.projection is not None for source in task.dataset_sources)
             else "exact_dataset_values"
             if task.dataset_sources
+            else "literal_html_metadata"
+            if task.html_metadata_discovery
             else "literal_evidence_with_model_semantic_review"
         ),
         "truth_verified": False,
