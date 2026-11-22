@@ -1,10 +1,12 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Verboisy documentation
+# Verboisy 2.0.0 documentation
 
 Verboisy turns research questions and permitted sources into structured records with
 inspectable evidence. It also prepares existing datasets through deterministic
-adapters and supports a separate disk-backed workflow for large local files.
+adapters and supports a separate disk-backed workflow for large local files. The
+production scope covers local dataset preparation and extraction from declared public
+sources. [Read the 2.0.0 release notes](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200).
 
 ## Start with your workflow
 
@@ -13,7 +15,9 @@ adapters and supports a separate disk-backed workflow for large local files.
 | Install the direct `verboisy` command | [Installation](installation.md) |
 | Research a question and export structured records | [CLI](cli.md), [contracts](contracts.md) and [providers](providers.md) |
 | Prepare local or declared HTTP inputs | [Ingestion](ingestion.md) and [file capabilities](formats.md) |
-| Prepare large local files with checkpoints | [Streaming](streaming.md) |
+| Reuse a pinned research or ingestion definition | [Versioned workflows](cli.md#versioned-workflows) |
+| Prepare, compare, and verify large local datasets | [Streaming](streaming.md) |
+| Extract declared metadata and table cells from web pages | [Declared HTML extraction](search-and-recovery.md#declared-html-extraction) |
 | Integrate with an application | [Python API](api.md) |
 | Inspect evidence and transformations | [Proof](proof.md), [research semantics](research-semantics.md) and [presentation](presentation.md) |
 
@@ -38,17 +42,16 @@ Bug reports and feature requests are welcome. Security reports should be sent
 privately through the [security policy](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
 
 
-## Data guarantees and qualification
+## Data guarantees
 
 Ordinary output reserves generated `id`; source IDs require explicit projection.
 Optional absence and explicit null remain distinct. Streaming is a separate row-validation
 contract with verified capture/checkpoint paging; see [streaming](streaming.md).
 
-Version `1.0.0` is qualified for the documented workflows, supported environments
-and tested limits. The [release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) records current evidence and
-approvals. [Historical offline results](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/results/offline-validation.json)
-retain their original source and environment context. See [validation](validation.md)
-for the engineering process and [evaluation](evaluation.md) for acceptance methods.
+Saved captures and ordered schemas support repeatable exports, and evidence sidecars
+preserve each accepted value’s origin. See [proof](proof.md) for delivery checks,
+[providers](providers.md) for hosted research, and [validation](validation.md) for
+engineering evidence by build and environment.
 
 ## Prepare a release
 
