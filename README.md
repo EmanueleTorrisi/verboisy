@@ -6,7 +6,7 @@
 <p align="center">Evidence-backed research · Structured extraction · Local data preparation · Portable provenance</p>
 <p align="center">
   <a href="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml"><img src="https://github.com/EmanueleTorrisi/verboisy/actions/workflows/ci.yml/badge.svg" alt="Continuous integration" /></a>
-  <img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB" alt="Python 3.11–3.14" />
+  <img src="https://img.shields.io/badge/Python-3.11.5%E2%80%933.14-3776AB" alt="Python 3.11.5–3.14" />
   <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Source%20inspection%20only-7057ff" alt="Source inspection license" /></a>
 </p>
 <p align="center"><a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#what-verboisy-does">Overview</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#see-the-cli-in-use">Demo</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#getting-started">Getting started</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#documentation">Documentation</a> · <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/README.md#licensing-demos-and-commercial-enquiries">Demos & licensing</a></p>
@@ -21,7 +21,25 @@
   <a href="https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/readme/README.zh-CN.md">简体中文</a>
 </p>
 
-> **Release status:** Version `1.0.0` is ready for production use within the documented workflows, supported environments and tested limits. The [release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) records the supporting engineering checks, real-task evaluation, independent beta and release-owner approvals.
+> **Verboisy 2.0.0** is ready for production use for local dataset preparation and extraction from declared public sources. These workflows support resumable processing and exports with traceable source evidence. [Release notes](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200).
+
+
+## New in 2.0.0
+
+- **Repeatable research and ingestion.** Pin a versioned workflow, bind inputs explicitly,
+  and extract text or typed table cells from declared pages with source proofs.
+  An optional project cache reuses verified source assessments.
+- **Dataset checks and updates.** Check row counts, completeness, and key uniqueness.
+  Compare two completed streams and distinguish deletions from rows absent in a partial snapshot.
+- **Portable analytical delivery.** Export bounded gzip JSONL or typed Parquet shards with
+  evidence and checksums. Verify a received bundle without the originating ledger.
+- **Recovery and operations.** Page through records under row and byte limits, resume from
+  saved captures, and preserve declared CSV columns across replay. Inspect saved runs and
+  preview retention in a private Linux workspace.
+- **Controlled model execution.** Select models by role from an approved catalog and
+  configure separate limits for hosted search attempts and OpenAI search tool calls.
+
+See the [complete 2.0.0 changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200) for configuration, compatibility, and reliability changes.
 
 ## What Verboisy does
 
@@ -68,8 +86,7 @@ Verboisy makes those questions part of the data workflow:
 This is useful for analyst research, reference-data collection, data preparation,
 internal information workflows and reproducible investigations. Scientific and
 regulated uses still require independent review of sources, sampling and conclusions.
-Verboisy's long-term ambition is to become a trusted standard for evidence-backed
-data extraction; that is a product direction, not a claim of market leadership.
+The same evidence model supports collection, review, and downstream delivery.
 
 ### Use AI where interpretation adds value
 
@@ -90,7 +107,7 @@ correctness remains subject to source quality and review.
 
 | Workflow | Typical input | Output | Execution |
 | --- | --- | --- | --- |
-| Web research | A question, columns or schema, permitted sites | Structured records, evidence and saved research state | Browser and configured model; optional search discovery |
+| Web research | A question, schema and permitted sites | Structured records, evidence and saved research state | Chromium; declared HTML bindings run without a model, while semantic research and hosted discovery use configured providers |
 | Dataset preparation | Granted local files or declared HTTP GET sources | Validated/projected records and retained source assets | Deterministic parsing without model, search or browser calls |
 | Large local preparation | CSV, TSV, JSONL, text or asset bytes | Paged records, counts, durable checkpoints and streaming bundles | Separate disk-backed ledger and bounded buffers |
 
@@ -123,7 +140,7 @@ See [evaluation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/eval
 
 ### Requirements
 
-- Python **3.11–3.14**. Use the operating-system and interpreter profiles recorded in the release matrix.
+- Python **3.11.5 or later**, through Python 3.14. See [installation](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/installation.md) for platform requirements.
 - A written evaluation or usage license for execution.
 - For model-based research, an approved provider profile and its credentials.
 - For browser acquisition, Chromium and the required system libraries.
@@ -357,7 +374,7 @@ to the current architecture. Source permissions, independent review and measured
 task outcomes define the scope of a research result.
 
 
-## Data and qualification boundaries
+## Data contracts
 
 Ordinary output reserves top-level `id` for generated row metadata. Rename source IDs
 explicitly to `source_id` with a [projection](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/ingestion.md#explicit-projection-engine);
@@ -369,8 +386,4 @@ combinators and conditionals are rejected, rather than silently ignored. Prepara
 exits 0 when completed, 2 when paused, 1 when failed and 130 when interrupted;
 read-only inspection can succeed for an incomplete job.
 
-Production qualification is tied to the released source, approved workflows and
-recorded environments. Historical scale measurements retain their original source
-and host context. Current engineering results, acceptance evidence and release
-approvals are recorded in
-[release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) and [release guide](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/release.md).
+Hosted search and model-assisted research follow the [provider contract](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/providers.md). Streaming resource ceilings and workload measurements are described in the [streaming guide](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/streaming.md).
