@@ -18,7 +18,15 @@
 <p align="center">証拠に基づく調査 · 構造化抽出 · ローカルデータ · 持ち運べる来歴</p>
 
 
-> **リリース状況：** バージョン `1.0.0` は、文書化されたワークフロー、対応環境、検証済みの制限の範囲内で、本番利用に対応しています。[リリースマトリクス](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json)には、その根拠となる技術検証、実タスク評価、独立したベータテスト、リリース責任者による承認を記録しています。
+> **Verboisy 2.0.0 は、ローカルデータセットの整備と、明示的に指定した公開ソースからの抽出における本番利用に対応します。処理は中断後に再開でき、エクスポートから出典をたどれます。** [リリースノートの全文](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200).
+
+## 2.0.0 の新機能
+
+- 入力を明示したバージョン管理付きワークフロー、根拠付きの HTML メタデータ・表の抽出、プロジェクト単位のソース評価キャッシュ。
+- データセットの品質ルールと、完了したスナップショットのキーに基づく比較。
+- gzip 圧縮 JSONL または型付き Parquet への分割エクスポート。根拠とチェックサムを含み、ローカルで検証可能。
+- CSV の列順を維持する処理再開、運用レポート、非公開の Linux 作業領域での保持ルール。
+- 承認済みカタログによる役割別のモデル選択と、外部検索サービスの使用上限の設定。
 
 ## 製品について
 
@@ -71,7 +79,7 @@ Web 調査はブラウザーと設定済みモデルを使い、検索による�
 
 ## インストールと設定
 
-Python **3.11–3.14** と書面による実行許可が必要です。Poetry は開発用ツールで、インストール後のコマンドは `verboisy` です。リリースマトリクスに記載された OS とインタープリターの構成を使用してください。Web 調査にはプロバイダーの設定、Chromium、システムライブラリーが必要です。ローカル入力にはディレクトリーの許可と空き容量が必要です。C++ コンパイラーは不要です。
+Python **3.11.5–3.14** と書面による実行許可が必要です。Poetry は開発用ツールで、インストール後のコマンドは `verboisy` です。リリースマトリクスに記載された OS とインタープリターの構成を使用してください。Web 調査にはプロバイダーの設定、Chromium、システムライブラリーが必要です。ローカル入力にはディレクトリーの許可と空き容量が必要です。C++ コンパイラーは不要です。
 
 許可されたチェックアウトで以下のコマンドを実行してください。pipx が導入済みなら、`pipx install .` によりプロジェクト外でもコマンドを使えます。許可された PyPI 公開後は `pipx install verboisy` を使えます。現時点での PyPI 公開は前提としていません。`python examples/local_quickstart.py` はモデルやブラウザーなしで 2 件の合成レコードを検証します。
 
@@ -173,12 +181,12 @@ Verboisy は独自ライセンスのソフトウェアで、**オープンソー
 
 **Emanuele Torrisi** が Verboisy を制作・保守し、現在は唯一の開発者です。[不具合報告と機能要望](https://github.com/EmanueleTorrisi/verboisy/issues)を歓迎します。脆弱性は[セキュリティ方針](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md)に従い非公開で報告してください。
 
-依頼していないコード提供は受け付けません。有償協力には、範囲、報酬、守秘義務、知的財産権について事前の合意が必要です。版ごとの変更は[変更履歴](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)、0.1.0 から 1.0.0 への構成の変遷は[バージョン履歴](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)に記録しています。[参加方針](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)と[著作権](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)も参照してください。
+依頼していないコード提供は受け付けません。有償協力には、範囲、報酬、守秘義務、知的財産権について事前の合意が必要です。版ごとの変更は[変更履歴](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)、0.1.0 から 2.0.0 への構成の変遷は[バージョン履歴](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)に記録しています。[参加方針](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)と[著作権](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)も参照してください。
 ## 実践的なワークフロー
 
 [研究機関のカタログ](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
 [大規模なローカル観測データの処理](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md) ·
-[バージョン履歴：0.1.0–1.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
+[バージョン履歴：0.1.0–2.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
 
 
 ## データ契約と検証範囲
