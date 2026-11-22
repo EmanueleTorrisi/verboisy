@@ -18,7 +18,15 @@
 <p align="center">基于证据的研究 · 结构化提取 · 本地数据 · 可移植溯源</p>
 
 
-> **发布状态：** 版本 `1.0.0` 已具备生产使用条件，适用范围为文档所述的工作流、受支持的环境和经过测试的限制。[发布矩阵](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json)记录了作为依据的工程检查、真实任务评估、独立 Beta 测试以及发布负责人的批准。
+> **Verboisy 2.0.0 可在生产环境中用于本地数据集处理和从明确指定的公开来源提取数据。处理可在中断后续接，导出数据可追溯至来源。** [完整发布说明](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200).
+
+## 2.0.0 新特性
+
+- 支持显式输入绑定的版本化工作流、附带来源证据的 HTML 元数据和表格提取，以及可选的项目级来源评估缓存。
+- 数据集质量规则，以及按键比较已完成的数据快照。
+- 分片导出为 gzip 压缩的 JSONL 或带类型约束的 Parquet，附带证据和校验和，支持本地验证。
+- 恢复运行时保持 CSV 列顺序不变，并支持运行报告和 Linux 私有工作区内的数据保留策略。
+- 从获批目录中按角色选择模型，并配置托管搜索的使用上限。
 
 ## 产品介绍
 
@@ -71,7 +79,7 @@ Verboisy 将确定性代码与承担语义理解的 AI 结合使用。结构化�
 
 ## 安装与配置
 
-需要 Python **3.11–3.14** 和书面运行许可。Poetry 是开发工具，安装后的命令是 `verboisy`。请使用发布矩阵列明的操作系统和解释器配置。网页研究需要配置提供商、Chromium 和系统库。本地输入需要目录授权及磁盘空间，无需 C++ 编译器。
+需要 Python **3.11.5–3.14** 和书面运行许可。Poetry 是开发工具，安装后的命令是 `verboisy`。请使用发布矩阵列明的操作系统和解释器配置。网页研究需要配置提供商、Chromium 和系统库。本地输入需要目录授权及磁盘空间，无需 C++ 编译器。
 
 请在已获授权的源码目录中执行以下命令。安装 pipx 后，可用 `pipx install .` 在项目目录之外使用该命令。经授权发布到 PyPI 后，可用 `pipx install verboisy`。这里不假定软件已在 PyPI 发布。`python examples/local_quickstart.py` 无需模型或浏览器即可核验两条合成记录。
 
@@ -173,13 +181,13 @@ Verboisy 是专有软件，**不是开源项目**。英文 LICENSE 是正式条�
 
 **Emanuele Torrisi** 创建并维护 Verboisy，目前是项目唯一开发者。欢迎通过 [GitHub Issues](https://github.com/EmanueleTorrisi/verboisy/issues) 提交缺陷和功能请求。漏洞请按照[安全政策](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md)私下报告。
 
-目前不接受未经邀请的代码贡献。有偿合作需事先约定范围、报酬、保密和知识产权。版本变化记录在[更新日志](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)中；[版本历史](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)说明从 0.1.0 到 1.0.0 的架构演进。请参阅[参与政策](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)和[版权](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)。
+目前不接受未经邀请的代码贡献。有偿合作需事先约定范围、报酬、保密和知识产权。版本变化记录在[更新日志](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md)中；[版本历史](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)说明从 0.1.0 到 2.0.0 的架构演进。请参阅[参与政策](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)和[版权](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)。
 
 ## 应用工作流示例
 
 [研究机构目录](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
 [大型本地观测数据处理流程](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md) ·
-[版本历史：0.1.0–1.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
+[版本历史：0.1.0–2.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
 
 
 ## 数据契约与验证范围
