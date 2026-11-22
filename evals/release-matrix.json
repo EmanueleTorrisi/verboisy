@@ -2,7 +2,7 @@
   "schema_version": 1,
   "copyright": "Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms.",
   "status": "qualification_in_progress",
-  "version_baseline": "1.0.0",
+  "version_baseline": "2.0.0",
   "production_status": "not_certified",
   "scope": {
     "product": "General-purpose evidence-backed web research and dataset preparation",
