@@ -39,9 +39,7 @@ system credential sandbox. Endpoints remain operator-controlled configuration.
 ## Mixed hosted and local models
 
 This example selects an explicitly configured OpenAI-compatible local endpoint
-for extraction and a separate gateway model for escalation. Replace identifiers
-and credentials with values appropriate to the installed server; these illustrative
-names are not advertised as live-tested models.
+for extraction and a separate gateway model for escalation. Use the model identifiers and credentials issued for each configured endpoint.
 
 ```dotenv
 EXTRACTION_MODEL=openai/local-model
@@ -53,6 +51,20 @@ Keep populated configuration files private. Do not place real secrets in tasks,
 schemas, source documents, logs or committed examples. A local extraction model
 does not make a whole run offline: other roles, search, browser acquisition and
 provider SDK behavior still need a separate no-egress qualification.
+
+## Model selection by role
+
+Set `LLM_MODEL_ROUTING` to a JSON catalog with one `provider`, a `models` list
+and optional `input_tokens_by_role`. Each entry declares its provider-qualified
+`model`, permitted `roles`, `context_tokens`, `max_output_tokens`, JSON-object
+capability (`json_object`), and input/output price estimates in microdollars per
+million tokens.
+
+The router considers the resolved provider profile and role requirements, then
+selects the eligible model with the lowest estimated cost. Explicit role overrides
+must also be eligible in the selected catalog. Inspect the resolved routing with
+`verboisy model-config` before execution. Catalog estimates do not replace provider
+billing. Hosted search has a separate configuration and credential path.
 
 ## Inspect before transport
 
@@ -72,14 +84,11 @@ same ledger and ceiling. Provider-reported tokens remain separate from request
 units and from monetary cost. No compatibility fallback sends an unbudgeted
 second request or silently changes model settings.
 
-## Qualification boundary
+## Provider configuration contract
 
-The offline suite checks request construction, role routing, credential isolation,
-prompt-mode validation, escalation, budget enforcement and safe inspection using
-test transports. It does not measure live provider accuracy or availability.
-Qualification must record the installed LiteLLM version, actual model identifier,
-endpoint class, response mode and tested authentication mechanism. Run the same
-held-out tasks for each advertised provider profile under an approved paid budget.
+The deployment profile specifies the LiteLLM version, model identifier, endpoint
+class, response mode and authentication mechanism. Accuracy, availability,
+and billing depend on the chosen provider, model, and task.
 
 The integration uses LiteLLM's normalized completion interface. Providers requiring
 additional custom authentication or request parameters need an adapter or a
