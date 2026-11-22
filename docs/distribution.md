@@ -22,10 +22,9 @@ controls downloading, not copying afterward; revocation does not disable install
 
 ## Prepare tested artifacts
 
-The README and its translations contain the prepared production-release statement.
-Publish them with the reviewed release after the release matrix is complete for the
-exact source revision and evidence. The commands below enforce that requirement
-before uploading to either public package index.
+Each distribution is identified by its version, source revision and artifact checksums.
+Prepare the wheel and source archive from the selected release source, with the
+capabilities and operating limits documented in the corresponding release notes.
 
 ```bash
 source .venv/bin/activate
@@ -43,8 +42,8 @@ hashes. No broad `dist/*` upload is used. The candidate file remains ignored in 
 One-time registration, email verification, 2FA and token setup require the account
 interface: [PyPI](https://pypi.org/account/register/) and
 [TestPyPI](https://test.pypi.org/account/register/) have separate accounts and tokens.
-There is no supported terminal-only replacement for that registration. No editor
-is needed; package preparation and upload below are terminal commands.
+Complete registration in the account interface before preparing and uploading
+artifacts from the terminal.
 
 For a new project, use a pending Trusted Publisher or an account-scoped upload token;
 after it exists, prefer project-scoped tokens. Confirm your account controls the
@@ -122,10 +121,11 @@ VERBOISY_VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyprojec
 git tag -a "v$VERBOISY_VERSION" -m "Release Verboisy $VERBOISY_VERSION"
 git push origin "v$VERBOISY_VERSION"
 gh release create "v$VERBOISY_VERSION" --verify-tag \
-  --title "Verboisy $VERBOISY_VERSION" --notes-file CHANGELOG.md
+  --title "Verboisy $VERBOISY_VERSION" --notes-file release-notes.md
 ```
 
-Publishing that GitHub release triggers the public PyPI workflow. Do not run this
+Use the release notes for the selected version in `release-notes.md`. Publishing
+the GitHub release triggers the public PyPI workflow. Do not run this
 for a version already uploaded manually. See [Trusted Publisher setup](https://docs.pypi.org/trusted-publishers/adding-a-publisher/)
 and [new-project setup](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/).
 

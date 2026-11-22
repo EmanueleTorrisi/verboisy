@@ -6,39 +6,86 @@ Changes are grouped by product version and technical subsystem. Version identifi
 refer to the corresponding implementation; publication dates are recorded with
 release tags rather than inferred from documentation edits.
 
-## Unreleased
 
-### Contract and reliability corrections
+## 2.0.0
 
-The following changes are unreleased:
+Verboisy 2.0.0 is the production release for local dataset preparation and extraction
+from declared public sources. It adds repeatable workflows, dataset checks,
+verifiable analytical delivery, and tighter recovery contracts.
 
-- Reserve ordinary top-level source IDs; preserve optional absence and typed groups,
-  finite aggregates, mixed-value ordering and contributor missingness.
-- Resolve local schema references and numeric object policies consistently across
-  preflight, semantic plans and presentation. Enable each policy role through its
-  own provider profile and reject ambiguous/non-finite model JSON.
-- Verify streaming contracts, prefix replay and paged records; reject unsupported
-  collection predicates without changing the version-1 ledger.
-- Protect unrelated databases, bind SmartID reference formats/checksums, align CLI
-  registration and incomplete exit codes, and include browser startup in deadlines.
-- Make provisioning cancellable, report denied browser target gaps, sync publication
-  directory entries, pin workflow actions and validate distribution archives.
+### Research and acquisition
 
-These changes introduce stricter input/replay boundaries. They do not establish
-provider acceptance, platform execution or production certification. Explicit
-credential routing does not prevent a provider SDK from using its own environment.
+- Define versioned workflows with a goal, schema, task, and explicit input bindings.
+  Validate recipes without acquiring sources with `workflow-check`, optionally pin
+  the exact file SHA-256, and carry workflow identity into exports and replay.
+- Extract literal text from a selected region or definition list, and extract text
+  or signed integer cells from declared visible HTML tables. Bind each value to its
+  source, preserve declared nulls for absent metadata, and refuse ambiguous
+  layouts and missing required cells.
+- Opt in to hosted discovery for metadata tasks restricted to declared HTTPS hosts
+  and paths. Persist the selected detail pages and search acquisition across resume;
+  an accepted scope change can renew discovery without resetting request history.
+- Use an opt-in model catalog to choose eligible models per role based on declared
+  capabilities, context limits and estimated cost. Preserve explicit role overrides
+  and keep provider credentials separate from hosted discovery credentials.
+- Cap OpenAI search tool calls per request and retain provider usage for incomplete
+  responses. Report tool entries and billable search counts separately from search
+  attempt budgets and invoice totals.
+- Reuse verified source assessments in a private, scoped project cache with expiration
+  and size limits. Bind reuse to the captured source and resolved request contract.
+  Inspect, clear or bypass the cache explicitly.
 
+### Dataset operations and delivery
 
-### Export integrity and ingestion performance
+- Compare completed streaming snapshots by explicit single or compound keys with
+  `stream-update`. Export inserts, updates and count summaries; report absent rows as
+  unobserved unless both snapshots are declared complete.
+- Enforce versioned quality contracts with `stream-quality`: row bounds, minimum
+  field completeness, and unique typed keys. Keep failures distinct from execution
+  errors with an explicit CLI exit code.
+- Publish bounded gzip JSONL and typed Parquet shards with source hashes, row evidence,
+  and a manifest. Parquet uses an explicit physical column contract and PyArrow.
+- Verify delivered bundles offline with `stream-verify`. Check file digests and proof
+  inventories for both formats, and compare decoded data rows and proofs for gzip JSONL.
+- Page through verified streaming results with explicit byte and row budgets and a
+  stable continuation cursor. Resume from a checked checkpoint without revalidating
+  the same captured prefix twice.
+- Read versioned operational reports for research or streaming ledgers. Preview
+  retention in an owner-private Linux workspace, protect saved IDs, and apply a
+  specific unchanged plan by its SHA-256.
 
-- Reject output and provenance aliases of source, configuration, ledger and SmartID
-  inputs, including symlinks and hardlinks. Retain known input paths on resume and
-  recheck destinations before publication.
-- Protect formula-capable streaming CSV headers and cells by default. Add a saved
-  JSON-encoded CSV mode while preserving original values in evidence sidecars.
-- Replace per-row collection recounting with committed admission deltas. Preserve
-  duplicate, preferred-replacement and conflict behavior without changing public
-  disposition strings. Add a reproducible complete-ingestion benchmark.
+### Contract and recovery corrections
+
+- Preserve CSV schema column order across resume and keep the saved source policy on
+  navigation and recovery. Align CLI artifact labels and expose the installed version.
+- Protect source, configuration, ledger, and SmartID inputs against export aliases
+  and recheck publication paths, including symlinks and hardlinks.
+- Protect spreadsheet-mode streaming CSV headers and fields that could be interpreted
+  as formulas. Preserve original values in evidence and keep a saved JSON CSV mode for
+  typed interchange.
+- Preserve optional absence, typed grouping, finite aggregates, mixed-value ordering,
+  and contributor missingness. Resolve local schema references consistently and reject
+  duplicate-key or non-finite model JSON.
+- Index SmartID reference matching; preserve typed compound keys and contributor scope.
+  Verify reference mode and hashes before execution and reject a changed reference on resume.
+- Restore validated `--task` files, align incomplete-run exit codes, preserve unrelated
+  ledgers, include browser startup in runner deadlines, and cancel owned provisioning
+  processes when setup is interrupted.
+- Verify streaming contracts, captures, prefix replay, and pages without altering the
+  version 1 ledger. Reject unsupported collection rules before ingestion and publish
+  manifests only after their referenced files are in place.
+
+### Runtime and packaging
+
+- Load CLI and Python execution components on demand. Use committed admission deltas
+  instead of recounting the collection after every row, and reuse verified JSON during
+  streaming replay and proof serialization.
+- Optimize ASCII word boundaries and whole-text matching in the optional native engine
+  while retaining Unicode behavior and the Python fallback.
+- Require Python 3.11.5 or later, through Python 3.14. Refresh the dependency lock and
+  validate built archives and installations from both wheel and source distribution.
+
+See the [migration guide](docs/migration.md) for upgrade and replay behavior.
 
 ## 1.0.0
 

@@ -18,7 +18,15 @@
 <p align="center">근거 기반 조사 · 구조화 추출 · 로컬 데이터 · 이동 가능한 출처 기록</p>
 
 
-> **릴리스 상태:** 버전 `1.0.0`은 문서화된 워크플로, 지원 환경 및 검증된 한도 내에서 프로덕션 사용이 가능합니다. [릴리스 매트릭스](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json)는 이를 뒷받침하는 기술 검증, 실제 작업 평가, 독립 베타 테스트 및 릴리스 책임자의 승인을 기록합니다.
+> **Verboisy 2.0.0은 로컬 데이터셋 준비와 명시적으로 지정한 공개 출처의 데이터 추출에 프로덕션 환경에서 사용할 수 있습니다. 중단된 처리를 재개할 수 있으며 내보낸 데이터에서 출처를 추적할 수 있습니다.** [전체 릴리스 노트](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200).
+
+## 2.0.0의 새로운 기능
+
+- 입력을 명시하는 버전 관리형 워크플로, 근거를 남기는 HTML 메타데이터 및 표 추출, 선택적으로 사용하는 프로젝트별 출처 평가 캐시.
+- 데이터셋 품질 규칙과 완료된 스냅샷 간의 키 기반 비교.
+- 근거와 체크섬을 포함한 분할 내보내기(gzip JSONL 또는 타입이 지정된 Parquet)와 로컬 검증.
+- 재개 시 CSV 열 순서 유지, 운영 보고서, 비공개 Linux 작업 공간의 보존 정책.
+- 승인된 카탈로그의 역할별 모델 선택과 외부 검색 서비스의 사용 한도 설정.
 
 ## 제품 소개
 
@@ -71,7 +79,7 @@ Verboisy는 결정론적 코드와 의미 해석을 담당하는 AI를 결합합
 
 ## 설치와 설정
 
-Python **3.11–3.14**와 서면 실행 허가가 필요합니다. Poetry는 개발 도구이며 설치 후 명령은 `verboisy`입니다. 릴리스 매트릭스에 명시된 운영체제와 인터프리터 구성을 사용하세요. 웹 조사에는 공급자 설정, Chromium과 시스템 라이브러리가 필요합니다. 로컬 입력에는 디렉터리 허가와 디스크 공간이 필요하며 C++ 컴파일러는 필요하지 않습니다.
+Python **3.11.5–3.14**와 서면 실행 허가가 필요합니다. Poetry는 개발 도구이며 설치 후 명령은 `verboisy`입니다. 릴리스 매트릭스에 명시된 운영체제와 인터프리터 구성을 사용하세요. 웹 조사에는 공급자 설정, Chromium과 시스템 라이브러리가 필요합니다. 로컬 입력에는 디렉터리 허가와 디스크 공간이 필요하며 C++ 컴파일러는 필요하지 않습니다.
 
 허가된 체크아웃에서 다음 명령을 실행하세요. pipx가 설치되어 있으면 `pipx install .`로 프로젝트 밖에서도 명령을 사용할 수 있습니다. 허가된 PyPI 공개 후에는 `pipx install verboisy`를 사용할 수 있습니다. 현재 PyPI에 공개되어 있다고 가정하지 않습니다. `python examples/local_quickstart.py`는 모델이나 브라우저 없이 합성 레코드 두 개를 검증합니다.
 
@@ -173,12 +181,12 @@ Verboisy는 독점 소프트웨어로 **오픈소스가 아닙니다**. 영문 L
 
 **Emanuele Torrisi**가 Verboisy를 만들고 유지하며 현재 유일한 개발자입니다. [버그 보고와 기능 요청](https://github.com/EmanueleTorrisi/verboisy/issues)을 환영합니다. 취약점은 [보안 정책](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md)에 따라 비공개로 보고하세요.
 
-요청하지 않은 코드 기여는 받지 않습니다. 유료 협업은 범위, 보수, 기밀 유지와 지식재산권에 대한 사전 합의가 필요합니다. 버전 변경은 [변경 기록](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md), 0.1.0에서 1.0.0까지의 발전은 [버전 역사](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)에 기록합니다. [참여 정책](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)과 [저작권](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)을 확인하세요.
+요청하지 않은 코드 기여는 받지 않습니다. 유료 협업은 범위, 보수, 기밀 유지와 지식재산권에 대한 사전 합의가 필요합니다. 버전 변경은 [변경 기록](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md), 0.1.0에서 2.0.0까지의 발전은 [버전 역사](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)에 기록합니다. [참여 정책](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md)과 [저작권](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md)을 확인하세요.
 ## 실제 워크플로 예제
 
 [연구 기관 목록](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
 [대규모 로컬 관측 데이터 처리](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md) ·
-[버전 이력: 0.1.0–1.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
+[버전 이력: 0.1.0–2.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
 
 
 ## 데이터 계약과 검증 범위

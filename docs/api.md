@@ -34,6 +34,25 @@ Internal 0.1 `Agent`, `Planner`, raw `ExtractionEngine` and `DatabaseManager` AP
 retired; importing them is intentionally unsupported in this breaking revision.
 
 
+## Reusable workflows
+
+`run(workflow=..., workflow_sha256=..., workflow_inputs=..., config=...)`
+executes a versioned workflow with the same source grants and validation as the
+CLI. For local input aliases, pass a dictionary from alias names to paths. The
+workflow checksum identifies the exact definition in each export manifest.
+`arun` accepts the same arguments. See [workflow definitions](cli.md#versioned-workflows).
+
+## Streaming and ledgers
+
+`verboisy.streaming` provides `stream_updates`, `check_stream_quality`,
+`export_stream_analytics`, and `verify_stream_analytics`. These functions
+operate on completed captures or portable bundles. `StreamLedger.page` supports
+both row and byte budgets. [Large local datasets](streaming.md) describes the
+record, comparison and delivery contracts.
+
+`verboisy.operational_report` reads saved research or streaming ledger metadata.
+It returns a versioned dictionary without loading record payloads into the report.
+
 ## Resolved input and output contracts
 
 New research contracts are validated before opening saved state. `maxrows` must be

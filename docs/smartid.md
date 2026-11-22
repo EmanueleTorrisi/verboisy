@@ -102,6 +102,14 @@ unbound events establish a first verified binding labelled unrecorded, without c
 retroactive verification. Checksums establish consistency, not authenticity. Matching
 remains conservative and exact; source IDs require ordinary explicit projection.
 
+## Matching through export and resume
+
+Reference lookups index typed exact and contextual keys. Output relationships are
+derived from typed contributor records before display conversions. Grouped or
+ambiguous contributors do not create a relationship unless the saved evidence
+supports the link. Saved runs validate the original reference binding before
+resuming, preserving the reference ID semantics across presentation changes.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)

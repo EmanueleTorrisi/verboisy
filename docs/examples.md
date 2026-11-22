@@ -3,8 +3,7 @@
 # Applied workflows
 
 Verboisy provides separate interfaces for research and large local data preparation.
-The examples below use those actual interfaces and expose source scope, resource
-ceilings, status and recovery rather than providing prerecorded output.
+The workflows below define source scope, resource ceilings, status, and recovery.
 
 ## Multi-source research catalogue
 
@@ -16,7 +15,7 @@ published services. A compound identity and a 100-record target make the task ex
 The script previews its contract without making requests. `--live` starts actual
 model/browser research under host, page and request ceilings. It exports accepted
 JSON/CSV records with evidence and reports partial or failed outcomes accurately.
-Sources are selected by the caller; no fictitious URLs are advertised as acquired data.
+Each resulting record links to its acquired source.
 
 ## Large local observation pipeline
 
@@ -26,9 +25,8 @@ The generator can write multi-gigabyte input with bounded memory and reports its
 byte count and SHA-256. The processing script pauses at a row budget, resumes from
 captured bytes, exports evidence-bearing JSONL and reads a bounded sample with paging.
 
-Generation is a workload, not internet research. Recorded [scale measurements](streaming.md)
-identify their implementation and environment. Gigabyte input files are generated
-locally rather than stored in the repository.
+The generator writes inputs locally. Recorded [scale measurements](streaming.md)
+identify the implementation, runtime, and input characteristics for each workload.
 
 ## Demonstrations
 

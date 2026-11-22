@@ -53,6 +53,56 @@ This mode can use substantially more browser requests, search requests, model to
 
 `--task PATH` loads the existing advanced TaskSpec configuration. Advanced JSON Schema and task policies remain the lower-level contract used by the same research engine.
 
+### Versioned workflows
+
+A workflow JSON file declares `version: "1"`, a lowercase `name`, a positive
+integer `revision`, `goal`, `schema`, and `task`. Local dataset sources use a
+named `input:NAME` binding; the bound path must still be within the configured
+dataset roots. HTTP(S) sources belong in the task and use separate acquisition
+credentials where applicable.
+
+An inventory recipe (`inventory.json`) for a two-row CSV with `namespace` and
+`sku` headers:
+
+```json
+{
+  "version": "1",
+  "name": "inventory",
+  "revision": 1,
+  "goal": "Prepare inventory keys from the supplied catalogue.",
+  "schema": {
+    "type": "object",
+    "properties": {"namespace": {"type": "string"}, "sku": {"type": "string"}},
+    "required": ["namespace", "sku"],
+    "additionalProperties": false
+  },
+  "task": {
+    "target_records": 2,
+    "identity_fields": ["/namespace", "/sku"],
+    "dataset_sources": [{"url": "input:catalog", "format": "csv"}]
+  }
+}
+```
+
+```bash
+verboisy workflow-check inventory.json --sha256 "$WORKFLOW_SHA256"
+verboisy run --workflow inventory.json --workflow-sha256 "$WORKFLOW_SHA256" \
+  --workflow-input "catalog=$CATALOG_CSV" --proof --export inventory-output.json
+```
+
+`workflow-check` validates the definition without reading data inputs or starting a
+run. Execution saves the workflow name, revision and checksum in export provenance.
+`--resume` reuses the saved contract. See [declared HTML extraction](search-and-recovery.md#declared-html-extraction)
+for page bindings and [Python workflows](api.md#reusable-workflows) for API input binding.
+
+### Project assessment cache
+
+Enable persistence with `--cache-dir` and `--cache-scope`, or the equivalent
+`CACHE_DIRECTORY` and `CACHE_SCOPE` settings. The cache reuses verified source
+assessments for the same capture and request contract. `--no-cache` bypasses it
+for an invocation. Inspect a scope with `verboisy cache --directory "$CACHE_DIR" --scope inventory`;
+include `--clear` to remove that scope's assessments.
+
 ### Explicit entity identity
 
 Use `--identity` with a row-relative JSON pointer to a scalar field in the requested
@@ -355,7 +405,7 @@ so each retry reserves its full request size. Existing persisted reservations
 are retained. Strict object parsing, non-finite-number rejection, token-limit
 selection and temperature settings remain unchanged. HTTP 400 diagnostics for
 `parameter=messages` now point to message structure and JSON instructions.
-# Saved requirement proposals
+## Saved requirement proposals
 
 `verboisy run --resume RUN_ID` continues the saved requirements. If a proposal is
 pending, it records a decline and continues the original contract.
@@ -383,7 +433,7 @@ requirements and decision in the existing event ledger, applies the replacements
 atomically, and requeues browser work under the new requirements. Existing
 snapshots and rejected candidates remain history. Old semantic and source
 assessment caches are not reused under accepted requirements. New browser visits
-may make model requests; this foundation does not yet replay saved snapshots.
+follow the accepted requirements and the saved source policy.
 Neither decision resets token/request accounting or raises the budget.
 
 This initial workflow supports incomplete browser runs with zero accepted rows.
@@ -436,6 +486,28 @@ missing or changed build inputs, and does not contact providers or open a ledger
 Matching hashes do not establish binary compatibility. See [native validation](native.md)
 for the separate compiled-test gate.
 
+
+### Operational reports and retention
+
+`verboisy report` reads saved research or streaming metadata, including status and
+record counts. Select `--kind research` or `--kind stream`; use `--run-id` or
+`--limit` to narrow the report. Records and provider credentials are not included.
+
+In an owner-private Linux workspace with mode 0700, pass `--workspace` and a ledger
+filename instead of a database path. Retention previews list eligible completed runs
+or jobs; `--keep-last` retains recent entries and repeated `--protect-run-id`
+preserves named entries.
+
+```bash
+verboisy report --workspace "$WORKSPACE" --kind stream --database inventory.db
+verboisy retention --workspace "$WORKSPACE" --kind stream --database inventory.db \
+  --keep-last 3 --limit 2
+```
+
+Repeat the preview arguments with `--apply-plan SHA256` to apply that exact plan.
+The operation rejects stale plans and preserves evidence shared with retained runs.
+Use the [streaming guide](streaming.md#quality-updates-and-delivery) for analytical
+checks and bundle delivery.
 
 ### Command completion and validation
 

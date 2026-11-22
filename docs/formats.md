@@ -81,7 +81,7 @@ file bytes can be captured, but are not automatically expanded.
 ## Bounds and rejection behavior
 
 Current default acquisition is 16 MiB and 100,000 output records per asset.
-These adapters are not streaming or qualified for gigabyte-scale inputs.
+Use [streaming](streaming.md) for large local CSV, TSV, JSONL, text, and asset inputs.
 Office archives additionally allow at most 1,024 entries, 16 MiB combined declared
 uncompressed size and a 200:1 maximum per-entry expansion ratio. Members are never
 extracted to disk. Unsafe paths, symlink members, duplicate entries, encryption and
@@ -102,11 +102,19 @@ an empty cell means absence and `null` means explicit null. Streaming `stream-1`
 CSV JSON-encodes both headers and cells and requires stable columns. Spreadsheet
 mode preserves text/escaping semantics and is not universally reversible.
 
-SmartID verifies the adjacent manifest version/mode and primary-file hash before
+New research runs preserve the declared CSV field order across resume. SmartID
+verifies the adjacent manifest version/mode and primary-file hash before
 decoding cells. Unmanifested CSV is text: `001`, `null` and `true` are not heuristically
 converted. Duplicate headers/IDs, ragged rows, invalid UTF-8 and ambiguous/non-finite
 JSON fail. Streaming array roots support only pure object items, reference context,
 standard descriptions and non-validating `x-` annotations; unsupported assertions fail.
+
+## Analytical output formats
+
+Completed streams support [sharded gzip JSONL and typed Parquet delivery](streaming.md#quality-updates-and-delivery).
+Each bundle includes a manifest and row evidence. Parquet is an output format;
+ingestion uses the declarations in the table above. For declared rendered page data,
+see [HTML metadata and table bindings](search-and-recovery.md#declared-html-extraction).
 
 ---
 

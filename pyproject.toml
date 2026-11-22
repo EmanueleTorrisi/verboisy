@@ -3,7 +3,7 @@
 
 [project]
 name = "verboisy"
-version = "1.0.0"
+version = "2.0.0"
 description = "Evidence-backed research and data extraction with portable provenance."
 readme = "README.md"
 license = "LicenseRef-Verboisy-Source-Inspection-2.0"

@@ -66,6 +66,24 @@ uses its adapter contract; it does not invoke a model merely to parse local rows
 | Output semantics | `output`, `presentation`, `time_series`, `research_summary` | Ordered views, display choices and scoped diagnostics | Mutating raw evidence or certifying missing real-world facts |
 | Distribution | `storage.dataset`, `asset_bundle`, `lineage`, `proof` | Portable assets, checksums, contributor/cell lineage and proof | Cryptographic authenticity or factual truth |
 
+## Reusable runs and dataset operations
+
+Versioned workflow definitions bind the goal, schema and task to an exact file
+digest. Local input aliases resolve at execution against source grants. Research
+stores the workflow origin with the run and preserves declared schema field order
+through replay. Project caches reuse verified assessments under a source and
+request contract.
+
+Declared HTML metadata and tables use deterministic bindings over captured,
+visible values. Metadata discovery selects in-scope detail pages before
+acquisition, and the saved selection binds subsequent replay.
+
+The streaming execution path separates preparation from quality checks, keyed
+comparison and analytical export. Completed snapshots provide the verified
+input to each operation. Bundles can be verified independently of the research
+or streaming database. Operational reports read ledger metadata; retention
+applies an explicit preview in an owner-private workspace.
+
 ## Web research
 
 1. Normalize the schema, identity, source scope and saved display preferences.
