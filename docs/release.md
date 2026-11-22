@@ -2,13 +2,11 @@
 
 # Release qualification
 
-Version `1.0.0` is qualified for production use within the documented workflows,
-supported environments and tested limits. The release matrix records the supporting
-engineering checks, real-task evaluation, independent beta and release-owner approvals.
-
-This guide defines the evidence and approval process for maintaining that standard
-through subsequent changes. Release copy is prepared before final qualification;
-publication follows completion of the source-bound reviews below.
+Verboisy 2.0.0 covers production use for local dataset preparation and extraction from
+declared public sources. The [changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200) records feature and compatibility changes.
+Release records link engineering, workflow and distribution evidence to the exact
+source revision and package artifacts. The [release matrix](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) defines
+the review criteria and records the approvals for publication.
 
 ## Three files, three responsibilities
 
@@ -18,8 +16,8 @@ publication follows completion of the source-bound reviews below.
 | `docs/evaluation.md` | Methods, measurements and campaign design | Evaluation design changes |
 | `evals/release-matrix.json` | Tasks, targets and seven release reviews | Plans are approved or evidence is reviewed |
 
-Keep these files. Reports under `evals/results/` retain their original scope and
-measurements; historical reports do not automatically qualify later source.
+Reports under `evals/results/` retain the source revision, execution environment and
+workload for each result.
 
 ## Execute engineering checks
 
@@ -81,17 +79,15 @@ See [evaluation](evaluation.md) for the campaign protocol and reviewer responsib
 
 ## Save actual evidence from the terminal
 
-Copy real reports under `evals/results/`. To write a review note without an editor,
-enter the following command, type the actual review and press **Ctrl-D**:
+Store release evidence in `evals/results/`. Review records identify the reviewer, source
+revision and digest, executed checks, findings, and artifact hashes.
 
 ```bash
 cat > evals/results/editorial-review.md
 ```
 
-Record reviewer, date, exact source revision/digest, work performed, outcomes,
-limitations and retained artifacts. Do not record success for unperformed work.
-Keep confidential agreements and personal data private; public evidence may use
-redacted attestations referencing privately retained records.
+Public review records can reference private evidence by checksum without exposing
+confidential agreements or personal data.
 
 Give every evidence file its own commit:
 
@@ -125,10 +121,9 @@ python scripts/release_matrix.py require-complete
 ```
 
 The second command fails until all seven reviews match current source and evidence.
-Review bookkeeping and reports are excluded from the source digest to avoid recursion.
-Changes to code, dependencies, docs, tests or the evaluation plan make reviews stale.
-`production_status` remains `not_certified`: completed review is an accountable release
-decision, not an independent certification.
+The source digest excludes review bookkeeping and reports. Changes to code,
+dependencies, documentation, tests or the evaluation plan require renewed source-bound
+reviews. The release owner records the delivery decision separately.
 
 ## Select the tested package
 
