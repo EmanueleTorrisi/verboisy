@@ -1,16 +1,17 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Version evolution: 0.1.0 to 1.0.0
+# Version evolution: 0.1.0 to 2.0.0
 
 Verboisy evolved from goal-driven browser extraction into an evidence-backed research
-and data preparation system. The milestones below describe architectural changes;
-they do not invent releases between documented versions.
+and data preparation system. Each milestone records the acquisition, execution and
+evidence contracts introduced with that version.
 
 | Milestone | Product architecture | Data contract |
 | --- | --- | --- |
 | 0.1.0 — Initial research interface | Model/browser orchestration, requested fields and structured export | Goal and schema drive extraction |
 | 0.2.0rc1 — Evidence engine | Persistent crawling, snapshots, independent candidate admission and identity conflict handling | Records require inspectable source bindings; completion is evaluated independently |
 | 1.0.0 — Integrated workflows | Scoped web research, deterministic local/HTTP adapters, separate large-file streaming, proposals, provider profiles and optional C++ | Saved contracts, durable budgets, strict replay and portable row/cell provenance |
+| 2.0.0 — Dataset operations | Versioned workflows, declared HTML extraction, project caches, stream comparison, quality checks and analytical bundles | Preserved CSV column order, bounded pages, portable verification and reviewed retention plans |
 
 ## Research and acquisition
 
