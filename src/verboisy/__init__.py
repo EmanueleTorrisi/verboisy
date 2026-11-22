@@ -6,7 +6,7 @@
 from importlib import import_module
 from typing import TYPE_CHECKING, Any
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 if TYPE_CHECKING:
     from .api import RunResult, arun, run
