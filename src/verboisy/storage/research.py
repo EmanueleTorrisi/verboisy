@@ -145,11 +145,13 @@ class ResearchStore:
     ) -> str:
         """Create a run and any required origin events in one transaction."""
         rid = str(uuid.uuid4())
+        # CSV field order follows the declared schema and must survive a resume.
+        schema_json = json.dumps(schema, ensure_ascii=False, allow_nan=False)
         with self.db:
             self.db.execute(
                 "INSERT INTO research_runs(id,goal,schema_json,task_json,status,export_path) "
                 "VALUES(?,?,?,?,?,?)",
-                (rid, goal, encode(schema), task.model_dump_json(), "RUNNING", export),
+                (rid, goal, schema_json, task.model_dump_json(), "RUNNING", export),
             )
             for kind, value in initial_events:
                 self.db.execute(
