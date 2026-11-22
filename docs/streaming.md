@@ -91,7 +91,7 @@ result = stream_dataset(
 )
 
 with closing(StreamLedger(Path("large-dataset.db"), read_only=True)) as ledger:
-    page = ledger.page(result.job_id, after=0, limit=100)
+    page = ledger.page(result.job_id, after=0, limit=100, max_bytes=1_048_576)
     # Continue with after=page[-1]["ordinal"]. The maximum page size is 1,000.
 ```
 
@@ -235,14 +235,57 @@ Public keyset pages return verified source-bound rows from coherent read snapsho
 First access can scan the capture/prefix; subsequent pages at a stable connection
 revision reuse at most 32 small stamps. Both own writes and external commits invalidate
 stamps; caller transactions remain owned by the caller and are never cached. Pages
-are limited to 1..1000 rows, with no full-dataset result list.
+are limited to 1..1000 rows and at most 16 MiB of stored JSON payload before
+decoding. An explicit `max_bytes` returns a shorter page when the next row would
+exceed the remaining budget. A budget that cannot hold the first row raises an
+error; continue from the last returned ordinal.
 
 Staged export files are flushed/fsynced, directory entries sync where supported, and
 the manifest publishes last. Preparation exits 0/2/1/130 for completed/paused/failed/
 interrupted outcomes. Status inspection can exit 0 for a paused job. Historical million-row
-results apply to their recorded source and host. The [release record](release.md)
-identifies qualified resource limits, platforms and recovery behavior. Consult
-[validation](validation.md) for the checks used to maintain that scope.
+results apply to their recorded source and host. [Validation](validation.md) describes the checks for recovery, paging and
+platform behavior. Size the input, ledger and output ceilings for each workload.
+
+## Quality, updates and delivery
+
+`stream-quality` checks a completed snapshot against a version 1 contract.
+Field pointers follow RFC 6901. A completeness rule counts present non-null
+values; composite uniqueness rules validate typed keys. Policy violations exit
+with status 3 and include a JSON report.
+
+```json
+{
+  "version": "1",
+  "min_rows": 1,
+  "completeness": [{"field": "/sku", "min_present_percent": 100}],
+  "unique": [["/namespace", "/sku"]]
+}
+```
+
+```bash
+verboisy stream-quality --database inventory.db --job "$CURRENT" --contract quality.json
+verboisy stream-update --database inventory.db --baseline "$BASELINE" --current "$CURRENT" \
+  --key /namespace --key /sku --export inventory-delta.jsonl
+verboisy stream-analytics --database inventory.db --job "$CURRENT" \
+  --format jsonl --output-dir inventory-bundle
+verboisy stream-verify inventory-bundle --manifest-sha256 "$MANIFEST_SHA256" --require-row-checks
+```
+
+`stream-update` uses a bounded index to compare completed jobs by explicit
+keys. Inserts and updates take their values from the current capture. Unseen keys
+are reported as unobserved; specify `--complete-snapshot` only when both input
+snapshots cover the same complete population and deletion is intended.
+
+Analytical delivery writes bounded shards with a manifest and evidence. `jsonl`
+produces gzip JSONL. `parquet` requires PyArrow and `--columns` with an explicit
+version 1 column contract. Every column names its physical `type` (`bool`,
+`int64`, `float64`, `string`, or `json`) and Boolean `nullable` policy.
+
+Verification reads a portable bundle without the source ledger. Both formats
+support manifest, file-hash, and proof inventory checks. Gzip JSONL supports
+decoded row and proof comparison; select `--require-row-checks` when that
+level of verification is required. Obtain the manifest checksum from a
+trusted sender. A checksum establishes consistency with that manifest.
 
 ---
 
