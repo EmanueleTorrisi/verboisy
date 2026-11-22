@@ -50,6 +50,16 @@ and projection. Publication flushes files and syncs supported directory boundari
 with the manifest last; this does not assert power-loss safety on all filesystems or
 authenticity of the source.
 
+## Workflow and analytical evidence
+
+A reusable workflow adds its version, revision and exact file checksum to export
+provenance. Declared HTML bindings link accepted fields to captured visible text or
+table cells. Saved runs retain declared schema column order across replay.
+
+Analytical streaming bundles include source and file checksums plus row evidence.
+[Bundle verification](streaming.md#quality-updates-and-delivery) supports verification
+on the receiving system, independently of the originating ledger.
+
 ---
 
 [Overview](index.md) · [CLI](cli.md) · [API](api.md) · [Licensing](licensing.md)
