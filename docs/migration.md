@@ -2,6 +2,26 @@
 
 # Ledger and output compatibility
 
+## Upgrade from 1.0.0 to 2.0.0
+
+Install the wheel for the target version and confirm it with `verboisy --version`.
+Back up ledgers, workflow definitions and exported evidence as a unit. See the
+[2.0.0 changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200) for new commands and compatibility changes.
+
+- **CSV column order.** New research runs persist declared schema field order and
+  reuse it on export after resume. Existing runs retain the order stored by their
+  original version. Preserve earlier exports when an integration reads fields by
+  column position.
+- **Streaming and delivery.** Streaming ledgers retain version 1. Compare only
+  completed runs with compatible declared keys. Treat missing records in partial
+  snapshots as unobserved. Verify analytical bundles against a trusted manifest
+  SHA-256 before importing them.
+- **Workflow pins and caches.** A changed workflow file has a new checksum and
+  starts a new run. Use resume for the saved definition. Reuse project assessments
+  only in the intended scope; use `--no-cache` to bypass persistent reuse.
+- **Runtime.** Python 3.11 deployments require at least 3.11.5. Model role selection
+  from a catalog is opt-in; explicit provider configuration remains available.
+
 ## Current ledger and output compatibility
 
 Back up and verify a ledger before changing execution environments. Ordinary v2/v3
