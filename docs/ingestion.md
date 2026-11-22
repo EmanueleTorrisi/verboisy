@@ -14,6 +14,10 @@ change the network policy. The declared adapters support CSV, JSON, JSONL, TSV, 
 Arbitrary file bytes can be captured and indexed explicitly with `asset`. See
 [File capabilities](formats.md) for the exact output, limitations and safety bounds.
 
+A [versioned workflow](cli.md#versioned-workflows) stores declarations and projections
+with its schema. Local input aliases bind paths at execution without granting new
+directories. Resumed exports use the saved capture and the declared field order.
+
 #### Local files
 
 Configure absolute directory grants in the local `.env`:
