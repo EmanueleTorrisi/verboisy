@@ -1,9 +1,10 @@
 <!-- Copyright (c) 2026 Emanuele Torrisi. See LICENSE for applicable terms. -->
 
-# Install once. Run `verboisy`.
+# Install Verboisy 2.0.0
 
-Python **3.11–3.14** is required. The package already exposes the `verboisy` console
-entry point. Poetry is a development tool; it is not part of the installed command.
+Verboisy requires **Python 3.11.5 or later**, through Python 3.14. The package provides
+the `verboisy` console command. Poetry is used for development; the installed command
+runs without it.
 Execution requires the [written usage rights](licensing.md).
 
 | Need | Installation | Usage |
@@ -11,7 +12,7 @@ Execution requires the [written usage rights](licensing.md).
 | Develop and test this repository | Bootstrap, then activate `.venv` | `verboisy run …` |
 | Use the CLI outside a project | pipx with an authorized wheel or checkout | `verboisy run …` |
 | Import the Python API | pip in your application's virtual environment | `from verboisy import run` |
-| Install a future public release | `pipx install verboisy` or pip in a virtual environment | Available only after publication |
+| Install from a public or private package index | pipx or pip in a virtual environment | Use the index and version specified in the delivery agreement |
 
 pip and pipx are installers. **PyPI is the registry you publish to.** There is no
 separate upload to pip or pipx. Public availability does not change the license.
@@ -65,13 +66,12 @@ export PATH="$HOME/.local/bin:$PATH"
 verboisy --help
 ```
 
-Once an authorized public release exists, users with pipx can run:
+For an authorized PyPI delivery, install and verify the selected version:
 
 ```bash
-pipx install verboisy
+pipx install 'verboisy==2.0.0'
+verboisy --version
 verboisy --help
-# Later, for a new published release:
-pipx upgrade verboisy
 ```
 
 pipx isolates the CLI; its packages are not importable from an unrelated interpreter.
