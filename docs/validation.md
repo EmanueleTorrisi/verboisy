@@ -2,7 +2,7 @@
 
 # Engineering validation
 
-The supported development environment uses Python 3.11–3.14 and Poetry. Execution,
+Verboisy 2.0.0 uses Python 3.11.5 or later through Python 3.14 and Poetry for development. Execution,
 including development tests, requires the permissions described in [licensing](licensing.md).
 
 ## Standard checks
@@ -14,9 +14,9 @@ source .venv/bin/activate
 python scripts/verify_release.py --native --audit --package
 ```
 
-This saves executed outcomes and artifact hashes without claiming all seven release
-gates are complete. See [release qualification](release.md) for evidence review.
-The existing Make targets below remain available to developers using Poetry.
+The verifier records each outcome and artifact checksum. See [release qualification](release.md)
+for source-bound review and package selection. The Make targets provide the same
+engineering checks as individual commands.
 
 ```bash
 make validate
@@ -60,13 +60,12 @@ precision, recall, completion correctness and cost measurements.
 
 Run `poetry check --lock`, `poetry install`, Ruff lint/format checks, `mypy src`, and
 the offline statement/branch coverage gate at its unchanged 100% threshold. Build both
-native modules and run `scripts/check_native_tests.py`. A threshold failure is a failed
-gate, even when behavioral tests pass; do not replace it with a certification claim.
+native modules and run `scripts/check_native_tests.py`.
 
 Provision Chromium explicitly; Linux may need administrator-installed OS libraries
 via `python -m playwright install --with-deps chromium`. Run
 `VERBOISY_REQUIRE_BROWSER=1 poetry run pytest -m "browser and not live" -v` with the required sandbox.
-Missing/truncated downloads block browser qualification; do not substitute mocks.
+Use an intact browser distribution and the sandbox configuration required by the deployment.
 
 Run `poetry run pip-audit --local`, strict MkDocs, `poetry build`,
 `python scripts/check_distribution.py --dist-dir dist --from-sdist --install-smoke`,
@@ -75,10 +74,9 @@ audit skip when not indexed; record dependency scope/skips separately. The check
 covers all public Markdown and local anchors/HTML; Material renders Mermaid containers.
 
 Release evidence binds each result to its source, configuration and environment.
-Report files are excluded from source fingerprints to avoid recursion. The approved
-release record combines engineering checks with annotated research, supported-platform
-and Docker results, browser sandbox and network-policy checks, scale and recovery
-measurements, independent beta and accountable release-owner reviews.
+Report files are excluded from source fingerprints. The release review considers
+engineering checks, annotated research, platform and Docker results, browser policy,
+scale and recovery evidence, and independent review.
 
 Native sanitizers, complete workloads and filesystem or power-loss tests are required
 where the delivered profile makes those claims. Record the exact infrastructure,
