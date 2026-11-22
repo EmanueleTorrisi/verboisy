@@ -18,7 +18,15 @@
 <p align="center">Investigación con evidencias · Extracción estructurada · Datos locales · Procedencia portable</p>
 
 
-> **Estado de la versión:** la versión `1.0.0` está preparada para su uso en producción dentro de los flujos documentados, los entornos compatibles y los límites probados. La [matriz de publicación](https://github.com/EmanueleTorrisi/verboisy/blob/main/evals/release-matrix.json) recoge las comprobaciones técnicas, la evaluación de tareas reales, la beta independiente y las aprobaciones de los responsables de la publicación.
+> **Verboisy 2.0.0 está preparado para el uso en producción en la preparación de datos locales y la extracción a partir de fuentes públicas declaradas. El procesamiento se puede reanudar y las exportaciones conservan la trazabilidad hasta las fuentes.** [Notas completas de la versión](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md#200).
+
+## Novedades de 2.0.0
+
+- Flujos de trabajo versionados con entradas explícitas, extracción de metadatos y tablas HTML con evidencias, y caché opcional de evaluaciones de fuentes por proyecto.
+- Reglas de calidad de conjuntos de datos y comparación por claves entre capturas completas.
+- Exportaciones segmentadas en JSONL comprimido con gzip o Parquet tipado, con evidencias, sumas de comprobación y verificación local.
+- Reanudación con orden estable de las columnas CSV, informes operativos y políticas de retención en espacios privados de Linux.
+- Selección de modelos por función a partir de un catálogo aprobado y límites configurables para la búsqueda alojada.
 
 ## El producto
 
@@ -71,7 +79,7 @@ Capturar binarios no significa OCR ni interpretación universal de documentos. O
 
 ## Instalación y configuración
 
-Se necesitan Python **3.11–3.14** y autorización escrita para ejecutar el software. Poetry es una herramienta de desarrollo; el comando instalado es `verboisy`. Utiliza los perfiles de sistema operativo e intérprete indicados en la matriz de publicación. La investigación web requiere un proveedor configurado, Chromium y bibliotecas del sistema. Las fuentes locales necesitan directorios autorizados y espacio en disco. No se necesita compilador C++.
+Se necesitan Python **3.11.5–3.14** y autorización escrita para ejecutar el software. Poetry es una herramienta de desarrollo; el comando instalado es `verboisy`. Utiliza los perfiles de sistema operativo e intérprete indicados en la matriz de publicación. La investigación web requiere un proveedor configurado, Chromium y bibliotecas del sistema. Las fuentes locales necesitan directorios autorizados y espacio en disco. No se necesita compilador C++.
 
 Ejecuta los siguientes comandos desde una copia autorizada del repositorio. Con pipx instalado, `pipx install .` permite usar el comando fuera del proyecto. Tras la publicación autorizada en PyPI: `pipx install verboisy`. No se da por supuesta su disponibilidad en PyPI. `python examples/local_quickstart.py` verifica dos registros sintéticos sin modelos ni navegador.
 
@@ -173,13 +181,13 @@ Contactar con **[emanueletorrisi98@gmail.com](mailto:emanueletorrisi98@gmail.com
 
 **Emanuele Torrisi** crea y mantiene Verboisy y es actualmente su único desarrollador. [Informes de errores y solicitudes de funciones](https://github.com/EmanueleTorrisi/verboisy/issues) son bienvenidos. Las vulnerabilidades se comunican en privado según la [política de seguridad](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/SECURITY.md).
 
-No se aceptan contribuciones de código no solicitadas. La colaboración remunerada requiere acuerdos previos sobre alcance, compensación, confidencialidad y propiedad intelectual. Los cambios se registran en el [changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md); el [historial](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md) describe la evolución de 0.1.0 a 1.0.0. Consulta [participación](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md) y [derechos](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md).
+No se aceptan contribuciones de código no solicitadas. La colaboración remunerada requiere acuerdos previos sobre alcance, compensación, confidencialidad y propiedad intelectual. Los cambios se registran en el [changelog](https://github.com/EmanueleTorrisi/verboisy/blob/main/CHANGELOG.md); el [historial](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md) describe la evolución de 0.1.0 a 2.0.0. Consulta [participación](https://github.com/EmanueleTorrisi/verboisy/blob/main/.github/CONTRIBUTING.md) y [derechos](https://github.com/EmanueleTorrisi/verboisy/blob/main/COPYRIGHT.md).
 
 ## Ejemplos de flujos
 
 [Catálogo de instituciones de investigación](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/research_catalog/README.md) ·
 [Procesamiento de grandes conjuntos locales de observaciones](https://github.com/EmanueleTorrisi/verboisy/blob/main/examples/streaming_observations/README.md) ·
-[Historial de versiones: 0.1.0–1.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
+[Historial de versiones: 0.1.0–2.0.0](https://github.com/EmanueleTorrisi/verboisy/blob/main/docs/development-roadmap.md)
 
 
 ## Contratos de datos y cualificación
