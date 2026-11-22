@@ -69,13 +69,23 @@ def read_json(path):
     return json.loads(path.read_bytes())
 
 
-def test_reuse_and_resume_preserve_the_exact_workflow_origin(tmp_path, configured):
+@pytest.mark.parametrize("collection_schema", [False, True], ids=["object", "collection"])
+def test_reuse_and_resume_preserve_the_exact_workflow_origin(
+    tmp_path, configured, collection_schema
+):
     config, recipe, source, definition = configured
+    if collection_schema:
+        definition["schema"] = {"type": "array", "items": definition["schema"], "minItems": 1}
+        recipe.write_bytes(json.dumps(definition).encode())
     digest = hashlib.sha256(recipe.read_bytes()).hexdigest()
     first = tmp_path / "first.json"
+    first_csv = first.with_suffix(".csv")
     args = {"config": config, "workflow": recipe, "workflow_sha256": digest}
-    original = run(**args, workflow_inputs={"catalog": source}, export=first, proof=True)
+    original = run(
+        **args, workflow_inputs={"catalog": source}, export=[first, first_csv], proof=True
+    )
     assert original.completed and read_json(first)[0]["available"] is False
+    assert first_csv.read_bytes().splitlines()[0] == b"id,name,available"
     origin = {"version": "1", "name": "catalog", "revision": 3, "sha256": digest}
     manifest = read_json(original.manifest_path)
     assert manifest["workflow_origin"] == origin
@@ -98,8 +108,10 @@ def test_reuse_and_resume_preserve_the_exact_workflow_origin(tmp_path, configure
     with pytest.raises(WorkflowError, match="differs"):
         run(**args, workflow_inputs={"catalog": replacement})
     reexport = tmp_path / "resumed.json"
-    resumed = run(resume=original.run_id, config=config, export=reexport)
+    reexport_csv = reexport.with_suffix(".csv")
+    resumed = run(resume=original.run_id, config=config, export=[reexport, reexport_csv])
     assert resumed.completed and read_json(reexport) == read_json(first)
+    assert reexport_csv.read_bytes() == first_csv.read_bytes()
     assert read_json(resumed.manifest_path)["workflow_origin"] == origin
 
 
