@@ -258,7 +258,10 @@ def _openai_search_request(
     reservation = len(json.dumps(payload, ensure_ascii=False).encode("utf-8")) + config.max_tokens
     ceiling = config.model_request_budget or config.max_total_tokens
     if reservation > ceiling:
-        raise BudgetExceededError("Search request budget exhausted; resume with a larger budget")
+        raise BudgetExceededError(
+            f"Model request budget is too small for web search: "
+            f"the request needs {reservation} internal units, but the limit is {ceiling}."
+        )
     return payload
 
 

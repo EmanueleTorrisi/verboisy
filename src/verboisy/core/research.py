@@ -62,6 +62,7 @@ from verboisy.core.unit_normalization import journal_unit_normalizations
 from verboisy.evidence.models import Candidate, Snapshot, Source, TaskSpec
 from verboisy.evidence.snapshot import canonical_url, chunks, snapshot
 from verboisy.extractor.evidenced import EvidenceExtractor
+from verboisy.extractor.extraction_journal import ExtractionJournal
 from verboisy.extractor.range_changes import (
     ProposedChangesPauseError,
     candidate_range_conflicts,
@@ -148,6 +149,7 @@ class ResearchRunner:
             temporal_intent=self.temporal_intent,
             current_year=self.current_year,
             field_semantics=self.field_semantics,
+            journal=ExtractionJournal(store, rid, self.client),
         )
         self.browser = BrowserManager(config=config)
         self.hosts = {h.lower().rstrip(".") for h in self.task.allowed_hosts}
