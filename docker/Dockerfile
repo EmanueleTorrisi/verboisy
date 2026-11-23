@@ -2,7 +2,7 @@
 # See LICENSE for applicable terms.
 
 
-FROM python:3.11-slim
+FROM python:3.15-slim
 
 # Python and Playwright environment
 ENV PYTHONDONTWRITEBYTECODE=1 \
