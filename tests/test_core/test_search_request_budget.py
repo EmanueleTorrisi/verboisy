@@ -34,7 +34,10 @@ async def test_search_budget_checked_before_dns_and_transport(limits):
     with (
         patch("verboisy.core.search.httpx.AsyncClient", transport),
         patch("verboisy.core.search.validate_url", dns),
-        pytest.raises(BudgetExceededError, match="Search request budget"),
+        pytest.raises(
+            BudgetExceededError,
+            match="web search: the request needs [0-9]+ internal units, but the limit is 1",
+        ),
     ):
         await openai_search("Find universities", config(**limits))
     transport.assert_not_called()
