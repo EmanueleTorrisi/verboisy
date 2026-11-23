@@ -174,6 +174,7 @@ def _create_and_upgrade(
               payload TEXT,
               created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
+            CREATE INDEX IF NOT EXISTS research_events_by_run_kind ON events(run_id,kind);
         """)
     if version == 2:
         columns = {row[1] for row in db.execute("PRAGMA table_info(records)").fetchall()}
