@@ -88,6 +88,14 @@ class Source(StrictModel):
     text: str
     scope: str
     href: str | None = None
+    column_header: str | None = Field(default=None, min_length=1, max_length=128)
+
+    @model_serializer(mode="wrap")
+    def serialize_source(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if self.column_header is None:
+            data.pop("column_header", None)
+        return data
 
 
 class Snapshot(StrictModel):
